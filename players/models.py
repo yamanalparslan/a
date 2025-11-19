@@ -24,7 +24,7 @@ class Player(models.Model):
     phone = models.CharField(max_length=20, default='', blank=True)
     city = models.CharField(max_length=100, default='')
 
-    # GÜNCELLENEN ALAN: Artık choices (seçenekler) kullanıyor
+    # Seviye Alanı
     skill_level = models.CharField(
         max_length=100, 
         choices=SKILL_CHOICES, 
@@ -48,24 +48,58 @@ class Match(models.Model):
     score_team1 = models.IntegerField(default=0)
     score_team2 = models.IntegerField(default=0)
     
-    # Puanlandı mı? (Sonsuz döngü koruması)
+    # Puanlandı mı? (Sonsuz döngü ve tekrar puanlama koruması)
     is_rated = models.BooleanField(default=False)
     
-    # YENİ: Maç Onaylandı mı?
-    # False ise "Davet gönderildi, cevap bekleniyor" demektir.
+    # Maç Onaylandı mı? (Yeterli çoğunluk sağlandı mı?)
     is_confirmed = models.BooleanField(default=False)
     
     def __str__(self):
         return f"Maç - {self.match_date.strftime('%d %b %H:%M')}"
 
+    # --- YENİ EKLENEN KONSENSÜS MANTIĞI ---
+    def check_consensus_and_calculate(self):
+        """
+        Oyuncuların %74'ü onayladıysa puanları hesaplar.
+        Bu fonksiyon her 'Onayla' butonuna basıldığında çağrılmalıdır.
+        """
+        # 1. GÜVENLİK: Zaten puanlandıysa işlem yapma
+        if self.is_rated:
+            return
+
+        # 2. Toplam Oyuncu Sayısını Bul
+        total_players = self.team1_players.count() + self.team2_players.count()
+        if total_players == 0: return 
+
+        # 3. Onaylayanları Say
+        # A) Maçı kuran kişi (created_by) zaten doğal olarak onaylamıştır (+1)
+        approval_count = 1 
+        
+        # B) Bildirimleri "Okundu/Onaylandı" (is_read=True) olanları say
+        # (Notification modeline ters ilişki ile erişiyoruz)
+        approved_notifications = self.notification_set.filter(is_read=True).count()
+        approval_count += approved_notifications
+
+        # 4. Oranı Hesapla
+        approval_ratio = approval_count / total_players
+        
+        # Eşik Değer: %74 (0.74)
+        # Örn: 4 oyuncu varsa, 3 kişi onaylarsa (3/4 = 0.75) eşik geçilir.
+        if approval_ratio >= 0.74:
+            self.calculate_ratings() # Puanları hesapla
+            self.is_confirmed = True # Maçı resmen onayla
+            self.save()
+
     def calculate_ratings(self):
-        """ Puan hesaplama mantığı (Sadece onaylandığında çalışır) """
-        if self.is_rated or not self.is_confirmed: # Onaylanmamışsa hesaplama!
+        """ Puan hesaplama mantığı (Sadece yukarıdaki fonksiyon çağırır) """
+        # İkinci bir güvenlik kontrolü
+        if self.is_rated:
             return
         
         if self.score_team1 == self.score_team2:
             return
 
+        # Sizin belirlediğiniz puanlar
         WIN_POINTS = 150
         LOSE_POINTS = 100
 
@@ -87,15 +121,16 @@ class Match(models.Model):
             player.rating -= LOSE_POINTS
             player.save()
 
+        # İŞLEM BİTTİ: Kilidi kapat
         self.is_rated = True
         self.save()
 
-# YENİ MODEL: BİLDİRİMLER
+# BİLDİRİM MODELİ
 class Notification(models.Model):
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications') # Kime gidecek?
-    match = models.ForeignKey(Match, on_delete=models.CASCADE) # Hangi maç için?
-    message = models.CharField(max_length=255) # Mesaj içeriği
-    is_read = models.BooleanField(default=False) # Okundu/Onaylandı mı?
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False) # True olduğunda "Onaylandı" kabul edilir
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

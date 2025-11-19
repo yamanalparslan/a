@@ -3,14 +3,17 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-
-from rest_framework import viewsets, permissions
-from .serializers import PlayerSerializer, MatchSerializer
 from django.db.models import F
 
-# Modellerimizi ve Formlarımızı import ediyoruz
+# REST Framework
+from rest_framework import viewsets, permissions
+from .serializers import PlayerSerializer, MatchSerializer
+
+# Modeller ve Formlar
 from .models import Player, Match, Notification
 from .forms import PlayerForm, CustomUserCreationForm, MatchForm
+
+# --- STANDART GÖRÜNÜMLER ---
 
 def player_list(request):
     """ Tüm oyuncuları listeleyen view. """
@@ -28,7 +31,7 @@ def player_detail(request, pk):
 
 def match_list(request):
     """ Tüm maçları listeleyen view. """
-    # Sadece onaylanmış (is_confirmed=True) maçları gösterelim
+    # Sadece onaylanmış (is_confirmed=True) maçları göster
     all_matches = Match.objects.filter(is_confirmed=True).order_by('-match_date')
     context = {'matches': all_matches}
     return render(request, 'players/match_list.html', context)
@@ -43,7 +46,6 @@ def match_detail(request, pk):
 
 def home(request):
     """ Ana sayfa view'i. """
-    # Sadece onaylı maçları göster
     recent_matches = Match.objects.filter(is_confirmed=True).order_by('-match_date')[:5]
     recent_players = Player.objects.all().order_by('-pk')[:5]
     
@@ -84,58 +86,80 @@ def signup(request):
     })
 
 
-# --- GÜNCELLENEN CREATE_MATCH FONKSİYONU ---
+@login_required
+def edit_profile(request):
+    """ Kullanıcının kendi profilini düzenlemesi. """
+    try:
+        player = request.user.player
+    except:
+        return redirect('home') # Profil yoksa anasayfaya at
+
+    if request.method == 'POST':
+        form = PlayerForm(request.POST, instance=player)
+        if form.is_valid():
+            form.save()
+            return redirect('player-detail', pk=player.pk)
+    else:
+        form = PlayerForm(instance=player)
+    
+    return render(request, 'players/edit_profile.html', {'form': form})
+
+
+# --- MAÇ YÖNETİMİ VE BİLDİRİMLER (MANTIK BURADA) ---
+
 @login_required
 def create_match(request):
     """
     Maç oluşturma ve davet gönderme.
-    Partner seçimi özelliği eklendi.
     """
     if request.method == 'POST':
         form = MatchForm(request.POST)
         if form.is_valid():
-            # 1. Maçı oluştur ama henüz veritabanına tam kaydetme
+            # 1. Maçı oluştur (Henüz veritabanına tam kaydetme)
             match = form.save(commit=False)
-            match.created_by = request.user # Maçı kim kurdu?
-            match.is_confirmed = False # HENÜZ ONAYLANMADI
-            match.save() # Şimdi ID oluştu, kaydedebiliriz
+            match.created_by = request.user 
+            match.is_confirmed = False 
+            match.save() 
             
             # 2. Takım 1'i Oluştur
             # A) Seni ekle (Zorunlu)
-            # (Eğer kullanıcının Player profili yoksa hata vermemesi için try-except)
             try:
                 match.team1_players.add(request.user.player)
             except:
                 pass 
             
-            # B) Partner Ekle (Eğer seçildiyse) -- YENİ KISIM
+            # B) Partner Ekle (Eğer seçildiyse)
             teammate = form.cleaned_data.get('teammate')
             if teammate:
                 match.team1_players.add(teammate)
+                
+                # DÜZELTME: Partnerine de bildirim gönder!
+                if teammate.user != request.user:
+                    Notification.objects.create(
+                        recipient=teammate.user,
+                        match=match,
+                        message=f"🤝 {request.user.username} seni takım arkadaşı olarak ekledi! Skor: {match.score_team1}-{match.score_team2}. Onaylıyor musun?"
+                    )
             
-            # 3. Takım 2 oyuncularını formdan alıp ekle
+            # 3. Takım 2 oyuncularını (Rakipleri) ekle
             form.save_m2m() 
             
-            # 4. Rakiplere BİLDİRİM (Davet) Gönder
+            # 4. Rakiplere Bildirim Gönder
             for opponent in match.team2_players.all():
-                # Kendine bildirim gönderme (Güvenlik)
                 if opponent.user != request.user:
                     Notification.objects.create(
                         recipient=opponent.user,
                         match=match,
-                        message=f"⚔️ {request.user.username} seni bir maça ekledi! Skor: {match.score_team1}-{match.score_team2}. Onaylıyor musun?"
+                        message=f"⚔️ {request.user.username} seni rakip olarak ekledi! Skor: {match.score_team1}-{match.score_team2}. Onaylıyor musun?"
                     )
             
-            # Kullanıcıyı maç listesine gönder (Maç henüz görünmeyecek çünkü onaylanmadı)
             return redirect('match-list')
     else:
         form = MatchForm()
-        # Formda kendi ismini listelerden çıkar (Kendini partner veya rakip seçemezsin)
+        # Form filtreleme (Kendini seçeme)
         try:
             current_player = request.user.player
-            # Takım arkadaşı listesinden kendini çıkar -- YENİ
             form.fields['teammate'].queryset = Player.objects.exclude(pk=current_player.pk)
-            # Rakip listesinden kendini çıkar
             form.fields['team2_players'].queryset = Player.objects.exclude(pk=current_player.pk)
         except:
             pass
@@ -145,10 +169,7 @@ def create_match(request):
 
 @login_required
 def notifications(request):
-    """
-    Kullanıcının bildirimlerini listeler.
-    """
-    # Bana gelen ve henüz okunmamış (is_read=False) bildirimleri al
+    """ Kullanıcının okunmamış bildirimlerini listeler. """
     my_notifications = Notification.objects.filter(recipient=request.user, is_read=False).order_by('-created_at')
     return render(request, 'players/notifications.html', {'notifications': my_notifications})
 
@@ -156,9 +177,8 @@ def notifications(request):
 @login_required
 def accept_match(request, notification_id):
     """
-    Gelen maç davetini onaylama.
+    Gelen maç davetini onaylama ve konsensüs kontrolü.
     """
-    # Bildirimi bul
     notification = get_object_or_404(Notification, pk=notification_id)
     
     # Güvenlik: Başkasının bildirimini onaylayamazsın
@@ -167,53 +187,26 @@ def accept_match(request, notification_id):
         
     match = notification.match
     
-    # 1. Maçı onayla
-    match.is_confirmed = True
-    match.save()
+    # 1. Bildirimi "Onaylandı" (Okundu) olarak işaretle
+    if not notification.is_read:
+        notification.is_read = True
+        notification.save()
     
-    # 2. Puanları Hesapla (Artık onaylandı!)
-    match.calculate_ratings()
-    
-    # 3. Bildirimi okundu olarak işaretle (Listeden düşsün)
-    notification.is_read = True
-    notification.save()
+    # 2. KONSENSÜS KONTROLÜ YAP
+    # Eğer onaylayan sayısı %74'ü geçerse puanlar hesaplanacak.
+    match.check_consensus_and_calculate()
     
     return redirect('match-list')
 
 
-@login_required
-def edit_profile(request):
-    """
-    Kullanıcının kendi profil bilgilerini güncellemesini sağlar.
-    """
-    # Giriş yapan kullanıcının oyuncu profilini al
-    player = request.user.player
-    
-    if request.method == 'POST':
-        # Formu gelen veriyle doldur, AMA 'instance=player' diyerek
-        # bunun yeni bir kayıt değil, güncelleme olduğunu belirtiyoruz.
-        form = PlayerForm(request.POST, instance=player)
-        
-        if form.is_valid():
-            form.save()
-            # Kaydettikten sonra kendi profil sayfasına yönlendir
-            return redirect('player-detail', pk=player.pk)
-            
-    else:
-        # Sayfa ilk açıldığında formu mevcut bilgilerle dolu getir
-        form = PlayerForm(instance=player)
-    
-    return render(request, 'players/edit_profile.html', {'form': form})
+# --- API VIEWSET'LERİ ---
 
 class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
-    """ Tüm oyuncuları listeler ve puana göre sıralar (API) """
-    # Puanı yüksekten düşüğe sırala (F ile null değerler en sona atılır)
     queryset = Player.objects.all().order_by(F('rating').desc(nulls_last=True), 'user__username')
     serializer_class = PlayerSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly] # Giriş yapılabilir veya sadece okunabilir
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class MatchViewSet(viewsets.ReadOnlyModelViewSet):
-    """ Tüm onaylanmış maçları listeler (API) """
     queryset = Match.objects.filter(is_confirmed=True).order_by('-match_date')
     serializer_class = MatchSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

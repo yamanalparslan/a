@@ -76,32 +76,47 @@
     <div class="d-md-none">
         {% for player in players %}
         <a href="{% url 'player-detail' player.pk %}" class="text-decoration-none">
+            
             <div class="card mb-3 border-0 shadow-sm" style="background-color: #1e293b; border-radius: 15px;">
                 <div class="card-body p-3 d-flex align-items-center">
                     
-                    <div class="rounded-circle d-flex justify-content-center align-items-center me-3 text-white fw-bold border border-secondary" 
-                         style="width: 50px; height: 50px; font-size: 1.2rem; background-color: #0f172a;">
+                    <div class="rounded-circle d-flex justify-content-center align-items-center me-3 text-white fw-bold shadow-sm" 
+                         style="width: 50px; height: 50px; font-size: 1.2rem; background-color: #0f172a; border: 1px solid #334155;">
                         {{ player.first_name|first|upper }}
                     </div>
                     
                     <div class="flex-grow-1">
                         <h6 class="mb-1 text-white fw-bold">{{ player.first_name }} {{ player.last_name }}</h6>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-dark border border-secondary text-muted" style="font-weight: normal; font-size: 0.7rem;">{{ player.skill_level }}</span>
-                            <span class="text-muted small"><i class="bi bi-geo-alt"></i> {{ player.city }}</span>
+                        
+                        <div class="d-flex flex-column gap-1">
+                            <div>
+                                <span class="badge border border-secondary" 
+                                      style="background-color: #0f172a; color: #cbd5e1; font-weight: normal; font-size: 0.7rem;">
+                                    {{ player.skill_level }}
+                                </span>
+                            </div>
+                            
+                            <span class="small" style="color: #94a3b8;">
+                                <i class="bi bi-geo-alt-fill me-1"></i> {{ player.city|default:"-" }}
+                            </span>
                         </div>
                     </div>
 
                     <div class="text-end">
-                        <div class="fw-bold fs-5 font-monospace" style="color: #d9f99d;">{{ player.rating }}</div>
-                        <small style="color: #64748b; font-size: 0.7rem;">PUAN</small>
+                        <div class="fw-bold fs-4 font-monospace" style="color: #d9f99d; text-shadow: 0 0 10px rgba(217, 249, 157, 0.2);">
+                            {{ player.rating }}
+                        </div>
+                        <small class="fw-bold text-uppercase" style="color: #64748b; font-size: 0.65rem;">PUAN</small>
                     </div>
 
                 </div>
             </div>
         </a>
         {% empty %}
-            <div class="text-center text-muted py-4">Henüz kayıtlı oyuncu yok.</div>
+            <div class="text-center py-5" style="color: #94a3b8;">
+                <i class="bi bi-people fs-1 d-block mb-3 opacity-50"></i>
+                Henüz kayıtlı oyuncu bulunamadı.
+            </div>
         {% endfor %}
     </div>
 
