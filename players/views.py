@@ -4,6 +4,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 
+from rest_framework import viewsets, permissions
+from .serializers import PlayerSerializer, MatchSerializer
+from django.db.models import F
+
 # Modellerimizi ve Formlarımızı import ediyoruz
 from .models import Player, Match, Notification
 from .forms import PlayerForm, CustomUserCreationForm, MatchForm
@@ -200,3 +204,16 @@ def edit_profile(request):
         form = PlayerForm(instance=player)
     
     return render(request, 'players/edit_profile.html', {'form': form})
+
+class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
+    """ Tüm oyuncuları listeler ve puana göre sıralar (API) """
+    # Puanı yüksekten düşüğe sırala (F ile null değerler en sona atılır)
+    queryset = Player.objects.all().order_by(F('rating').desc(nulls_last=True), 'user__username')
+    serializer_class = PlayerSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly] # Giriş yapılabilir veya sadece okunabilir
+
+class MatchViewSet(viewsets.ReadOnlyModelViewSet):
+    """ Tüm onaylanmış maçları listeler (API) """
+    queryset = Match.objects.filter(is_confirmed=True).order_by('-match_date')
+    serializer_class = MatchSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
