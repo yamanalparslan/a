@@ -1,0 +1,33 @@
+{% extends 'players/base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 p-4">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Courtmax Padel'e Katıl</h2>
+                <p class="text-muted">Profesyonel padel topluluğu.</p>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                
+                <h6 class="text-uppercase mb-3 mt-2" style="color: var(--lime); font-size: 0.8rem;">Hesap Bilgileri</h6>
+                <div class="form-floating mb-3">{{ user_form.username }}<label>Kullanıcı Adı</label></div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6"><div class="form-floating">{{ user_form.password1 }}<label>Şifre</label></div></div>
+                    <div class="col-6"><div class="form-floating">{{ user_form.password2 }}<label>Şifre (Tekrar)</label></div></div>
+                </div>
+
+                <h6 class="text-uppercase mb-3 mt-4" style="color: var(--lime); font-size: 0.8rem;">Oyuncu Profili</h6>
+                <div class="row g-2 mb-3">
+                    <div class="col-6"><div class="form-floating">{{ player_form.first_name }}<label>Ad</label></div></div>
+                    <div class="col-6"><div class="form-floating">{{ player_form.last_name }}<label>Soyad</label></div></div>
+                </div>
+                <div class="form-floating mb-3">{{ player_form.city }}<label>Şehir</label></div>
+                <div class="form-floating mb-3">{{ player_form.skill_level }}<label>Seviye</label></div>
+
+                <button type="submit" class="btn btn-primary w-100 py-3 mt-2">Kaydı Tamamla</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

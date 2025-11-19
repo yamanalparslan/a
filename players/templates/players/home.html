@@ -1,0 +1,77 @@
+{% extends 'players/base.html' %}
+
+{% block content %}
+
+<div class="row mb-5 align-items-center">
+    <div class="col-lg-8">
+        <h1 class="display-4 fw-bold mb-2 text-white">Hoş Geldin, <span style="color: var(--lime);">{{ user.username }}</span></h1>
+        <p class="lead" style="color: #e2e8f0;">Courtmax Padel topluluğunda performansını takip et, rakiplerinle yarış.</p>
+    </div>
+    <div class="col-lg-4 text-lg-end">
+        {% if user.is_authenticated %}
+            <a href="{% url 'create-match' %}" class="btn btn-primary btn-lg shadow-lg text-dark fw-bold">
+                <i class="bi bi-plus-lg me-2"></i> Maç Ekle
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    
+    <div class="col-lg-7">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <h4 class="mb-0 fw-bold text-white"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Son Aktiviteler</h4>
+            <a href="{% url 'match-list' %}" class="text-decoration-none small fw-bold" style="color: var(--lime);">Tümünü Gör &rarr;</a>
+        </div>
+
+        {% for match in recent_matches %}
+        <div class="card mb-3 border-0 hover-effect">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="small mb-1" style="color: #94a3b8;"><i class="bi bi-calendar-event me-1"></i> {{ match.match_date|date:"d M H:i" }}</div>
+                    <div class="fw-bold text-white fs-5">
+                        <span style="color: #d9f99d;">Takım 1</span> <span class="mx-1 text-secondary">vs</span> <span style="color: #ffffff;">Takım 2</span>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="badge bg-black border border-secondary p-2 fs-5 font-monospace">
+                        <span style="color: var(--lime);">{{ match.score_team1 }}</span> - <span class="text-white">{{ match.score_team2 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <div class="alert alert-dark border-secondary text-center">Henüz maç aktivitesi yok.</div>
+        {% endfor %}
+    </div>
+
+    <div class="col-lg-5">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <h4 class="mb-0 fw-bold text-white"><i class="bi bi-stars text-warning me-2"></i>Aramıza Katılanlar</h4>
+            <a href="{% url 'player-list' %}" class="text-decoration-none small fw-bold" style="color: var(--lime);">Tümünü Gör &rarr;</a>
+        </div>
+
+        <div class="card border-0">
+            <ul class="list-group list-group-flush bg-transparent">
+                {% for player in recent_players %}
+                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-secondary py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold" style="width: 40px; height: 40px;">
+                            {{ player.first_name|first }}
+                        </div>
+                        <div>
+                            <div class="fw-bold text-white">{{ player.first_name }} {{ player.last_name }}</div>
+                            <div class="small" style="color: #94a3b8;">{{ player.city }}</div>
+                        </div>
+                    </div>
+                    <span class="badge bg-primary text-dark fw-bold">{{ player.skill_level }}</span>
+                </li>
+                {% empty %}
+                    <li class="list-group-item bg-transparent text-muted text-center py-3">Henüz oyuncu yok.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

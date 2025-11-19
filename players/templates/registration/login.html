@@ -1,0 +1,21 @@
+{% extends 'players/base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow-lg border-0 p-4">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Giriş Yap</h2>
+                <p class="text-muted">Hesabına erişmek için bilgilerini gir.</p>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary w-100 py-2 mt-3">Giriş</button>
+            </form>
+            <p class="text-center mt-4 text-muted">
+                Hesabın yok mu? <a href="{% url 'signup' %}" style="color: var(--lime);">Kayıt Ol</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

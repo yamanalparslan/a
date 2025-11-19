@@ -1,0 +1,28 @@
+{% extends 'players/base.html' %}
+
+{% block content %}
+    <h1>Maç Detayı</h1>
+    
+    <h3>
+        Tarih: {{ match.match_date|date:"d M Y, H:i" }}
+    </h3>
+    
+    <h2>
+        Skor: {{ match.score_team1 }} - {{ match.score_team2 }}
+    </h2>
+
+    <hr>
+    
+    <h3>Maça Katılan Oyuncular</h3>
+    <ul>
+        {% for player in match.players.all %}
+            <li>
+                <a href="{% url 'player-detail' player.pk %}">
+                    {{ player.first_name }} {{ player.last_name }}
+                </a>
+            </li>
+        {% empty %}
+            <li>Maça oyuncu atanmamış.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
