@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <title>Courtmax Padel Mate</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,9 +14,7 @@
             --bg-dark: #0f172a;
             --card-dark: #1e293b;
             --lime: #d9f99d;
-            --lime-hover: #bef264;    
             --text-white: #ffffff;
-            --text-silver: #e2e8f0;
             --text-dim: #94a3b8;
         }
 
@@ -25,158 +22,140 @@
             background-color: var(--bg-dark);
             color: var(--text-white);
             font-family: 'Inter', sans-serif;
-            overflow-x: hidden; /* Mobilde sağa kaymayı engeller */
+            padding-bottom: 80px; /* Alt menü için boşluk */
         }
 
-        /* MOBİL CİHAZLAR İÇİN ÖZEL AYARLAR */
-        @media (max-width: 991px) {
-            /* Konteyner kenar boşluklarını mobilde daralt */
-            .container { padding-left: 20px; padding-right: 20px; }
-            
-            /* Mobilde menü açıldığında arka planı koyulaştır */
-            .navbar-collapse {
-                background-color: rgba(30, 41, 59, 0.95);
-                padding: 15px;
-                border-radius: 10px;
-                margin-top: 10px;
-                border: 1px solid rgba(255,255,255,0.1);
-            }
-            
-            /* Linkleri mobilde alt alta daha rahat diz */
-            .nav-item { margin-bottom: 10px; }
-            
-            /* iPhone'da inputa tıklayınca ekranın zoom yapmasını engelle */
-            input, select, textarea { font-size: 16px !important; }
-            
-            /* Başlıkları mobilde biraz küçült */
-            h1.display-4, h1.display-5 { font-size: 2rem; }
-        }
-
-        ::selection { background-color: var(--lime); color: var(--bg-dark); }
-
-        h1, h2, h3, h4, h5, h6, .navbar-brand {
-            font-family: 'Poppins', sans-serif;
-            color: var(--text-white);
-        }
-
-        .text-muted { color: var(--text-dim) !important; }
-        .lead { color: var(--text-silver) !important; }
-        p, li, span, div { color: var(--text-silver); }
-        
-        .card {
-            background-color: var(--card-dark);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-        }
-        
-        .navbar {
+        /* MASAÜSTÜ NAVBAR */
+        .navbar-top {
             background-color: rgba(15, 23, 42, 0.95) !important;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .nav-link { color: var(--text-silver) !important; font-weight: 500; transition: 0.3s; }
-        .nav-link:hover, .nav-link.active { color: var(--lime) !important; }
 
-        /* Tabloların mobilde taşmasını önleyen stil */
-        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .table { --bs-table-color: var(--text-silver); --bs-table-border-color: rgba(255,255,255,0.1); white-space: nowrap; }
-        .table-hover tbody tr:hover { color: var(--lime); background-color: rgba(255,255,255,0.05); }
+        /* MOBİL ALT MENÜ (APP BAR) */
+        .bottom-nav {
+            background-color: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom); /* iPhone X+ uyumu */
+        }
+        
+        .bottom-nav-item {
+            color: var(--text-dim);
+            text-align: center;
+            font-size: 0.75rem;
+            padding: 10px 0;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        
+        .bottom-nav-item i {
+            font-size: 1.4rem;
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        .bottom-nav-item.active { color: var(--lime); }
+        .bottom-nav-item:hover { color: #ffffff; }
 
-        .form-control, .form-select {
-            background-color: #020617;
-            border: 1px solid #475569;
-            color: var(--text-white) !important;
-        }
-        .form-control:focus {
-            background-color: #020617;
-            border-color: var(--lime);
-            color: var(--text-white);
-            box-shadow: 0 0 0 2px rgba(217, 249, 157, 0.2);
-        }
-        .form-floating > label { color: var(--text-dim); }
-        
-        .btn-primary {
-            background-color: var(--lime);
-            color: #0f172a;
-            border: none;
-            font-weight: 700;
-        }
-        .btn-primary:hover { background-color: var(--lime-hover); color: #0f172a; }
-        
+        /* Genel Stiller */
         a { text-decoration: none; }
+        .card { background-color: var(--card-dark); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-primary { background-color: var(--lime); color: #0f172a; border: none; font-weight: 700; }
+        
+        /* Masaüstü/Mobil Görünüm Kontrolü */
+        @media (min-width: 992px) {
+            .bottom-nav { display: none; } /* Masaüstünde alt menüyü gizle */
+            body { padding-bottom: 0; }
+        }
+        @media (max-width: 991px) {
+            .navbar-top .navbar-collapse { display: none !important; } /* Mobilde üst menü detaylarını gizle */
+            .navbar-top .navbar-toggler { display: none; }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg sticky-top py-3">
-        <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-top sticky-top py-3">
+        <div class="container d-flex justify-content-between align-items-center">
             
             <a class="navbar-brand fs-4 fw-bold" href="{% url 'home' %}">
-                <span style="color: #ffffff;">Courtmax</span> <span style="color: var(--lime);">Padel Mate</span>
+                <span style="color: #ffffff;">Courtmax</span> <span style="color: var(--lime);">PM</span>
             </a>
             
-            <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="bi bi-list text-white fs-1"></i>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="d-none d-lg-flex align-items-center gap-4">
+                <a class="nav-link text-white" href="{% url 'home' %}">Ana Sayfa</a>
+                <a class="nav-link text-white" href="{% url 'player-list' %}">Oyuncular</a>
+                <a class="nav-link text-white" href="{% url 'match-list' %}">Maçlar</a>
+                <a class="nav-link text-warning" href="{% url 'leaderboard' %}">Sıralama</a>
                 
-                <ul class="navbar-nav me-auto ms-lg-4 align-items-start align-items-lg-center">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">🏠 Ana Sayfa</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'player-list' %}">👤 Oyuncular</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'match-list' %}">🎾 Maçlar</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'leaderboard' %}">🏆 Sıralama</a></li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="https://www.courtmax.com.tr/padel" target="_blank">
-                            <i class="bi bi-bag-fill me-1"></i> Mağaza
+                {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <a class="text-white fw-bold dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown">
+                            {{ user.username }}
                         </a>
-                    </li>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow-lg" style="background-color: var(--card-dark);">
+                            <li><a class="dropdown-item" href="{% url 'edit-profile' %}">Profili Düzenle</a></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="document.getElementById('logout-form').submit();">Çıkış Yap</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-sm btn-outline-light">Giriş</a>
+                {% endif %}
+            </div>
 
-                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                        <a class="nav-link btn btn-outline-secondary text-light border-0 position-relative px-3 text-start" href="{% url 'notifications' %}">
-                            <i class="bi bi-bell-fill me-1"></i> Bildirimler
-                        </a>
-                    </li>
-                </ul>
-                
-                <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0 pt-3 pt-lg-0 border-top border-lg-0 border-secondary border-opacity-25">
-                    {% if user.is_authenticated %}
-                        <div class="dropdown w-100 w-lg-auto">
-                            <a class="text-white fw-bold dropdown-toggle d-flex align-items-center gap-2 text-decoration-none" href="#" role="button" data-bs-toggle="dropdown">
-                                <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
-                                    {{ user.username|first|upper }}
-                                </div>
-                                {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border-0 shadow-lg w-100" style="background-color: var(--card-dark);">
-                                <li><a class="dropdown-item" href="{% url 'edit-profile' %}"><i class="bi bi-pencil me-2"></i> Profili Düzenle</a></li>
-                                {% if user.is_superuser %}
-                                    <li><a class="dropdown-item" href="/admin/"><i class="bi bi-gear me-2"></i> Yönetim</a></li>
-                                {% endif %}
-                                <li><hr class="dropdown-divider border-secondary"></li>
-                                <li>
-                                    <form action="{% url 'logout' %}" method="post">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    {% else %}
-                        <div class="d-flex w-100 gap-2">
-                            <a href="{% url 'login' %}" class="btn btn-outline-light w-50">Giriş</a>
-                            <a href="{% url 'signup' %}" class="btn btn-primary w-50">Kayıt Ol</a>
-                        </div>
-                    {% endif %}
-                </div>
+            <div class="d-lg-none">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'edit-profile' %}" class="text-white fs-4"><i class="bi bi-person-circle"></i></a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-sm btn-primary">Giriş</a>
+                {% endif %}
             </div>
         </div>
     </nav>
 
-    <div class="container py-5">
+    <div class="container py-4">
         {% block content %}
         {% endblock %}
     </div>
+
+    <div class="bottom-nav d-lg-none">
+        <div class="container h-100">
+            <div class="row h-100">
+                <div class="col-3">
+                    <a href="{% url 'home' %}" class="bottom-nav-item d-flex flex-column align-items-center justify-content-center h-100 {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                        <i class="bi bi-house-door"></i>
+                        <span>Ana Sayfa</span>
+                    </a>
+                </div>
+                <div class="col-3">
+                    <a href="{% url 'match-list' %}" class="bottom-nav-item d-flex flex-column align-items-center justify-content-center h-100 {% if request.resolver_match.url_name == 'match-list' %}active{% endif %}">
+                        <i class="bi bi-activity"></i>
+                        <span>Maçlar</span>
+                    </a>
+                </div>
+                <div class="col-3">
+                    <a href="{% url 'leaderboard' %}" class="bottom-nav-item d-flex flex-column align-items-center justify-content-center h-100 {% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}">
+                        <i class="bi bi-trophy"></i>
+                        <span>Sıralama</span>
+                    </a>
+                </div>
+                <div class="col-3">
+                    <a href="{% url 'player-list' %}" class="bottom-nav-item d-flex flex-column align-items-center justify-content-center h-100 {% if request.resolver_match.url_name == 'player-list' %}active{% endif %}">
+                        <i class="bi bi-people"></i>
+                        <span>Oyuncular</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+        {% csrf_token %}
+    </form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
