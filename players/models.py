@@ -4,11 +4,33 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Player(models.Model):
+    # --- PADEL SEVİYE SEÇENEKLERİ ---
+    SKILL_CHOICES = [
+        ('0-1.0 Beginner', '🟩 0 – 1.0: Tam Başlangıç (Beginner)'),
+        ('1.5 Novice', '🟩 1.5: Yeni Öğrenen (Novice)'),
+        ('2.0-2.5 Improver', '🟨 2.0 – 2.5: Gelişen Oyuncu (Improver)'),
+        ('3.0 Intermediate', '🟨 3.0: Orta Seviye (Intermediate)'),
+        ('3.5 Upper Intermediate', '🟨 3.5: Orta-Üst Seviye (Upper Intermediate)'),
+        ('4.0 Advanced', '🟧 4.0: İyi Seviye (Advanced)'),
+        ('4.5 High Advanced', '🟧 4.5: İleri (High Advanced)'),
+        ('5.0 Semi Pro', '🟥 5.0: Yarı-Pro (Semi Pro)'),
+        ('5.5-6.0 Pro', '🟥 5.5 – 6.0: Pro (Professional)'),
+        ('6.5-7.0 Elite', '🟥 6.5 – 7.0: Elit / Dünya Sınıfı'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20, default='', blank=True)
     city = models.CharField(max_length=100, default='')
-    skill_level = models.CharField(max_length=100, default='')
+
+    # GÜNCELLENEN ALAN: Artık choices (seçenekler) kullanıyor
+    skill_level = models.CharField(
+        max_length=100, 
+        choices=SKILL_CHOICES, 
+        default='0-1.0 Beginner'
+    )
+    
     rating = models.IntegerField(default=1000)
     
     def __str__(self):

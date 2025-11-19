@@ -1,33 +1,134 @@
 {% extends 'players/base.html' %}
+
 {% block content %}
-<div class="row justify-content-center mt-5">
+<div class="row justify-content-center mt-5 mb-5">
     <div class="col-md-6">
-        <div class="card shadow-lg border-0 p-4">
+        
+        <div class="card shadow-lg border-0 p-4" style="background-color: #1e293b !important; color: #ffffff !important;">
+            
             <div class="text-center mb-4">
-                <h2 class="fw-bold">Courtmax Padel'e Katıl</h2>
-                <p class="text-muted">Profesyonel padel topluluğu.</p>
+                <h2 class="fw-bold text-white">Courtmax Padel'e Katıl</h2>
+                <p style="color: #94a3b8;">Profesyonel padel topluluğu.</p>
             </div>
+            
+            {% if user_form.errors or player_form.errors %}
+                <div class="alert alert-danger small rounded-3 mb-4" style="background-color: rgba(220, 38, 38, 0.1); border: 1px solid #dc2626; color: #fca5a5;">
+                    <strong>Lütfen hataları düzeltin:</strong>
+                    <ul class="mb-0 ps-3 mt-1">
+                        {% for field in user_form %}{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}{% endfor %}
+                        {% for field in player_form %}{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
             <form method="post">
                 {% csrf_token %}
                 
-                <h6 class="text-uppercase mb-3 mt-2" style="color: var(--lime); font-size: 0.8rem;">Hesap Bilgileri</h6>
-                <div class="form-floating mb-3">{{ user_form.username }}<label>Kullanıcı Adı</label></div>
+                <h6 class="text-uppercase mb-3 mt-2 fw-bold" style="color: #d9f99d; font-size: 0.8rem; letter-spacing: 1px;">Hesap Bilgileri</h6>
+                
+                <div class="form-floating mb-1">
+                    {{ user_form.username }}
+                    <label class="text-muted">Kullanıcı Adı</label>
+                </div>
+                
+                <div id="username-error" class="small text-danger mb-3 d-none">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    Kullanıcı adında boşluk bırakamazsınız! Lütfen bitişik yazın veya '_' kullanın.
+                </div>
+                
                 <div class="row g-2 mb-3">
-                    <div class="col-6"><div class="form-floating">{{ user_form.password1 }}<label>Şifre</label></div></div>
-                    <div class="col-6"><div class="form-floating">{{ user_form.password2 }}<label>Şifre (Tekrar)</label></div></div>
+                    <div class="col-6">
+                        <div class="form-floating">
+                            {{ user_form.password1 }}
+                            <label class="text-muted">Şifre</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating">
+                            {{ user_form.password2 }}
+                            <label class="text-muted">Şifre (Tekrar)</label>
+                        </div>
+                    </div>
                 </div>
 
-                <h6 class="text-uppercase mb-3 mt-4" style="color: var(--lime); font-size: 0.8rem;">Oyuncu Profili</h6>
+                <h6 class="text-uppercase mb-3 mt-4 fw-bold" style="color: #d9f99d; font-size: 0.8rem; letter-spacing: 1px;">Oyuncu Profili</h6>
+                
                 <div class="row g-2 mb-3">
-                    <div class="col-6"><div class="form-floating">{{ player_form.first_name }}<label>Ad</label></div></div>
-                    <div class="col-6"><div class="form-floating">{{ player_form.last_name }}<label>Soyad</label></div></div>
+                    <div class="col-6">
+                        <div class="form-floating">
+                            {{ player_form.first_name }}
+                            <label class="text-muted">Ad</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating">
+                            {{ player_form.last_name }}
+                            <label class="text-muted">Soyad</label>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-floating mb-3">{{ player_form.city }}<label>Şehir</label></div>
-                <div class="form-floating mb-3">{{ player_form.skill_level }}<label>Seviye</label></div>
 
-                <button type="submit" class="btn btn-primary w-100 py-3 mt-2">Kaydı Tamamla</button>
+                <div class="form-floating mb-3">
+                    {{ player_form.phone }}
+                    <label class="text-muted">Telefon Numarası</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    {{ player_form.city }}
+                    <label class="text-muted">Şehir</label>
+                </div>
+                
+                <div class="form-floating mb-4">
+                    {{ player_form.skill_level }}
+                    <label class="text-muted">Seviye</label>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" id="submit-btn" class="btn btn-lg fw-bold rounded-3 shadow-sm hover-effect"
+                            style="background-color: #d9f99d; color: #0f172a; border: none;">
+                        Kaydı Tamamla ✨
+                    </button>
+                </div>
             </form>
+            
+            <p class="text-center mt-4 mb-0" style="color: #94a3b8;">
+                Zaten hesabın var mı? <a href="{% url 'login' %}" class="fw-bold text-decoration-none" style="color: #d9f99d;">Giriş Yap</a>
+            </p>
         </div>
     </div>
 </div>
+
+<script>
+    // HTML elemanlarını seçiyoruz
+    const usernameInput = document.getElementById('id_username'); // Django'nun varsayılan ID'si
+    const errorMsg = document.getElementById('username-error');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // Kullanıcı her tuşa bastığında çalışacak fonksiyon
+    usernameInput.addEventListener('input', function() {
+        const value = this.value;
+
+        // Eğer içinde boşluk (" ") varsa
+        if (value.includes(" ")) {
+            // 1. Hata mesajını göster (d-none sınıfını kaldır)
+            errorMsg.classList.remove('d-none');
+            
+            // 2. Kutucuğun kenarlığını kırmızı yap
+            this.style.borderColor = "#ef4444";
+            
+            // 3. Kayıt butonunu kilitle (Tıklanamaz yap)
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.5";
+            submitBtn.style.cursor = "not-allowed";
+        } else {
+            // Boşluk yoksa her şeyi normale döndür
+            errorMsg.classList.add('d-none');
+            this.style.borderColor = ""; // Varsayılan renge dön
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = "1";
+            submitBtn.style.cursor = "pointer";
+        }
+    });
+</script>
+
 {% endblock %}

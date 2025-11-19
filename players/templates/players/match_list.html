@@ -1,61 +1,94 @@
 {% extends 'players/base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-5">
-    <h1 class="fw-bold">Tüm Maçlar</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-white">🎾 Tüm Maçlar</h1>
+    
     {% if user.is_authenticated %}
-        <a href="{% url 'create-match' %}" class="btn btn-primary rounded-pill px-4">
-            <i class="bi bi-plus-lg me-2"></i> Maç Ekle
+        <a href="{% url 'create-match' %}" class="btn fw-bold shadow-sm px-4 py-2 rounded-pill"
+           style="background-color: #d9f99d; color: #0f172a; border: none;">
+            <i class="bi bi-plus-lg"></i> Maç Ekle
         </a>
+    {% else %}
+        <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">Giriş Yap</a>
     {% endif %}
 </div>
 
 <div class="row">
-    <div class="col-12">
+    <div class="col-md-12">
+        
         {% for match in matches %}
-        <div class="card mb-4 border-0 shadow-sm overflow-hidden">
-            <div class="card-body p-4">
-                <div class="row align-items-center">
-                    <div class="col-md-4 text-center text-md-start">
-                        <h5 class="fw-bold text-white mb-3">Takım 1</h5>
-                        {% for player in match.team1_players.all %}
-                            <div class="d-flex align-items-center justify-content-center justify-content-md-start mb-2">
-                                <div class="rounded-circle bg-secondary me-2" style="width: 30px; height: 30px; display:grid; place-items:center; font-size:0.8rem;">
-                                    {{ player.first_name|first }}
-                                </div>
-                                <span>{{ player.first_name }} {{ player.last_name }}</span>
-                            </div>
-                        {% endfor %}
+            <div class="card shadow-lg mb-4 border-0 rounded-4 overflow-hidden" style="background-color: #1e293b;">
+                <div class="card-body p-4">
+                    
+                    <div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 pb-3 mb-3">
+                        <span class="small" style="color: #cbd5e1;">
+                            <i class="bi bi-calendar3 me-2"></i> {{ match.match_date|date:"d F Y, l - H:i" }}
+                        </span>
                     </div>
 
-                    <div class="col-md-4 text-center my-4 my-md-0">
-                        <div class="d-inline-block bg-dark border border-secondary rounded-3 px-4 py-2">
-                            <span class="display-6 fw-bold" style="color: var(--lime);">{{ match.score_team1 }}</span>
-                            <span class="mx-3 text-muted">-</span>
-                            <span class="display-6 fw-bold text-white">{{ match.score_team2 }}</span>
+                    <div class="row align-items-center">
+                        <div class="col-5 text-center text-md-start">
+                            <h5 class="fw-bold mb-3 text-white">Takım 1</h5>
+                            <ul class="list-unstyled mb-0">
+                                {% for player in match.team1_players.all %}
+                                    <li class="mb-2 d-flex align-items-center justify-content-center justify-content-md-start">
+                                        <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-2 text-white small" 
+                                             style="width: 30px; height: 30px;">
+                                            {{ player.first_name|first|upper }}
+                                        </div>
+                                        <span class="text-white fw-bold">{{ player.first_name }} {{ player.last_name }}</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="fst-italic" style="color: #94a3b8;">-</li>
+                                {% endfor %}
+                            </ul>
                         </div>
-                        <div class="mt-2 small text-muted">{{ match.match_date|date:"d M Y, H:i" }}</div>
+
+                        <div class="col-2 text-center">
+                            <div class="bg-dark text-white rounded-3 py-2 border border-secondary fw-bold fs-3 shadow-sm d-flex justify-content-center gap-2">
+                                <span style="color: #d9f99d;">{{ match.score_team1 }}</span>
+                                <span style="color: #64748b;">-</span>
+                                <span style="color: #ffffff;">{{ match.score_team2 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="col-5 text-center text-md-end">
+                            <h5 class="fw-bold mb-3 text-white">Takım 2</h5>
+                            <ul class="list-unstyled mb-0">
+                                {% for player in match.team2_players.all %}
+                                    <li class="mb-2 d-flex align-items-center justify-content-center justify-content-md-end">
+                                        <span class="text-white fw-bold">{{ player.first_name }} {{ player.last_name }}</span>
+                                        <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center ms-2 text-white small" 
+                                             style="width: 30px; height: 30px;">
+                                            {{ player.first_name|first|upper }}
+                                        </div>
+                                    </li>
+                                {% empty %}
+                                    <li class="fst-italic" style="color: #94a3b8;">-</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
 
-                    <div class="col-md-4 text-center text-md-end">
-                        <h5 class="fw-bold text-white mb-3">Takım 2</h5>
-                        {% for player in match.team2_players.all %}
-                            <div class="d-flex align-items-center justify-content-center justify-content-md-end mb-2">
-                                <span>{{ player.first_name }} {{ player.last_name }}</span>
-                                <div class="rounded-circle bg-secondary ms-2" style="width: 30px; height: 30px; display:grid; place-items:center; font-size:0.8rem;">
-                                    {{ player.first_name|first }}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
                 </div>
             </div>
-        </div>
         {% empty %}
-            <div class="text-center py-5">
-                <h3 class="text-muted">Henüz kayıtlı maç yok.</h3>
+            <div class="alert alert-dark text-center p-5 rounded-4 border-secondary" style="background-color: #1e293b; color: #cbd5e1;">
+                <div class="fs-1 mb-2">🎾</div>
+                <h4 class="text-white">Henüz maç oynanmamış.</h4>
+                <p>Topluluğu canlandırmak için ilk maçı sen ekle!</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'create-match' %}" class="btn mt-3 px-4 rounded-pill fw-bold"
+                       style="background-color: #d9f99d; color: #0f172a; border: none;">
+                        İlk Maçı Ekle
+                    </a>
+                {% endif %}
             </div>
         {% endfor %}
+
     </div>
 </div>
+
 {% endblock %}

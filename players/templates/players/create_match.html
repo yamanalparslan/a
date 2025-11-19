@@ -1,52 +1,159 @@
 {% extends 'players/base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
+<div class="row justify-content-center my-4">
     <div class="col-md-8 col-lg-6">
-        <div class="card shadow-lg border-0">
-            <div class="card-header py-4 text-center">
-                <h3 class="fw-bold mb-1">Maç Daveti Oluştur</h3>
-                <p class="text-muted mb-0 small">Rakiplerini seç ve skorunu gir.</p>
+        
+        <div class="card shadow-lg border-0 rounded-4" style="background-color: #1e293b; color: white;">
+            
+            <div class="card-header text-center py-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h3 class="fw-bold mb-1" style="color: #d9f99d;">⚔️ Maç Daveti Oluştur</h3>
+                <small style="color: #94a3b8;">Rakiplerini seç ve onlara davet gönder.</small>
             </div>
+            
             <div class="card-body p-4">
                 <form method="post">
                     {% csrf_token %}
                     
-                    <div class="mb-4 p-3 rounded" style="background-color: rgba(217, 249, 157, 0.05); border: 1px solid rgba(217, 249, 157, 0.2);">
-                        <label class="fw-bold mb-2" style="color: var(--lime);">Siz (Takım 1)</label>
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="bi bi-person-circle fs-4 me-2 text-white"></i>
-                            <span class="fw-bold fs-5">{{ user.username }}</span>
+                    {% if form.errors %}
+                        <div class="alert alert-danger rounded-3 small bg-danger bg-opacity-10 border-danger text-danger">
+                            <strong>Hata:</strong> Lütfen alanları kontrol edin.
                         </div>
+                    {% endif %}
+
+                    <div class="p-3 rounded-3 mb-4" style="background-color: #0f172a; border: 1px solid #334155;">
+                        <label class="fw-bold mb-3 d-block" style="color: #d9f99d;">Takım 1 (Siz)</label>
+                        
+                        <div class="d-flex align-items-center mb-3 px-2">
+                            <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold" 
+                                 style="width: 40px; height: 40px;">
+                                {{ user.username|first|upper }}
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold text-white">{{ user.username }}</h6>
+                                <small class="text-white" style="font-size: 0.75rem;">Maç Kurucusu</small>
+                            </div>
+                        </div>
+
                         <div class="form-floating">
                             {{ form.teammate }}
-                            <label>Partnerin Kimdi? (Opsiyonel)</label>
+                            <label class="text-white">Partnerin Kimdi? (Opsiyonel)</label>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="fw-bold mb-2 text-white">Rakipler (Takım 2)</label>
-                        {{ form.team2_players }}
-                        <div class="form-text text-muted">CTRL/CMD tuşuyla birden fazla seçebilirsiniz.</div>
+                        <label class="fw-bold mb-2 text-white">Takım 2 (Rakipler)</label>
+                        
+                        <div class="input-group mb-2">
+                            <span class="input-group-text border-secondary text-white" style="background-color: #0f172a;">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" id="opponentSearch" class="form-control border-secondary text-white" 
+                                   placeholder="Oyuncu ismi ara..." style="background-color: #0f172a;">
+                        </div>
+
+                        <div class="opponent-list p-2 rounded border border-secondary" 
+                             style="max-height: 200px; overflow-y: auto; background-color: #0f172a;">
+                            
+                            {% for value, label in form.fields.team2_players.choices %}
+                                <div class="form-check opponent-item py-2 px-2 rounded hover-effect">
+                                    <input class="form-check-input" type="checkbox" name="team2_players" value="{{ value }}" id="id_team2_{{ forloop.counter }}"
+                                           style="background-color: #1e293b; border-color: #64748b;">
+                                    <label class="form-check-label w-100 text-silver" for="id_team2_{{ forloop.counter }}" style="cursor: pointer;">
+                                        {{ label }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                            
+                            <div id="noResults" class="text-center text-white py-2 d-none">
+                                <small>Oyuncu bulunamadı.</small>
+                            </div>
+                        </div>
+                        <div class="form-text text-white small mt-1">Maksimum 2 adet rakip seçebilirsiniz.</div>
                     </div>
+                    
+                    <hr class="my-4 opacity-25 border-secondary">
 
                     <div class="row g-3">
                         <div class="col-6">
-                            <label class="fw-bold mb-1" style="color: var(--lime);">Sizin Skor</label>
+                            <label class="fw-bold text-center d-block mb-2" style="color: #d9f99d;">Sizin Skorunuz</label>
                             {{ form.score_team1 }}
                         </div>
                         <div class="col-6">
-                            <label class="fw-bold mb-1 text-white">Rakip Skor</label>
+                            <label class="fw-bold text-white text-center d-block mb-2">Rakip Skoru</label>
                             {{ form.score_team2 }}
                         </div>
                     </div>
 
-                    <div class="d-grid mt-5">
-                        <button type="submit" class="btn btn-primary py-3 fs-5">Davet Gönder</button>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-lg fw-bold shadow-sm hover-scale" 
+                                style="background-color: #d9f99d; color: #0f172a; border: none;">
+                            Davet Gönder <i class="bi bi-send-fill ms-2"></i>
+                        </button>
                     </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'match-list' %}" class="text-decoration-none small" style="color: #94a3b8;">İptal et</a>
+                    </div>
+
                 </form>
             </div>
         </div>
+
     </div>
 </div>
+
+<script>
+    document.getElementById('opponentSearch').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let items = document.querySelectorAll('.opponent-item');
+        let visibleCount = 0;
+
+        items.forEach(function(item) {
+            let text = item.textContent.toLowerCase();
+            if (text.includes(filter)) {
+                item.style.display = ""; // Göster
+                visibleCount++;
+            } else {
+                item.style.display = "none"; // Gizle
+            }
+        });
+
+        // Hiç sonuç yoksa mesaj göster
+        let noResults = document.getElementById('noResults');
+        if (visibleCount === 0) {
+            noResults.classList.remove('d-none');
+        } else {
+            noResults.classList.add('d-none');
+        }
+    });
+</script>
+
+<style>
+    /* Liste elemanına gelince arka planı aydınlat */
+    .opponent-item:hover {
+        background-color: #1e293b;
+    }
+    
+    /* Tik atıldığında (Checked) rengi yeşil yap */
+    .form-check-input:checked {
+        background-color: #d9f99d;
+        border-color: #d9f99d;
+    }
+    
+    /* Scrollbar'ı güzelleştir (Koyu Tema) */
+    .opponent-list::-webkit-scrollbar {
+        width: 8px;
+    }
+    .opponent-list::-webkit-scrollbar-track {
+        background: #0f172a; 
+    }
+    .opponent-list::-webkit-scrollbar-thumb {
+        background: #334155; 
+        border-radius: 4px;
+    }
+    .opponent-list::-webkit-scrollbar-thumb:hover {
+        background: #475569; 
+    }
+</style>
 {% endblock %}

@@ -1,21 +1,57 @@
 {% extends 'players/base.html' %}
+
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow-lg border-0 p-4">
-            <div class="text-center mb-4">
-                <h2 class="fw-bold">Giriş Yap</h2>
-                <p class="text-muted">Hesabına erişmek için bilgilerini gir.</p>
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5 col-lg-4">
+        
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-lg" 
+                 style="width: 60px; height: 60px; background-color: #1e293b; border: 2px solid #d9f99d; color: #d9f99d; font-size: 1.5rem;">
+                <i class="bi bi-unlock-fill"></i>
             </div>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary w-100 py-2 mt-3">Giriş</button>
-            </form>
-            <p class="text-center mt-4 text-muted">
-                Hesabın yok mu? <a href="{% url 'signup' %}" style="color: var(--lime);">Kayıt Ol</a>
-            </p>
+            <h2 class="fw-bold text-white">Giriş Yap</h2>
+            <p style="color: #94a3b8;">Hesabına erişmek için bilgilerini gir.</p>
         </div>
+
+        <div class="card border-0 shadow-lg rounded-4" style="background-color: #1e293b !important; color: #ffffff !important;">
+            <div class="card-body p-4 p-md-5">
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger small rounded-3 mb-4" style="background-color: rgba(220, 38, 38, 0.1); border: 1px solid #dc2626; color: #fca5a5;">
+                            <i class="bi bi-exclamation-circle me-1"></i> Kullanıcı adı veya şifre hatalı.
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label text-white small text-uppercase fw-bold" style="font-size: 0.75rem;">Kullanıcı Adı</label>
+                        <input type="text" name="username" class="form-control form-control-lg" placeholder="Kullanıcı adınızı girin" required id="id_username"
+                               style="background-color: #0f172a; border-color: #334155; color: white;">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-white small text-uppercase fw-bold" style="font-size: 0.75rem;">Şifre</label>
+                        <input type="password" name="password" class="form-control form-control-lg" placeholder="Şifrenizi girin" required id="id_password"
+                               style="background-color: #0f172a; border-color: #334155; color: white;">
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-lg fw-bold rounded-3 shadow-sm hover-effect"
+                                style="background-color: #d9f99d; color: #0f172a; border: none;">
+                            Giriş Yap <i class="bi bi-arrow-right-short ms-1"></i>
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+            
+            <div class="card-footer text-center py-3 border-0" style="background-color: rgba(0,0,0,0.2);">
+                <small style="color: #94a3b8;">Hesabın yok mu? <a href="{% url 'signup' %}" class="fw-bold text-decoration-none" style="color: #d9f99d;">Hemen Kayıt Ol</a></small>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}
