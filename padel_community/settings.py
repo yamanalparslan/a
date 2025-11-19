@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,6 +43,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'rest_framework',
+
 ]
 
 MIDDLEWARE = [
@@ -79,10 +82,11 @@ WSGI_APPLICATION = "padel_community.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    'default': dj_database_url.config(
+        # Render'daki veritabanı bağlantı adresini (URL) burada tutacağız
+        default='postgresql://padel_mate_user:8WkbvDFbSmXGsCn2e2BCEC9ZR82PSVJQ@dpg-d4eq99rgk3sc73btca50-a.frankfurt-postgres.render.com/padel_mate',
+        conn_max_age=600
+    )
 }
 
 
