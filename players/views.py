@@ -3,8 +3,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.db.models import F
-from django.db.models import Q
+from django.db.models import F, Q
 
 # REST Framework
 from rest_framework import viewsets, permissions
@@ -30,7 +29,6 @@ def player_detail(request, pk):
     return render(request, 'players/player_detail.html', context)
 
 
-
 @login_required
 def match_list(request):
     """ 
@@ -39,13 +37,11 @@ def match_list(request):
     """
     try:
         player = request.user.player
-        
         # Filtre: (Takım 1'de ben varım VEYA Takım 2'de ben varım) VE (Maç onaylanmış)
         my_matches = Match.objects.filter(
             Q(team1_players=player) | Q(team2_players=player),
             is_confirmed=True
         ).order_by('-match_date')
-        
     except:
         # Eğer kullanıcının player profili yoksa boş liste dönsün
         my_matches = []
@@ -80,11 +76,12 @@ def leaderboard(request):
     return render(request, 'players/leaderboard.html', context)
 
 
+# --- KAYIT OLMA (RESİM DESTEĞİ EKLENDİ) ---
 def signup(request):
-    """ Kayıt olma view'i. """
     if request.method == 'POST':
         user_form = CustomUserCreationForm(request.POST)
-        player_form = PlayerForm(request.POST)
+        # EKLENDİ: request.FILES
+        player_form = PlayerForm(request.POST, request.FILES)
         
         if user_form.is_valid() and player_form.is_valid():
             user = user_form.save()
@@ -103,16 +100,17 @@ def signup(request):
     })
 
 
+# --- PROFİL DÜZENLEME (RESİM DESTEĞİ EKLENDİ) ---
 @login_required
 def edit_profile(request):
-    """ Kullanıcının kendi profilini düzenlemesi. """
     try:
         player = request.user.player
     except:
-        return redirect('home') # Profil yoksa anasayfaya at
+        return redirect('home')
 
     if request.method == 'POST':
-        form = PlayerForm(request.POST, instance=player)
+        # EKLENDİ: request.FILES
+        form = PlayerForm(request.POST, request.FILES, instance=player)
         if form.is_valid():
             form.save()
             return redirect('player-detail', pk=player.pk)
@@ -122,7 +120,7 @@ def edit_profile(request):
     return render(request, 'players/edit_profile.html', {'form': form})
 
 
-# --- MAÇ YÖNETİMİ VE BİLDİRİMLER (MANTIK BURADA) ---
+# --- MAÇ YÖNETİMİ VE BİLDİRİMLER ---
 
 @login_required
 def create_match(request):
@@ -132,25 +130,22 @@ def create_match(request):
     if request.method == 'POST':
         form = MatchForm(request.POST)
         if form.is_valid():
-            # 1. Maçı oluştur (Henüz veritabanına tam kaydetme)
+            # 1. Maçı oluştur
             match = form.save(commit=False)
             match.created_by = request.user 
             match.is_confirmed = False 
             match.save() 
             
             # 2. Takım 1'i Oluştur
-            # A) Seni ekle (Zorunlu)
             try:
                 match.team1_players.add(request.user.player)
             except:
                 pass 
             
-            # B) Partner Ekle (Eğer seçildiyse)
             teammate = form.cleaned_data.get('teammate')
             if teammate:
                 match.team1_players.add(teammate)
                 
-                # DÜZELTME: Partnerine de bildirim gönder!
                 if teammate.user != request.user:
                     Notification.objects.create(
                         recipient=teammate.user,
@@ -158,7 +153,7 @@ def create_match(request):
                         message=f"🤝 {request.user.username} seni takım arkadaşı olarak ekledi! Skor: {match.score_team1}-{match.score_team2}. Onaylıyor musun?"
                     )
             
-            # 3. Takım 2 oyuncularını (Rakipleri) ekle
+            # 3. Takım 2'yi ekle
             form.save_m2m() 
             
             # 4. Rakiplere Bildirim Gönder
@@ -173,7 +168,6 @@ def create_match(request):
             return redirect('match-list')
     else:
         form = MatchForm()
-        # Form filtreleme (Kendini seçeme)
         try:
             current_player = request.user.player
             form.fields['teammate'].queryset = Player.objects.exclude(pk=current_player.pk)
@@ -198,19 +192,15 @@ def accept_match(request, notification_id):
     """
     notification = get_object_or_404(Notification, pk=notification_id)
     
-    # Güvenlik: Başkasının bildirimini onaylayamazsın
     if notification.recipient != request.user:
         return redirect('home')
         
     match = notification.match
     
-    # 1. Bildirimi "Onaylandı" (Okundu) olarak işaretle
     if not notification.is_read:
         notification.is_read = True
         notification.save()
     
-    # 2. KONSENSÜS KONTROLÜ YAP
-    # Eğer onaylayan sayısı %74'ü geçerse puanlar hesaplanacak.
     match.check_consensus_and_calculate()
     
     return redirect('match-list')
