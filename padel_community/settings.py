@@ -115,14 +115,14 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # --- DOSYA DEPOLAMA AYARLARI (WhiteNoise Düzeltmesi) ---
 
-# 1. Yeni Yöntem (STORAGES)
+# 1. Yeni Yöntem (STORAGES) - Django 5 Uyumlu
 STORAGES = {
     # Medya (Resim) dosyaları Cloudinary'de saklanır
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     # Statik (CSS/JS) dosyalar WhiteNoise ile sunulur.
-    # DÜZELTME: CompressedManifest... yerine Compressed... kullanıyoruz.
+    # DÜZELTME: 'CompressedManifest...' yerine 'Compressed...' kullanıyoruz.
     # Bu, eksik dosya hatalarını (MissingFileError) engeller.
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
@@ -144,8 +144,7 @@ LOGOUT_REDIRECT_URL = 'home'
 # Güvenlik (CSRF)
 CSRF_TRUSTED_ORIGINS = [
     'https://courtmax-padel-mate.onrender.com',
-    'https://padel.courtmax.com.tr',
-]
+    
 
 # Cloudinary API Ayarları
 CLOUDINARY_STORAGE = {
