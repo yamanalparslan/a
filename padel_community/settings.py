@@ -144,7 +144,7 @@ LOGOUT_REDIRECT_URL = 'home'
 # Güvenlik (CSRF)
 CSRF_TRUSTED_ORIGINS = [
     'https://courtmax-padel-mate.onrender.com',
-    
+]
 
 # Cloudinary API Ayarları
 CLOUDINARY_STORAGE = {
