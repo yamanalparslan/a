@@ -33,20 +33,22 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    # YENİ EKLEDİĞİMİZ UYGULAMA
-    'players.apps.PlayersConfig',
-
-    # Django'nun varsayılan uygulamaları
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    'rest_framework',
-
+# 1. EN BAŞA BUNU AL:
     'cloudinary_storage',
+    
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    
+    # 2. BU BURADA KALSIN:
+    'django.contrib.staticfiles',
+
+    # 3. DİĞERLERİ:
     'cloudinary',
+    'rest_framework',
+    'players.apps.PlayersConfig',
 ]
 
 MIDDLEWARE = [
