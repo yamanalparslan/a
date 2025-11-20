@@ -113,7 +113,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# --- DOSYA DEPOLAMA AYARLARI (Django 5 Uyumlu) ---
+# --- DOSYA DEPOLAMA AYARLARI (WhiteNoise Düzeltmesi) ---
 
 # 1. Yeni Yöntem (STORAGES)
 STORAGES = {
@@ -121,14 +121,17 @@ STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
-    # Statik (CSS/JS) dosyalar WhiteNoise ile sunulur
+    # Statik (CSS/JS) dosyalar WhiteNoise ile sunulur.
+    # DÜZELTME: CompressedManifest... yerine Compressed... kullanıyoruz.
+    # Bu, eksik dosya hatalarını (MissingFileError) engeller.
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
-# 2. Eski Yöntem (Geriye dönük uyumluluk ve hata önleme için)
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# 2. Eski Yöntem (Geriye dönük uyumluluk için)
+# DÜZELTME: Burada da aynı şekilde 'Manifest' ifadesini kaldırdık.
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 
 # Default primary key field type
@@ -141,6 +144,7 @@ LOGOUT_REDIRECT_URL = 'home'
 # Güvenlik (CSRF)
 CSRF_TRUSTED_ORIGINS = [
     'https://courtmax-padel-mate.onrender.com',
+    'https://padel.courtmax.com.tr',
 ]
 
 # Cloudinary API Ayarları
