@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'rest_framework',
 
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +138,15 @@ LOGIN_REDIRECT_URL = 'home'
 
 
 LOGOUT_REDIRECT_URL = 'home'
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://courtmax-padel-mate.onrender.com',
+]
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'BURAYA_CLOUD_NAME_YAZIN',
+    'API_KEY': 'BURAYA_API_KEY_YAZIN',
+    'API_SECRET': 'BURAYA_API_SECRET_YAZIN',
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

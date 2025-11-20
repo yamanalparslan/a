@@ -21,7 +21,7 @@
                 </div>
             {% endif %}
 
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 <h6 class="text-uppercase mb-3 mt-2 fw-bold" style="color: #d9f99d; font-size: 0.8rem; letter-spacing: 1px;">Hesap Bilgileri</h6>
@@ -33,7 +33,7 @@
                 
                 <div id="username-error" class="small text-danger mb-3 d-none">
                     <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                    Kullanıcı adında boşluk bırakamazsınız! Lütfen bitişik yazın veya '_' kullanın.
+                    Kullanıcı adında boşluk bırakamazsınız! Lütfen bitişik yazın.
                 </div>
                 
                 <div class="row g-2 mb-3">
@@ -53,6 +53,11 @@
 
                 <h6 class="text-uppercase mb-3 mt-4 fw-bold" style="color: #d9f99d; font-size: 0.8rem; letter-spacing: 1px;">Oyuncu Profili</h6>
                 
+                <div class="mb-3">
+                    <label class="form-label text-muted small text-uppercase fw-bold" style="font-size: 0.7rem;">Profil Fotoğrafı (İsteğe Bağlı)</label>
+                    {{ player_form.profile_picture }}
+                </div>
+
                 <div class="row g-2 mb-3">
                     <div class="col-6">
                         <div class="form-floating">
@@ -99,36 +104,28 @@
 </div>
 
 <script>
-    // HTML elemanlarını seçiyoruz
-    const usernameInput = document.getElementById('id_username'); // Django'nun varsayılan ID'si
+    const usernameInput = document.getElementById('id_username');
     const errorMsg = document.getElementById('username-error');
     const submitBtn = document.getElementById('submit-btn');
 
-    // Kullanıcı her tuşa bastığında çalışacak fonksiyon
-    usernameInput.addEventListener('input', function() {
-        const value = this.value;
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            const value = this.value;
 
-        // Eğer içinde boşluk (" ") varsa
-        if (value.includes(" ")) {
-            // 1. Hata mesajını göster (d-none sınıfını kaldır)
-            errorMsg.classList.remove('d-none');
-            
-            // 2. Kutucuğun kenarlığını kırmızı yap
-            this.style.borderColor = "#ef4444";
-            
-            // 3. Kayıt butonunu kilitle (Tıklanamaz yap)
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = "0.5";
-            submitBtn.style.cursor = "not-allowed";
-        } else {
-            // Boşluk yoksa her şeyi normale döndür
-            errorMsg.classList.add('d-none');
-            this.style.borderColor = ""; // Varsayılan renge dön
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = "1";
-            submitBtn.style.cursor = "pointer";
-        }
-    });
+            if (value.includes(" ")) {
+                errorMsg.classList.remove('d-none');
+                this.style.borderColor = "#ef4444"; // Kırmızı çerçeve
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = "0.5";
+                submitBtn.style.cursor = "not-allowed";
+            } else {
+                errorMsg.classList.add('d-none');
+                this.style.borderColor = ""; // Varsayılan
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = "1";
+                submitBtn.style.cursor = "pointer";
+            }
+        });
+    }
 </script>
-
 {% endblock %}

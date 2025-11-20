@@ -17,12 +17,12 @@ class CustomUserCreationForm(UserCreationForm):
             self.fields[field].widget.attrs.update({'class': 'form-control', 'placeholder': ' '})
             
 
-# 2. Oyuncu Profili Formu
+# 2. Oyuncu Profili Formu (GÜNCELLENDİ: Resim Alanı Eklendi)
 class PlayerForm(forms.ModelForm):
     class Meta:
         model = Player
-        # DÜZELTME BURADA YAPILDI: 'phone' (Boşluksuz)
-        fields = ['first_name', 'last_name', 'phone', 'city', 'skill_level']
+        # 'profile_picture' alanını listeye ekledik
+        fields = ['first_name', 'last_name', 'phone', 'city', 'skill_level', 'profile_picture']
         
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Adınız'}),
@@ -30,14 +30,21 @@ class PlayerForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '05XX XXX XX XX'}),
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Şehir'}),
             'skill_level': forms.Select(attrs={'class': 'form-select'}),
+            
+            # YENİ: Dosya Yükleme Kutusu (Koyu Tema Uyumlu)
+            'profile_picture': forms.FileInput(attrs={
+                'class': 'form-control', 
+                'style': 'background-color: #0f172a; color: white; border: 1px solid #334155;'
+            }),
         }
 
 
 # 3. Maç Ekleme Formu
 class MatchForm(forms.ModelForm):
+    # Takım Arkadaşı Seçimi
     teammate = forms.ModelChoiceField(
         queryset=Player.objects.all(),
-        required=False,
+        required=False, 
         label="Takım Arkadaşın (Opsiyonel)",
         widget=forms.Select(attrs={'class': 'form-select'})
     )
@@ -53,7 +60,23 @@ class MatchForm(forms.ModelForm):
         }
         
         labels = {
-            'team2_players': 'Rakip Oyuncuları Seçin (CTRL/CMD ile çoklu seçim)',
+            'team2_players': 'Rakip Oyuncuları Seçin',
             'score_team1': 'Sizin Takımın Skoru',
             'score_team2': 'Rakip Takımın Skoru',
         }
+
+    # Doğrulama Fonksiyonu
+    def clean_team2_players(self):
+        """
+        Takım 2 için seçilen oyuncu sayısını kontrol eder.
+        Maksimum 2 oyuncuya izin verir.
+        """
+        players = self.cleaned_data['team2_players']
+        
+        if len(players) > 2:
+            raise forms.ValidationError("En fazla 2 rakip oyuncu seçebilirsiniz.")
+        
+        if len(players) < 1:
+             raise forms.ValidationError("En az 1 rakip seçmelisiniz.")
+             
+        return players

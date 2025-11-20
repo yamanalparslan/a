@@ -26,14 +26,12 @@
             overflow-x: hidden;
         }
 
-        /* NAVBAR AYARLARI */
         .navbar-top {
             background-color: rgba(15, 23, 42, 0.95) !important;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            height: 70px; /* Yükseklik sabitleme */
+            height: 70px;
         }
 
-        /* MOBİL ALT MENÜ */
         .bottom-nav {
             background-color: rgba(30, 41, 59, 0.95);
             backdrop-filter: blur(10px);
@@ -61,10 +59,15 @@
         .bottom-nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
         .bottom-nav-item.active { color: var(--lime); }
 
-        /* GENEL */
         a { text-decoration: none; }
         .card { background-color: var(--card-dark); border: 1px solid rgba(255,255,255,0.1); }
         
+        /* Dropdown Menü İyileştirmesi */
+        .dropdown-menu-dark {
+            background-color: var(--card-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
         @media (min-width: 992px) {
             .bottom-nav { display: none; }
             body { padding-bottom: 0; }
@@ -98,7 +101,7 @@
                         <a class="text-white fw-bold dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown">
                             {{ user.username }}
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow-lg" style="background-color: var(--card-dark);">
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow-lg">
                             <li><a class="dropdown-item" href="{% url 'edit-profile' %}">Profili Düzenle</a></li>
                             {% if user.is_superuser %}<li><a class="dropdown-item" href="/admin/">Yönetim</a></li>{% endif %}
                             <li><hr class="dropdown-divider"></li>
@@ -112,7 +115,7 @@
 
             <div class="d-flex align-items-center gap-3 d-lg-none">
                 
-                <a href="https://www.courtmax.com.tr/padel" target="_blank" class="text-white fs-4">
+                <a href="https://www.courtmax.com.tr/padel?sayfa=2" target="_blank" class="text-white fs-4">
                     <i class="bi bi-bag"></i>
                 </a>
 
@@ -121,9 +124,29 @@
                         <i class="bi bi-bell-fill"></i>
                     </a>
 
-                    <a href="{% url 'edit-profile' %}" class="text-white fs-4">
-                        <i class="bi bi-person-circle"></i>
-                    </a>
+                    <div class="dropdown">
+                        <a class="text-white fs-1" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow-lg border-0" style="margin-top: 10px;">
+                            <li><h6 class="dropdown-header text-lime fw-bold">{{ user.username }}</h6></li>
+                            
+                            <li>
+                                <a class="dropdown-item py-2" href="{% url 'edit-profile' %}">
+                                    <i class="bi bi-pencil-square me-2"></i> Profili Düzenle
+                                </a>
+                            </li>
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            <li>
+                                <a class="dropdown-item text-danger py-2 fw-bold" href="#" onclick="document.getElementById('logout-form').submit();">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                 {% else %}
                     <a href="{% url 'login' %}" class="btn btn-sm btn-primary fw-bold">Giriş</a>
                 {% endif %}

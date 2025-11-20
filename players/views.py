@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import F
+from django.db.models import Q
 
 # REST Framework
 from rest_framework import viewsets, permissions
@@ -29,11 +30,27 @@ def player_detail(request, pk):
     return render(request, 'players/player_detail.html', context)
 
 
+
+@login_required
 def match_list(request):
-    """ Tüm maçları listeleyen view. """
-    # Sadece onaylanmış (is_confirmed=True) maçları göster
-    all_matches = Match.objects.filter(is_confirmed=True).order_by('-match_date')
-    context = {'matches': all_matches}
+    """ 
+    Sadece giriş yapan kullanıcının katıldığı (Takım 1 veya Takım 2) 
+    onaylanmış maçları listeler.
+    """
+    try:
+        player = request.user.player
+        
+        # Filtre: (Takım 1'de ben varım VEYA Takım 2'de ben varım) VE (Maç onaylanmış)
+        my_matches = Match.objects.filter(
+            Q(team1_players=player) | Q(team2_players=player),
+            is_confirmed=True
+        ).order_by('-match_date')
+        
+    except:
+        # Eğer kullanıcının player profili yoksa boş liste dönsün
+        my_matches = []
+
+    context = {'matches': my_matches}
     return render(request, 'players/match_list.html', context)
 
 

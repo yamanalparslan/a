@@ -8,18 +8,23 @@
             
             <div class="card-header text-center py-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <h3 class="fw-bold mb-0" style="color: #d9f99d;">✏️ Profili Düzenle</h3>
-                <small style="color: #94a3b8;">Bilgilerini güncelle ve kaydet.</small>
+                <small style="color: #94a3b8;">Profil fotoğrafını ve bilgilerini güncelle.</small>
             </div>
             
             <div class="card-body p-4">
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     
                     {% if form.errors %}
-                        <div class="alert alert-danger small rounded-3" style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid #dc2626; color: #fca5a5;">
-                            <strong>Bir hata oluştu!</strong> Lütfen girdiğiniz bilgileri kontrol edin.
+                        <div class="alert alert-danger small rounded-3">
+                            <strong>Hata:</strong> Lütfen bilgileri kontrol edin.
                         </div>
                     {% endif %}
+
+                    <div class="mb-4">
+                        <label class="form-label text-white small text-uppercase fw-bold">Profil Fotoğrafı</label>
+                        {{ form.profile_picture }}
+                    </div>
 
                     <div class="row g-2 mb-3">
                         <div class="col-6">
@@ -37,13 +42,18 @@
                     </div>
 
                     <div class="form-floating mb-3">
+                        {{ form.phone }}
+                        <label class="text-muted">Telefon Numarası</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
                         {{ form.city }}
-                        <label class="text-muted">Oynadığınız Şehir</label>
+                        <label class="text-muted">Şehir</label>
                     </div>
 
                     <div class="form-floating mb-4">
                         {{ form.skill_level }}
-                        <label class="text-muted">Seviyeniz (Örn: Orta, İleri)</label>
+                        <label class="text-muted">Seviye</label>
                     </div>
 
                     <div class="d-grid gap-3 mt-4">
@@ -53,7 +63,7 @@
                         </button>
                         
                         <a href="{% url 'home' %}" class="btn btn-link text-decoration-none" style="color: #94a3b8;">
-                            İptal Et ve Geri Dön
+                            İptal Et
                         </a>
                     </div>
 
