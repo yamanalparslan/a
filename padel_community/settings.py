@@ -144,9 +144,9 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'divljychy',
-    'API_KEY': '372999294198912',
-    'API_SECRET': 'yUt4kD31eX_0Hu516ATRONG3qBA',
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'divljychy'), 
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '372999294198912'), 
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'yUt4kD31eX_0Hu516ATRONG3qBA'),
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
