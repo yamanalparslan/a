@@ -121,18 +121,17 @@ STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
-    # Statik (CSS/JS) dosyalar WhiteNoise ile sunulur.
-    # DÜZELTME: 'CompressedManifest...' yerine 'Compressed...' kullanıyoruz.
-    # Bu, eksik dosya hatalarını (MissingFileError) engeller.
+    # Statik (CSS/JS) dosyalar için STANDART Depolama
+    # Compressed... yerine standart StaticFilesStorage kullanıyoruz.
+    # Bu, eksik dosya hatalarını %100 önler.
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
 # 2. Eski Yöntem (Geriye dönük uyumluluk için)
 # DÜZELTME: Burada da aynı şekilde 'Manifest' ifadesini kaldırdık.
-STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
-
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
