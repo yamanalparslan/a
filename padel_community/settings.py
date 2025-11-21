@@ -113,25 +113,25 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# --- DOSYA DEPOLAMA AYARLARI (WhiteNoise Düzeltmesi) ---
+# --- YENİ EKLENEN: MEDIA URL ---
+MEDIA_URL = '/media/'
 
-# 1. Yeni Yöntem (STORAGES) - Django 5 Uyumlu
+
+# --- DOSYA DEPOLAMA AYARLARI ---
+
+# 1. Yeni Yöntem (STORAGES)
 STORAGES = {
-    # Medya (Resim) dosyaları Cloudinary'de saklanır
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
-    # Statik (CSS/JS) dosyalar için STANDART Depolama
-    # Compressed... yerine standart StaticFilesStorage kullanıyoruz.
-    # Bu, eksik dosya hatalarını %100 önler.
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
-# 2. Eski Yöntem (Geriye dönük uyumluluk için)
-# DÜZELTME: Burada da aynı şekilde 'Manifest' ifadesini kaldırdık.
+# 2. Eski Yöntem
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -145,9 +145,25 @@ CSRF_TRUSTED_ORIGINS = [
     'https://courtmax-padel-mate.onrender.com',
 ]
 
-# Cloudinary API Ayarları
+# --- CLOUDINARY API AYARLARI ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'divljychy'), 
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '372999294198912'), 
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'yUt4kD31eX_0Hu516ATRONG3qBA'),
+    'SECURE': True,
+    'MEDIA_TAG': 'media',
 }
+
+# --- E-POSTA AYARLARI (Şifre Sıfırlama İçin) ---
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# Gmail Adresiniz (Gönderen Kişi)
+EMAIL_HOST_USER = 'courtmaxpm@gmail.com'  # <-- BURAYA KENDİ GMAIL ADRESİNİZİ YAZIN
+
+# Gmail Uygulama Şifresi (Verdiğiniz şifre buraya eklendi)
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'wgtl soqn xpxz ybyh')
+
+DEFAULT_FROM_EMAIL = 'Courtmax Padel Mate <noreply@courtmax.com>'
