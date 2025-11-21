@@ -24,7 +24,24 @@
                         <tr onclick="window.location='{% url 'player-detail' player.pk %}'" style="cursor: pointer;">
                             <td class="p-3 fw-bold fs-5" style="color: var(--lime);">#{{ forloop.counter }}</td>
                             
-                            <td class="p-3 text-white">{{ player.first_name }} {{ player.last_name }}</td>
+                            <td class="p-3 text-white">
+                                <div class="d-flex align-items-center">
+                                    {% if player.profile_picture %}
+                                        <img src="{{ player.profile_picture.url }}" 
+                                             class="rounded-circle me-3 border border-secondary" 
+                                             style="width: 40px; height: 40px; object-fit: cover;" 
+                                             alt="{{ player.first_name }}">
+                                    {% else %}
+                                        <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold" 
+                                             style="width: 40px; height: 40px; font-size: 0.8rem;">
+                                            {{ player.first_name|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <span>{{ player.first_name }} {{ player.last_name }}</span>
+                                </div>
+                            </td>
+
                             <td class="p-3"><span class="badge bg-dark border border-secondary">{{ player.skill_level }}</span></td>
                             <td class="p-3 text-end fw-bold" style="color: var(--lime);">{{ player.rating }}</td>
                         </tr>
@@ -43,13 +60,21 @@
                         #{{ forloop.counter }}
                     </div>
 
-                    <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold" style="width: 40px; height: 40px;">
-                        {{ player.first_name|first|upper }}
-                    </div>
+                    {% if player.profile_picture %}
+                        <img src="{{ player.profile_picture.url }}" 
+                             class="rounded-circle me-3 border border-secondary" 
+                             style="width: 40px; height: 40px; object-fit: cover;" 
+                             alt="{{ player.first_name }}">
+                    {% else %}
+                        <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold" 
+                             style="width: 40px; height: 40px;">
+                            {{ player.first_name|first|upper }}
+                        </div>
+                    {% endif %}
 
                     <div class="flex-grow-1">
                         <h6 class="mb-0 text-white fw-bold">{{ player.first_name }} {{ player.last_name }}</h6>
-                        <small class="text-white" style="opacity: 0.7;">{{ player.city }}</small>
+                        <small class="text-white" style="opacity: 0.7;">{{ player.city|default:"-" }}</small>
                     </div>
 
                     <div class="text-end">

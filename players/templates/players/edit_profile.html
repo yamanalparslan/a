@@ -21,8 +21,27 @@
                         </div>
                     {% endif %}
 
-                    <div class="mb-4">
-                        <label class="form-label text-white small text-uppercase fw-bold">Profil Fotoğrafı</label>
+                    <div class="mb-4 text-center">
+                        <label class="form-label text-white small text-uppercase fw-bold d-block text-start">Profil Fotoğrafı</label>
+                        
+                        {% if form.instance.profile_picture %}
+                            <div class="mb-3">
+                                <img src="{{ form.instance.profile_picture.url }}" 
+                                     alt="Mevcut Profil Fotoğrafı" 
+                                     class="rounded-circle border border-2 border-light shadow-sm"
+                                     style="width: 120px; height: 120px; object-fit: cover;">
+                                <div class="small text-muted mt-2">Mevcut Fotoğraf</div>
+                            </div>
+                        {% else %}
+                            <div class="mb-3">
+                                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white" 
+                                     style="width: 120px; height: 120px; font-size: 3rem;">
+                                    👤
+                                </div>
+                                <div class="small text-muted mt-2">Henüz fotoğraf yüklenmemiş</div>
+                            </div>
+                        {% endif %}
+
                         {{ form.profile_picture }}
                     </div>
 

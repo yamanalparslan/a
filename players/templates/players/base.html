@@ -16,6 +16,7 @@
             --lime: #d9f99d;
             --text-white: #ffffff;
             --text-dim: #94a3b8;
+            --neon-red: #ff004c; /* Neon kırmızısı */
         }
 
         body {
@@ -68,6 +69,32 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
 
+        /* --- YENİ EKLENEN NEON NOKTA STİLİ --- */
+        .neon-dot {
+            position: absolute;
+            background-color: var(--neon-red);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--neon-red), 0 0 12px var(--neon-red); /* Parlama efekti */
+            border: 2px solid var(--bg-dark); /* Arka plan rengiyle kesik görünümü */
+            z-index: 10;
+        }
+
+        /* Masaüstü konumlandırması */
+        .desktop-badge {
+            width: 12px;
+            height: 12px;
+            top: 8px;
+            right: 12px;
+        }
+
+        /* Mobil konumlandırması */
+        .mobile-badge {
+            width: 10px;
+            height: 10px;
+            top: 2px;
+            right: 0px;
+        }
+
         @media (min-width: 992px) {
             .bottom-nav { display: none; }
             body { padding-bottom: 0; }
@@ -92,8 +119,13 @@
                 <a class="nav-link text-white" href="https://www.courtmax.com.tr/padel" target="_blank">
                     <i class="bi bi-bag-fill me-1"></i> Mağaza
                 </a>
-                <a class="nav-link btn btn-outline-secondary text-light border-0 px-3" href="{% url 'notifications' %}">
+
+                <a class="nav-link btn btn-outline-secondary text-light border-0 px-3 position-relative" href="{% url 'notifications' %}">
                     <i class="bi bi-bell-fill me-1"></i> Bildirimler
+                    
+                    {% if unread_notifications %} 
+                        <span class="neon-dot desktop-badge"></span>
+                    {% endif %}
                 </a>
 
                 {% if user.is_authenticated %}
@@ -122,6 +154,10 @@
                 {% if user.is_authenticated %}
                     <a href="{% url 'notifications' %}" class="text-white fs-4 position-relative">
                         <i class="bi bi-bell-fill"></i>
+                        
+                        {% if unread_notifications %} 
+                            <span class="neon-dot mobile-badge"></span>
+                        {% endif %}
                     </a>
 
                     <div class="dropdown">
