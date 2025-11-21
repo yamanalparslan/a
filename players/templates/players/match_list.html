@@ -23,31 +23,49 @@
                             </span>
                         </div>
                         <div class="row align-items-center">
+                            
                             <div class="col-5 text-center text-md-start">
                                 <ul class="list-unstyled mb-0">
                                     {% for player in match.team1_players.all %}
                                         <li class="mb-2 d-flex align-items-center justify-content-center justify-content-md-start">
-                                            <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-2 text-white small" style="width: 32px; height: 32px;">{{ player.first_name|first|upper }}</div>
+                                            {% if player.profile_picture %}
+                                                <img src="{{ player.profile_picture.url }}" class="rounded-circle border border-secondary me-2 object-fit-cover" 
+                                                     style="width: 32px; height: 32px;" alt="Avatar">
+                                            {% else %}
+                                                <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-2 text-white small" 
+                                                     style="width: 32px; height: 32px;">{{ player.first_name|first|upper }}</div>
+                                            {% endif %}
+                                            
                                             <span class="text-white fw-bold">{{ player.first_name }} {{ player.last_name }}</span>
                                         </li>
                                     {% endfor %}
                                 </ul>
                             </div>
+
                             <div class="col-2 text-center">
                                 <div class="bg-dark text-white rounded-3 py-2 border border-secondary fw-bold fs-3 shadow-sm d-flex justify-content-center gap-2">
                                     <span style="color: #d9f99d;">{{ match.score_team1 }}</span><span>-</span><span style="color: #ffffff;">{{ match.score_team2 }}</span>
                                 </div>
                             </div>
+
                             <div class="col-5 text-center text-md-end">
                                 <ul class="list-unstyled mb-0">
                                     {% for player in match.team2_players.all %}
                                         <li class="mb-2 d-flex align-items-center justify-content-center justify-content-md-end">
                                             <span class="text-white fw-bold">{{ player.first_name }} {{ player.last_name }}</span>
-                                            <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center ms-2 text-white small" style="width: 32px; height: 32px;">{{ player.first_name|first|upper }}</div>
+                                            
+                                            {% if player.profile_picture %}
+                                                <img src="{{ player.profile_picture.url }}" class="rounded-circle border border-secondary ms-2 object-fit-cover" 
+                                                     style="width: 32px; height: 32px;" alt="Avatar">
+                                            {% else %}
+                                                <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center ms-2 text-white small" 
+                                                     style="width: 32px; height: 32px;">{{ player.first_name|first|upper }}</div>
+                                            {% endif %}
                                         </li>
                                     {% endfor %}
                                 </ul>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -75,8 +93,13 @@
                     
                     <div class="text-start" style="width: 40%;">
                         {% for player in match.team1_players.all %}
-                            <div class="text-white fw-bold text-truncate" style="font-size: 0.85rem; margin-bottom: 2px;">
-                                {{ player.first_name }}
+                            <div class="d-flex align-items-center mb-1">
+                                {% if player.profile_picture %}
+                                    <img src="{{ player.profile_picture.url }}" class="rounded-circle me-1 object-fit-cover border border-secondary" style="width: 20px; height: 20px;">
+                                {% endif %}
+                                <div class="text-white fw-bold text-truncate" style="font-size: 0.85rem;">
+                                    {{ player.first_name }}
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
@@ -91,8 +114,13 @@
 
                     <div class="text-end" style="width: 40%;">
                         {% for player in match.team2_players.all %}
-                            <div class="text-white fw-bold text-truncate" style="font-size: 0.85rem; margin-bottom: 2px;">
-                                {{ player.first_name }}
+                            <div class="d-flex align-items-center justify-content-end mb-1">
+                                <div class="text-white fw-bold text-truncate" style="font-size: 0.85rem;">
+                                    {{ player.first_name }}
+                                </div>
+                                {% if player.profile_picture %}
+                                    <img src="{{ player.profile_picture.url }}" class="rounded-circle ms-1 object-fit-cover border border-secondary" style="width: 20px; height: 20px;">
+                                {% endif %}
                             </div>
                         {% endfor %}
                     </div>
