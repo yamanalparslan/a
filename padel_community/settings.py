@@ -23,6 +23,9 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+
+     'players.apps.PlayersConfig',
+     
     # Cloudinary (En başta)
     'cloudinary_storage',
     
@@ -38,10 +41,10 @@ INSTALLED_APPS = [
     'rest_framework',
     
     # SİZİN UYGULAMANIZ (Sadece bu olmalı)
-    'players.apps.PlayersConfig', 
+    
     
     # DİKKAT: Burada 'accounts' varsa SİLİN!
-    
+
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
