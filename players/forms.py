@@ -5,23 +5,27 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Player, Match
 
-# 1. Kullanıcı Bilgileri Formu
+# 1. Kullanıcı Bilgileri Formu (GÜNCELLENDİ: E-posta Eklendi)
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['username']
+        # Username'in yanına 'email' de ekledik
+        fields = ['username', 'email']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Alanlara stil ekle
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control', 'placeholder': ' '})
-            
+        
+        # E-posta alanını zorunlu yap (Şifre sıfırlama için şart)
+        self.fields['email'].required = True
 
-# 2. Oyuncu Profili Formu (GÜNCELLENDİ: Resim Alanı Eklendi)
+
+# 2. Oyuncu Profili Formu
 class PlayerForm(forms.ModelForm):
     class Meta:
         model = Player
-        # 'profile_picture' alanını listeye ekledik
         fields = ['first_name', 'last_name', 'phone', 'city', 'skill_level', 'profile_picture']
         
         widgets = {
@@ -31,7 +35,6 @@ class PlayerForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Şehir'}),
             'skill_level': forms.Select(attrs={'class': 'form-select'}),
             
-            # YENİ: Dosya Yükleme Kutusu (Koyu Tema Uyumlu)
             'profile_picture': forms.FileInput(attrs={
                 'class': 'form-control', 
                 'style': 'background-color: #0f172a; color: white; border: 1px solid #334155;'
@@ -41,7 +44,6 @@ class PlayerForm(forms.ModelForm):
 
 # 3. Maç Ekleme Formu
 class MatchForm(forms.ModelForm):
-    # Takım Arkadaşı Seçimi
     teammate = forms.ModelChoiceField(
         queryset=Player.objects.all(),
         required=False, 
@@ -65,12 +67,7 @@ class MatchForm(forms.ModelForm):
             'score_team2': 'Rakip Takımın Skoru',
         }
 
-    # Doğrulama Fonksiyonu
     def clean_team2_players(self):
-        """
-        Takım 2 için seçilen oyuncu sayısını kontrol eder.
-        Maksimum 2 oyuncuya izin verir.
-        """
         players = self.cleaned_data['team2_players']
         
         if len(players) > 2:
