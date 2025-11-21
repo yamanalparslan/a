@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'cloudinary',
     'rest_framework',
     'players.apps.PlayersConfig',
+
+    'accounts',
 ]
 
 MIDDLEWARE = [
