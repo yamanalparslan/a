@@ -23,7 +23,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    # 1. EN BAŞA BUNU AL (Cloudinary için şart):
+    # Cloudinary (En başta)
     'cloudinary_storage',
     
     'django.contrib.admin',
@@ -31,18 +31,18 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    
-    # 2. BU BURADA KALSIN:
     'django.contrib.staticfiles',
 
-    # 3. DİĞERLERİ:
+    # Diğerleri
     'cloudinary',
     'rest_framework',
-    'players.apps.PlayersConfig',
-
-    'accounts',
+    
+    # SİZİN UYGULAMANIZ (Sadece bu olmalı)
+    'players.apps.PlayersConfig', 
+    
+    # DİKKAT: Burada 'accounts' varsa SİLİN!
+    
 ]
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     # WhiteNoise Middleware (CSS dosyaları için)
