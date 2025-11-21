@@ -13,8 +13,8 @@ urlpatterns = [
     # Admin Paneli ("admin/" doğru, "/admin/" YANLIŞ)
     path("admin/", admin.site.urls),
     
-    # Hazır giriş sistemi
-    path("accounts/", include("django.contrib.auth.urls")),
+    # Hesap Yönetimi (Custom accounts uygulaması)
+    path("accounts/", include("accounts.urls")),
     
     # Kayıt Ol
     path("signup/", player_views.signup, name="signup"),

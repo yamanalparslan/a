@@ -167,3 +167,6 @@ EMAIL_HOST_USER = 'courtmaxpm@gmail.com'  # <-- BURAYA KENDİ GMAIL ADRESİNİZ�
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'wgtl soqn xpxz ybyh')
 
 DEFAULT_FROM_EMAIL = 'Courtmax Padel Mate <noreply@courtmax.com>'
+
+LOGIN_URL = 'login'  # login view'unuzun URL name'i
+PASSWORD_CHANGE_REDIRECT_URL = 'home'  # Şifre değişim sonrası yönlendirme
