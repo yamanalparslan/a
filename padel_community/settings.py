@@ -17,15 +17,28 @@ SECRET_KEY = "django-insecure-)d8ce(xmnq+n%08ff#w&j5uqu8xg18sjwxe=u$2$vp$v%wtark
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'courtmax-padel-mate.onrender.com',  # Render adresi
+    'courtmaxpadel.com',                 # Yeni domain (kısa)
+    'www.courtmaxpadel.com',             # Yeni domain (uzun)
+    'localhost',
+    '127.0.0.1'
+]
 
+# 2. Form güvenliği (Giriş yapabilmek için ŞART)
+# Buraya domainlerin başında 'https://' olacak şekilde yazmalısın.
+CSRF_TRUSTED_ORIGINS = [
+    'https://courtmax-padel-mate.onrender.com',
+    'https://courtmaxpadel.com',
+    'https://www.courtmaxpadel.com',
+]
 
 # Application definition
 
 INSTALLED_APPS = [
 
      'players.apps.PlayersConfig',
-     
+
     # Cloudinary (En başta)
     'cloudinary_storage',
     
