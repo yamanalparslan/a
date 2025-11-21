@@ -2,23 +2,30 @@
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings            # Medya ayarları için
+from django.conf.urls.static import static  # Medya ayarları için
 from players import views as player_views 
 
 urlpatterns = [
-    # DİKKAT: Tırnakların içinde "/" işaretiyle BAŞLAMAYIN
-    
-    # Ana Sayfa (Boş tırnak doğrudur)
+    # Ana Sayfa
     path("", player_views.home, name="home"),
     
-    # Admin Paneli ("admin/" doğru, "/admin/" YANLIŞ)
+    # Admin Paneli
     path("admin/", admin.site.urls),
     
-    # Hesap Yönetimi (Custom accounts uygulaması)
-    path("accounts/", include("accounts.urls")),
+    # --- DÜZELTİLEN KISIM ---
+    # 'accounts.urls' YERİNE Django'nun kendi auth sistemini kullanıyoruz.
+    # Bu sayede login, logout, password_reset gibi sayfalar otomatik çalışır.
+    path("accounts/", include("django.contrib.auth.urls")),
     
-    # Kayıt Ol
+    # Kayıt Ol (Bizim özel view'imiz)
     path("signup/", player_views.signup, name="signup"),
     
     # Players uygulaması
     path("players/", include("players.urls")),
 ]
+
+# --- PROFİL FOTOĞRAFLARI İÇİN GEREKLİ AYAR ---
+# Geliştirme modundayken (DEBUG=True) yüklenen resimleri sunmak için:
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
