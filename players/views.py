@@ -55,7 +55,7 @@ def custom_login(request):
             # Base64 hatası veya başka bir sistemsel hata
             messages.error(request, "⚠️ Giriş işlemi sırasında bir hata oluştu.")
             
-    return render(request, 'players/login.html') # Template adının login.html olduğundan emin ol
+    return render(request, 'registration/login.html') # Template adının login.html olduğundan emin ol
 
 
 # --- KAYIT OLMA (RESİM DESTEĞİ EKLENDİ) ---
