@@ -12,102 +12,159 @@
             </div>
             
             <div class="card-body p-3 p-md-4">
-                <form method="post">
+                <form method="post" id="matchForm">
                     {% csrf_token %}
                     
-                    {% if form.errors %}
-                        <div class="alert alert-danger rounded-3 small bg-danger bg-opacity-10 border-danger text-danger">
-                            <strong>Hata:</strong> Lütfen alanları kontrol edin.
+                    <!-- GENEL HATA MESAJI -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger rounded-3 small bg-danger bg-opacity-10 border-danger text-danger mb-3">
+                            <strong><i class="bi bi-exclamation-circle me-2"></i>Hata:</strong>
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
                         </div>
                     {% endif %}
 
+                    <!-- TAKIM 1 (SİZ) -->
                     <div class="p-3 rounded-4 mb-4" style="background-color: #0f172a; border: 1px solid #334155;">
-                        <label class="fw-bold mb-3 d-block" style="color: #d9f99d;">Takım 1 (Siz)</label>
+                        <label class="fw-bold mb-3 d-block" style="color: #d9f99d;">
+                            <i class="bi bi-people-fill me-2"></i>Takım 1 (Siz)
+                        </label>
                         
-                        <div class="d-flex align-items-center mb-3 px-2">
+                        <!-- CURRENT USER -->
+                        <div class="d-flex align-items-center mb-4 px-2 pb-3" style="border-bottom: 1px solid #334155;">
                             <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold" 
-                                 style="width: 40px; height: 40px; flex-shrink: 0;">
+                                 style="width: 44px; height: 44px; flex-shrink: 0; font-size: 1rem;">
                                 {{ user.username|first|upper }}
                             </div>
                             <div>
                                 <h6 class="mb-0 fw-bold text-white">{{ user.username }}</h6>
-                                <small class="text-white" style="font-size: 0.75rem;">Maç Kurucusu</small>
+                                <small class="text-white" style="font-size: 0.75rem; color: #d9f99d;">✓ Maç Kurucusu</small>
                             </div>
                         </div>
 
-                        <div class="form-floating">
-                            <select name="teammate" class="form-select border-secondary text-white" id="id_teammate"
-                                    style="background-color: #1e293b;">
+                        <!-- TEAMMATE SELECT -->
+                        <div>
+                            <label for="id_teammate" class="form-label fw-bold mb-2 small" style="color: #94a3b8; text-transform: uppercase;">
+                                <i class="bi bi-person-plus me-1"></i>Takım Arkadaşı (Opsiyonel)
+                            </label>
+                            <select name="teammate" class="form-select rounded-3 border-secondary text-white fw-bold" id="id_teammate"
+                                    style="background-color: #1e293b; padding: 0.7rem;">
                                 {% for x, y in form.fields.teammate.choices %}
                                     <option value="{{ x }}" {% if form.teammate.value == x %}selected{% endif %}>{{ y }}</option>
                                 {% endfor %}
                             </select>
-                            <label for="id_teammate" class="text-muted">Partnerin Kimdi? (Opsiyonel)</label>
+                            <small style="color: #94a3b8; display: block; margin-top: 0.5rem;">
+                                <i class="bi bi-info-circle me-1"></i>Takım arkadaşını seçerseniz iki kişiyle oynarsınız.
+                            </small>
                         </div>
                     </div>
 
+                    <!-- TAKIM 2 (RAKİPLER) -->
                     <div class="mb-4">
-                        <label class="fw-bold mb-2 text-white">Takım 2 (Rakipler)</label>
+                        <label class="fw-bold mb-3 d-block" style="color: #cbd5e1;">
+                            <i class="bi bi-shield-fill me-2"></i>Takım 2 (Rakipler)
+                        </label>
                         
-                        <div class="input-group mb-2">
-                            <span class="input-group-text border-secondary text-white" style="background-color: #0f172a;">
+                        <!-- SEARCH INPUT -->
+                        <div class="input-group mb-3">
+                            <span class="input-group-text rounded-start-3 border-secondary text-white" style="background-color: #0f172a;">
                                 <i class="bi bi-search"></i>
                             </span>
-                            <input type="text" id="opponentSearch" class="form-control border-secondary text-white" 
-                                   placeholder="Oyuncu ara..." style="background-color: #0f172a;">
+                            <input type="text" id="opponentSearch" class="form-control border-secondary text-white rounded-end-3" 
+                                   placeholder="Oyuncu ara (ad, soyadı)..." style="background-color: #0f172a; padding: 0.7rem;">
                         </div>
 
+                        <!-- OPPONENT LIST -->
                         <div class="opponent-list p-2 rounded-3 border border-secondary" 
-                             style="max-height: 220px; overflow-y: auto; background-color: #0f172a;">
+                             style="max-height: 240px; overflow-y: auto; background-color: #0f172a;">
                             
                             {% for value, label in form.fields.team2_players.choices %}
-                                <div class="opponent-item d-flex align-items-center py-3 px-3 rounded hover-effect" 
-                                     style="border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;"
-                                     onclick="toggleCheckbox(this)">
+                                <div class="opponent-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 
+                                     data-player-name="{{ label|lower }}"
+                                     onclick="handleOpponentClick(event, this)">
                                     
-                                    <div class="me-3">
-                                        <input class="form-check-input" type="checkbox" name="team2_players" value="{{ value }}" id="id_team2_{{ forloop.counter }}"
-                                               style="background-color: #1e293b; border-color: #64748b; width: 1.3em; height: 1.3em; cursor: pointer;">
-                                    </div>
+                                    <input class="form-check-input me-3" type="checkbox" name="team2_players" 
+                                           value="{{ value }}" id="id_team2_{{ forloop.counter }}"
+                                           style="background-color: #1e293b; border-color: #64748b; width: 1.3em; height: 1.3em; cursor: pointer;">
                                     
-                                    <label class="form-check-label w-100 text-silver" style="font-size: 0.95rem; cursor: pointer; user-select: none;">
+                                    <label class="form-check-label flex-grow-1" style="font-size: 0.95rem; cursor: pointer; user-select: none;">
                                         {{ label }}
                                     </label>
                                 </div>
                             {% endfor %}
                             
                             <div id="noResults" class="text-center text-muted py-3 d-none">
-                                <small>Oyuncu bulunamadı.</small>
+                                <small><i class="bi bi-search me-1"></i>Oyuncu bulunamadı.</small>
                             </div>
+
+                            {% if not form.fields.team2_players.choices %}
+                                <div class="text-center text-muted py-3">
+                                    <small>Hiçbir oyuncu bulunamadı.</small>
+                                </div>
+                            {% endif %}
                         </div>
                         
+                        <!-- HELPER TEXT -->
                         <div class="form-text text-white small mt-2 opacity-75 ps-1">
-                            <i class="bi bi-info-circle me-1"></i> Maksimum 2 adet rakip seçebilirsiniz.
+                            <i class="bi bi-info-circle me-1"></i>
+                            <span id="selectedCount">0</span>/2 rakip seçildi
                         </div>
+
+                        <!-- FIELD ERROR -->
+                        {% if form.team2_players.errors %}
+                            <div class="alert alert-danger alert-sm mt-2 mb-0" style="font-size: 0.85rem;">
+                                {% for error in form.team2_players.errors %}
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <hr class="my-4 opacity-25 border-secondary">
 
-                    <div class="row g-3">
+                    <!-- SKOR GIRIŞI -->
+                    <div class="row g-3 mb-4">
                         <div class="col-6">
-                            <label class="fw-bold text-center d-block mb-2" style="color: #d9f99d;">Sizin Skor</label>
-                            {{ form.score_team1 }}
+                            <label class="fw-bold text-center d-block mb-2" style="color: #d9f99d;">
+                                <i class="bi bi-diagram-3 me-1"></i>Takım 1 Skoru
+                            </label>
+                            <input type="number" name="score_team1" class="form-control text-center score-input" 
+                                   value="{{ form.score_team1.value|default:0 }}" min="0" max="99" step="1" required>
+                            {% if form.score_team1.errors %}
+                                <small class="text-danger d-block mt-1">
+                                    {% for error in form.score_team1.errors %}{{ error }}{% endfor %}
+                                </small>
+                            {% endif %}
                         </div>
                         <div class="col-6">
-                            <label class="fw-bold text-white text-center d-block mb-2">Rakip Skor</label>
-                            {{ form.score_team2 }}
+                            <label class="fw-bold text-center d-block mb-2" style="color: #cbd5e1;">
+                                <i class="bi bi-diagram-3 me-1"></i>Takım 2 Skoru
+                            </label>
+                            <input type="number" name="score_team2" class="form-control text-center score-input" 
+                                   value="{{ form.score_team2.value|default:0 }}" min="0" max="99" step="1" required>
+                            {% if form.score_team2.errors %}
+                                <small class="text-danger d-block mt-1">
+                                    {% for error in form.score_team2.errors %}{{ error }}{% endfor %}
+                                </small>
+                            {% endif %}
                         </div>
                     </div>
 
+                    <!-- SUBMIT BUTTON -->
                     <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-lg fw-bold shadow-sm hover-scale py-3" 
-                                style="background-color: #d9f99d; color: #0f172a; border: none;">
-                            Davet Gönder <i class="bi bi-send-fill ms-2"></i>
+                        <button type="submit" id="submitBtn" class="btn btn-lg fw-bold shadow-sm py-3" 
+                                style="background-color: #d9f99d; color: #0f172a; border: none; transition: all 0.3s;">
+                            <i class="bi bi-send-fill me-2"></i>
+                            <span id="submitText">Davet Gönder</span>
+                            <span id="submitSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true" style="color: #0f172a;"></span>
                         </button>
                     </div>
                     
                     <div class="text-center mt-3">
-                        <a href="{% url 'match-list' %}" class="text-decoration-none small" style="color: #94a3b8;">İptal et</a>
+                        <a href="{% url 'match-list' %}" class="text-decoration-none small" style="color: #94a3b8;">
+                            <i class="bi bi-arrow-left me-1"></i>İptal et
+                        </a>
                     </div>
 
                 </form>
@@ -117,73 +174,164 @@
     </div>
 </div>
 
-<script>
-    // Arama fonksiyonu
-    document.getElementById('opponentSearch').addEventListener('keyup', function() {
-        let filter = this.value.toLowerCase();
-        let items = document.querySelectorAll('.opponent-item');
-        let visibleCount = 0;
-
-        items.forEach(function(item) {
-            let text = item.querySelector('label').textContent.toLowerCase();
-            if (text.includes(filter)) {
-                item.style.display = "flex";
-                visibleCount++;
-            } else {
-                item.style.display = "none";
-            }
-        });
-
-        let noResults = document.getElementById('noResults');
-        noResults.classList.toggle('d-none', visibleCount !== 0);
-    });
-
-    // Checkbox limit kontrolü
-    function enforceLimit() {
-        const checkboxes = document.querySelectorAll('input[name="team2_players"]');
-        const checked = document.querySelectorAll('input[name="team2_players"]:checked');
-
-        if (checked.length > 2) {
-            event.target.checked = false;
-            alert("En fazla 2 rakip seçebilirsiniz.");
-        }
-    }
-
-    // Checkbox değişiminde limit kontrolü
-    document.querySelectorAll('input[name="team2_players"]').forEach(cb => {
-        cb.addEventListener('change', enforceLimit);
-    });
-
-    // Satıra tıklayınca checkbox toggle
-    function toggleCheckbox(element) {
-        if (event.target.type === 'checkbox') return;
-
-        let checkbox = element.querySelector('input[type="checkbox"]');
-        checkbox.checked = !checkbox.checked;
-
-        enforceLimit();
-    }
-</script>
+<!-- TOAST NOTIFICATION (Dinamik) -->
+<div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 11; pointer-events: none;">
+</div>
 
 <style>
-    .opponent-item:hover { background-color: #1e293b; }
-    .form-check-input:checked { background-color: #d9f99d; border-color: #d9f99d; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%230f172a' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e"); }
+    .opponent-item:hover { 
+        background-color: rgba(217, 249, 157, 0.1);
+        border-radius: 0.5rem;
+    }
+    
+    .opponent-item { 
+        transition: background-color 0.2s;
+    }
+    
+    .form-check-input:checked { 
+        background-color: #d9f99d !important;
+        border-color: #d9f99d !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%230f172a' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
+    }
     
     .opponent-list::-webkit-scrollbar { width: 6px; }
     .opponent-list::-webkit-scrollbar-track { background: #0f172a; }
     .opponent-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    .opponent-list::-webkit-scrollbar-thumb:hover { background: #475569; }
     
-    input[type="number"] {
+    .score-input {
         background-color: #0f172a !important;
         color: white !important;
-        border: 1px solid #334155;
+        border: 1px solid #334155 !important;
         text-align: center;
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         font-weight: bold;
+        padding: 0.8rem !important;
     }
-    input[type="number"]:focus {
-        border-color: #d9f99d;
-        box-shadow: 0 0 0 3px rgba(217, 249, 157, 0.2);
+    
+    .score-input:focus {
+        border-color: #d9f99d !important;
+        box-shadow: 0 0 0 3px rgba(217, 249, 157, 0.2) !important;
     }
+    
+    .cursor-pointer { cursor: pointer; }
 </style>
+
+<script>
+    // ===== ARAMA FONKSİYONU =====
+    const searchInput = document.getElementById('opponentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase().trim();
+            const items = document.querySelectorAll('.opponent-item');
+            let visibleCount = 0;
+
+            items.forEach(function(item) {
+                const playerName = item.dataset.playerName;
+                if (playerName && playerName.includes(filter)) {
+                    item.style.display = "flex";
+                    visibleCount++;
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            document.getElementById('noResults').classList.toggle('d-none', visibleCount !== 0);
+        });
+    }
+
+    // ===== CHECKBOX TOGGLE =====
+    function handleOpponentClick(event, element) {
+        if (event.target.type === 'checkbox') {
+            enforceLimit(event.target);
+            return;
+        }
+
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            enforceLimit(checkbox);
+        }
+    }
+
+    // ===== CHECKBOX LİMİT KONTROLÜ =====
+    function enforceLimit(checkbox) {
+        const allCheckboxes = document.querySelectorAll('input[name="team2_players"]');
+        const checkedBoxes = document.querySelectorAll('input[name="team2_players"]:checked');
+        
+        // Seçili sayısını göster
+        document.getElementById('selectedCount').textContent = checkedBoxes.length;
+
+        if (checkedBoxes.length > 2) {
+            checkbox.checked = false;
+            showToast('⚠️ Maksimum 2 rakip seçebilirsiniz!', 'warning');
+        }
+    }
+
+    // Tüm checkbox'lara listener ekle
+    document.querySelectorAll('input[name="team2_players"]').forEach(cb => {
+        cb.addEventListener('change', function() {
+            enforceLimit(this);
+        });
+    });
+
+    // ===== TOAST NOTIFICATION =====
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        
+        const bgColor = {
+            'success': '#22c55e',
+            'error': '#ef4444',
+            'warning': '#f59e0b',
+            'info': '#3b82f6'
+        }[type] || '#3b82f6';
+
+        const toast = document.createElement('div');
+        toast.className = 'toast show';
+        toast.style.cssText = `
+            background-color: ${bgColor};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease-out;
+            max-width: 300px;
+        `;
+        toast.innerHTML = message;
+        
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // ===== FORM SUBMIT =====
+    document.getElementById('matchForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const submitSpinner = document.getElementById('submitSpinner');
+
+        submitBtn.disabled = true;
+        submitText.textContent = 'Gönderiliyor...';
+        submitSpinner.classList.remove('d-none');
+    });
+
+    // ===== ANIMATION CSS =====
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+
 {% endblock %}
