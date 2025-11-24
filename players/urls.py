@@ -3,21 +3,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-
-# --- 1. DRF Router Tanımı (Doğru ve En Basit Hali) ---
-# YALNIZCA kaynak adlarını ('players', 'matches') kullanıyoruz.
 router = DefaultRouter()
 router.register(r'players', views.PlayerViewSet, basename='api-player')
 router.register(r'matches', views.MatchViewSet, basename='api-match')
 
 
 urlpatterns = [
-    # --- API YOLLARI ---
-    # Router'ı direkt 'api/v1/' altına dahil ediyoruz.
-    # Bu sayede URL'ler: /players/api/v1/players/ şeklinde olacak.
     path('api/v1/', include(router.urls)),
-    
-    # --- MEVCUT HTML YOLLARI ---
+
     path('', views.player_list, name='player-list'),
     path('<int:pk>/', views.player_detail, name='player-detail'),
     path('matches/', views.match_list, name='match-list'),

@@ -189,3 +189,11 @@ DEFAULT_FROM_EMAIL = 'Courtmax Padel Mate <noreply@courtmax.com>'
 
 LOGIN_URL = 'login'  # login view'unuzun URL name'i
 PASSWORD_CHANGE_REDIRECT_URL = 'home'  # Şifre değişim sonrası yönlendirme
+
+SESSION_COOKIE_AGE = 1800
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+SESSION_SAVE_EVERY_REQUEST = True
+
+CSRF_USE_SESSIONS = True
