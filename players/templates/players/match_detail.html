@@ -1,28 +1,272 @@
 {% extends 'players/base.html' %}
 
 {% block content %}
-    <h1>Maç Detayı</h1>
+<div class="container py-4">
     
-    <h3>
-        Tarih: {{ match.match_date|date:"d M Y, H:i" }}
-    </h3>
-    
-    <h2>
-        Skor: {{ match.score_team1 }} - {{ match.score_team2 }}
-    </h2>
+    <!-- BAŞLIK + AKSIYON BUTONLARI -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-white mb-1">⚔️ Maç Detayı</h2>
+            <small style="color: #94a3b8;">
+                <i class="bi bi-calendar-event me-1"></i>
+                {{ match.match_date|date:"d M Y, H:i" }}
+            </small>
+        </div>
+        
+        <!-- DÜZENLE / SİL BUTONLARI - Sadece Oluşturan Görsün -->
+        {% if user.pk == match.created_by.pk %}
+        <div class="d-flex gap-2">
+            <a href="{% url 'edit-match' match.pk %}" class="btn btn-sm btn-outline-warning">
+                <i class="bi bi-pencil-square me-1"></i> Düzenle
+            </a>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash me-1"></i> Sil
+            </button>
+        </div>
+        {% endif %}
+    </div>
 
-    <hr>
-    
-    <h3>Maça Katılan Oyuncular</h3>
-    <ul>
-        {% for player in match.players.all %}
-            <li>
-                <a href="{% url 'player-detail' player.pk %}">
-                    {{ player.first_name }} {{ player.last_name }}
-                </a>
-            </li>
-        {% empty %}
-            <li>Maça oyuncu atanmamış.</li>
-        {% endfor %}
-    </ul>
+    <!-- SKOR - PROMINENT DISPLAY -->
+    <div class="card border-0 shadow-lg mb-4" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+        <div class="card-body p-5">
+            <div class="row g-4 align-items-center">
+                <!-- TAKIM 1 SKORU -->
+                <div class="col-md-4 text-center">
+                    <div class="small mb-2 fw-bold" style="color: #94a3b8;">TAKIM 1</div>
+                    <div class="display-4 fw-bold" style="color: #d9f99d;">
+                        {{ match.score_team1 }}
+                    </div>
+                </div>
+                
+                <!-- ORTADA -->
+                <div class="col-md-4 text-center">
+                    <div style="color: #64748b; font-size: 2rem;">vs</div>
+                </div>
+                
+                <!-- TAKIM 2 SKORU -->
+                <div class="col-md-4 text-center">
+                    <div class="small mb-2 fw-bold" style="color: #94a3b8;">TAKIM 2</div>
+                    <div class="display-4 fw-bold" style="color: #cbd5e1;">
+                        {{ match.score_team2 }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MAÇA DURUMU -->
+            <div class="mt-4 text-center">
+                {% if match.status == 'completed' %}
+                    <span class="badge bg-success fs-6 px-3 py-2">
+                        <i class="bi bi-check-circle me-1"></i> Tamamlandı
+                    </span>
+                    {% if match.score_team1 > match.score_team2 %}
+                        <div class="small mt-2" style="color: #d9f99d;">
+                            <strong>🎉 TAKIM 1 KAZANDI!</strong>
+                        </div>
+                    {% elif match.score_team2 > match.score_team1 %}
+                        <div class="small mt-2" style="color: #d9f99d;">
+                            <strong>🎉 TAKIM 2 KAZANDI!</strong>
+                        </div>
+                    {% else %}
+                        <div class="small mt-2" style="color: #fbbf24;">
+                            <strong>🤝 BERABERE!</strong>
+                        </div>
+                    {% endif %}
+                {% elif match.status == 'pending' %}
+                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                        <i class="bi bi-hourglass-split me-1"></i> Beklemede
+                    </span>
+                {% elif match.status == 'cancelled' %}
+                    <span class="badge bg-danger fs-6 px-3 py-2">
+                        <i class="bi bi-x-circle me-1"></i> İptal
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TAKIMLAR -->
+    <div class="row g-4 mb-4">
+        
+        <!-- TAKIM 1 -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100" style="background-color: #1e293b;">
+                <div class="card-header py-3 fw-bold" style="border-bottom: 2px solid #d9f99d; color: #d9f99d;">
+                    <i class="bi bi-people-fill me-2"></i> TAKIM 1
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush bg-transparent">
+                        {% for player in match.team1_players.all %}
+                        <li class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3 px-4">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <!-- PROFIL FOTOĞRAFI -->
+                                {% if player.profile_picture %}
+                                    <img src="{{ player.profile_picture.url }}" 
+                                         alt="{{ player.first_name }}"
+                                         class="rounded-circle me-3 border border-secondary"
+                                         style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold"
+                                         style="width: 40px; height: 40px; font-size: 0.9rem;">
+                                        {{ player.first_name|first|upper }}
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- OYUNCU BİLGİSİ -->
+                                <div>
+                                    <a href="{% url 'player-detail' player.pk %}" class="text-decoration-none fw-bold text-white">
+                                        {{ player.first_name }} {{ player.last_name }}
+                                    </a>
+                                    <div class="small" style="color: #94a3b8;">
+                                        <i class="bi bi-graph-up me-1"></i>{{ player.skill_level }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- PUAN -->
+                            <div class="text-end ms-3">
+                                <div class="badge px-3 py-2" style="background-color: #0f172a; color: #d9f99d; border: 1px solid #d9f99d;">
+                                    +{{ player.rating|default:"0" }} puan
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item bg-transparent text-center text-muted py-4">
+                            <i class="bi bi-info-circle me-2"></i> Oyuncu atanmamış
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAKIM 2 -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100" style="background-color: #1e293b;">
+                <div class="card-header py-3 fw-bold" style="border-bottom: 2px solid #cbd5e1; color: #cbd5e1;">
+                    <i class="bi bi-people-fill me-2"></i> TAKIM 2
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush bg-transparent">
+                        {% for player in match.team2_players.all %}
+                        <li class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3 px-4">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <!-- PROFIL FOTOĞRAFI -->
+                                {% if player.profile_picture %}
+                                    <img src="{{ player.profile_picture.url }}" 
+                                         alt="{{ player.first_name }}"
+                                         class="rounded-circle me-3 border border-secondary"
+                                         style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold"
+                                         style="width: 40px; height: 40px; font-size: 0.9rem;">
+                                        {{ player.first_name|first|upper }}
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- OYUNCU BİLGİSİ -->
+                                <div>
+                                    <a href="{% url 'player-detail' player.pk %}" class="text-decoration-none fw-bold text-white">
+                                        {{ player.first_name }} {{ player.last_name }}
+                                    </a>
+                                    <div class="small" style="color: #94a3b8;">
+                                        <i class="bi bi-graph-up me-1"></i>{{ player.skill_level }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- PUAN -->
+                            <div class="text-end ms-3">
+                                <div class="badge px-3 py-2" style="background-color: #0f172a; color: #cbd5e1;">
+                                    +{{ player.rating|default:"0" }} puan
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item bg-transparent text-center text-muted py-4">
+                            <i class="bi bi-info-circle me-2"></i> Oyuncu atanmamış
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAÇ BİLGİLERİ -->
+    <div class="card border-0 shadow-sm" style="background-color: #1e293b;">
+        <div class="card-header py-3 fw-bold text-white" style="border-bottom: 1px solid #334155;">
+            <i class="bi bi-info-circle me-2"></i> Maç Bilgileri
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-sm-6 col-md-3">
+                    <small style="color: #94a3b8; text-transform: uppercase;">Oluşturan</small>
+                    <div class="fw-bold text-white mt-1">
+                        <a href="{% url 'player-detail' match.created_by.pk %}" class="text-decoration-none" style="color: #d9f99d;">
+                            {{ match.created_by.first_name }} {{ match.created_by.last_name }}
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-sm-6 col-md-3">
+                    <small style="color: #94a3b8; text-transform: uppercase;">Tarih</small>
+                    <div class="fw-bold text-white mt-1">
+                        {{ match.match_date|date:"d M Y" }}
+                    </div>
+                </div>
+                
+                <div class="col-sm-6 col-md-3">
+                    <small style="color: #94a3b8; text-transform: uppercase;">Saat</small>
+                    <div class="fw-bold text-white mt-1">
+                        {{ match.match_date|date:"H:i" }}
+                    </div>
+                </div>
+                
+                <div class="col-sm-6 col-md-3">
+                    <small style="color: #94a3b8; text-transform: uppercase;">Durum</small>
+                    <div class="mt-1">
+                        {% if match.status == 'completed' %}
+                            <span class="badge bg-success">Tamamlandı</span>
+                        {% elif match.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Beklemede</span>
+                        {% else %}
+                            <span class="badge bg-danger">İptal</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GERİ DÖNÜŞ LINKI -->
+    <div class="mt-4">
+        <a href="{% url 'match-list' %}" class="text-decoration-none small fw-bold" style="color: #94a3b8;">
+            <i class="bi bi-arrow-left me-1"></i> Maçlara Dön
+        </a>
+    </div>
+
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-danger">⚠️ Maç Sil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Bu maç silinecek. Bu işlem geri alınamaz!
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <form method="post" action="{% url 'delete-match' match.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Sil</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
