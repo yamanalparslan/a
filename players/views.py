@@ -1,7 +1,8 @@
 # players/views.py
 
+import base64 # Şifre çözme için gerekli
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate # authenticate eklendi
 from django.contrib.auth.decorators import login_required
 from django.db.models import F, Q
 from django.http import Http404
@@ -14,6 +15,76 @@ from .serializers import PlayerSerializer, MatchSerializer
 # Modeller ve Formlar
 from .models import Player, Match, Notification
 from .forms import PlayerForm, CustomUserCreationForm, MatchForm
+
+# --- KİMLİK DOĞRULAMA (GÜVENLİK GÜNCELLEMESİ) ---
+
+def custom_login(request):
+    """
+    Frontend'den Base64 ile encode edilmiş şifreyi alıp
+    decode ettikten sonra giriş işlemini yapan view.
+    """
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        encoded_password = request.POST.get('password')
+        
+        try:
+            # 1. Base64 şifreyi çöz (Decode)
+            # Eğer şifre boş gelirse veya format bozuksa hata verebilir, try-except ile yakalıyoruz.
+            if encoded_password:
+                decoded_password = base64.b64decode(encoded_password).decode('utf-8')
+            else:
+                decoded_password = ""
+
+            # 2. Çözülmüş şifre ile kullanıcıyı doğrula
+            user = authenticate(request, username=username, password=decoded_password)
+            
+            if user is not None:
+                login(request, user)
+                messages.success(request, f"👋 Hoş geldin, {user.username}!")
+                
+                # 'next' parametresi varsa oraya, yoksa home'a git
+                next_url = request.GET.get('next', 'home')
+                return redirect(next_url)
+            else:
+                messages.error(request, "❌ Kullanıcı adı veya şifre hatalı.")
+                
+        except Exception as e:
+            # Base64 hatası veya başka bir sistemsel hata
+            messages.error(request, "⚠️ Giriş işlemi sırasında bir hata oluştu.")
+            
+    return render(request, 'players/login.html') # Template adının login.html olduğundan emin ol
+
+
+# --- KAYIT OLMA (RESİM DESTEĞİ EKLENDİ) ---
+def signup(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+        user_form = CustomUserCreationForm(request.POST)
+        # RESİM DESTEĞİ
+        player_form = PlayerForm(request.POST, request.FILES)
+        
+        if user_form.is_valid() and player_form.is_valid():
+            user = user_form.save()
+            player = player_form.save(commit=False)
+            player.user = user
+            player.save()
+            login(request, user)
+            messages.success(request, "✅ Hoş geldin! Profilin oluşturuldu.")
+            return redirect('home')     
+    else:
+        user_form = CustomUserCreationForm()
+        player_form = PlayerForm()
+        
+    return render(request, 'registration/signup.html', {
+        'user_form': user_form, 
+        'player_form': player_form
+    })
+
 
 # --- STANDART GÖRÜNÜMLER ---
 
@@ -110,31 +181,6 @@ def leaderboard(request):
     return render(request, 'players/leaderboard.html', context)
 
 
-# --- KAYIT OLMA (RESİM DESTEĞİ EKLENDİ) ---
-def signup(request):
-    if request.method == 'POST':
-        user_form = CustomUserCreationForm(request.POST)
-        # RESİM DESTEĞİ
-        player_form = PlayerForm(request.POST, request.FILES)
-        
-        if user_form.is_valid() and player_form.is_valid():
-            user = user_form.save()
-            player = player_form.save(commit=False)
-            player.user = user
-            player.save()
-            login(request, user)
-            messages.success(request, "✅ Hoş geldin! Profilin oluşturuldu.")
-            return redirect('home')     
-    else:
-        user_form = CustomUserCreationForm()
-        player_form = PlayerForm()
-        
-    return render(request, 'registration/signup.html', {
-        'user_form': user_form, 
-        'player_form': player_form
-    })
-
-
 # --- PROFİL DÜZENLEME (RESİM DESTEĞİ EKLENDİ) ---
 @login_required
 def edit_profile(request):
@@ -224,7 +270,6 @@ def create_match(request):
 def edit_match(request, pk):
     """
     Maç düzenleme (sadece oluşturan yapabilir)
-    YENİ EKLENEN FONKSIYON
     """
     match = get_object_or_404(Match, pk=pk)
     
@@ -255,7 +300,6 @@ def edit_match(request, pk):
 def delete_match(request, pk):
     """
     Maç silme (sadece oluşturan yapabilir)
-    YENİ EKLENEN FONKSIYON
     """
     match = get_object_or_404(Match, pk=pk)
     
@@ -265,7 +309,6 @@ def delete_match(request, pk):
         return redirect('match-detail', pk=pk)
     
     if request.method == 'POST':
-        match_id = match.pk
         match.delete()
         messages.success(request, "✅ Maç başarıyla silindi!")
         return redirect('match-list')
@@ -306,7 +349,7 @@ def accept_match(request, notification_id):
         notification.is_read = True
         notification.save()
     
-    # Consensus check ve puan hesaplama
+    # Consensus check ve puan hesaplama (Modelinizde bu metodun olduğundan emin olun)
     if hasattr(match, 'check_consensus_and_calculate'):
         match.check_consensus_and_calculate()
     
@@ -318,7 +361,6 @@ def accept_match(request, notification_id):
 def reject_match(request, notification_id):
     """
     Gelen maç davetini reddetme
-    YENİ EKLENEN FONKSIYON
     """
     notification = get_object_or_404(Notification, pk=notification_id)
     
@@ -330,7 +372,7 @@ def reject_match(request, notification_id):
     notification.is_read = True
     notification.save()
     
-    # Eğer maç henüz confirmed değilse ve tüm oyuncular reddet ise maçı sil
+    # Eğer maç henüz confirmed değilse ve bir kişi bile reddederse maçı sil (veya mantığınıza göre düzenleyin)
     if not match.is_confirmed:
         match.delete()
         messages.info(request, "ℹ️ Maç daveti reddedildi.")
