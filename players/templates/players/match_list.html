@@ -32,27 +32,12 @@
                     
                     <div class="card-body p-4">
                         
-                        <!-- TARIH + DURUM -->
-                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3" style="border-bottom: 1px solid #334155;">
+                        <!-- TARIH -->
+                        <div class="mb-3 pb-3" style="border-bottom: 1px solid #334155;">
                             <small style="color: #cbd5e1;">
                                 <i class="bi bi-calendar3 me-2"></i> 
                                 {{ match.match_date|date:"d F Y, l - H:i" }}
                             </small>
-                            
-                            <!-- DURUM BADGE -->
-                            {% if match.status == 'completed' %}
-                                <span class="badge bg-success fs-7 px-3 py-1">
-                                    <i class="bi bi-check-circle me-1"></i> Tamamlandı
-                                </span>
-                            {% elif match.status == 'pending' %}
-                                <span class="badge bg-warning text-dark fs-7 px-3 py-1">
-                                    <i class="bi bi-hourglass-split me-1"></i> Beklemede
-                                </span>
-                            {% else %}
-                                <span class="badge bg-secondary fs-7 px-3 py-1">
-                                    <i class="bi bi-x-circle me-1"></i> İptal
-                                </span>
-                            {% endif %}
                         </div>
 
                         <!-- TAKIMLAR VE SKOR -->
@@ -96,17 +81,12 @@
                                         <span style="color: #cbd5e1;">{{ match.score_team2 }}</span>
                                     </div>
                                     
-                                    <!-- KAZANAN -->
-                                    {% if match.status == 'completed' %}
-                                        <small class="d-block mt-2" style="color: #d9f99d;">
-                                            {% if match.score_team1 > match.score_team2 %}
-                                                🏆 Takım 1
-                                            {% elif match.score_team2 > match.score_team1 %}
-                                                🏆 Takım 2
-                                            {% else %}
-                                                🤝 Berabere
-                                            {% endif %}
-                                        </small>
+                                    {% if match.score_team1 > match.score_team2 %}
+                                        🏆 Takım 1
+                                    {% elif match.score_team2 > match.score_team1 %}
+                                        🏆 Takım 2
+                                    {% else %}
+                                        🤝 Berabere
                                     {% endif %}
                                 </div>
                             </div>
@@ -165,17 +145,10 @@
                      onmouseover="this.style.transform='translateY(-2px)';"
                      onmouseout="this.style.transform='translateY(0)';">
                     
-                    <div class="card-header border-0 pb-0 pt-3 bg-transparent d-flex justify-content-between align-items-center px-3">
+                    <div class="card-header border-0 pb-0 pt-3 bg-transparent px-3">
                         <span class="badge bg-dark border border-secondary text-white fw-normal" style="font-size: 0.7rem;">
                             {{ match.match_date|date:"d M Y - H:i" }}
                         </span>
-                        
-                        <!-- DURUM BADGE -->
-                        {% if match.status == 'completed' %}
-                            <span class="badge bg-success" style="font-size: 0.65rem;">✅ Tamamlandı</span>
-                        {% elif match.status == 'pending' %}
-                            <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">⏳ Beklemede</span>
-                        {% endif %}
                     </div>
                     
                     <div class="card-body p-3">
