@@ -357,12 +357,15 @@ def accept_match(request, notification_id):
     return redirect('match-detail', pk=match.pk)
 
 
+# players/views.py dosyasında reject_match fonksiyonunu bul ve bununla değiştir:
+
 @login_required
-def reject_match(request, notification_id):
+def reject_match(request, pk):  # <-- Burası eskiden 'notification_id' idi, 'pk' yaptık.
     """
     Gelen maç davetini reddetme
     """
-    notification = get_object_or_404(Notification, pk=notification_id)
+    # Parametre olarak pk kullandığımız için sorguda da pk=pk diyoruz
+    notification = get_object_or_404(Notification, pk=pk)
     
     if notification.recipient != request.user:
         messages.error(request, "❌ Bu bildirimi göremezsin.")
@@ -372,14 +375,18 @@ def reject_match(request, notification_id):
     notification.is_read = True
     notification.save()
     
-    # Eğer maç henüz confirmed değilse ve bir kişi bile reddederse maçı sil (veya mantığınıza göre düzenleyin)
-    if not match.is_confirmed:
+    # Eğer maç henüz confirmed değilse ve reddediliyorsa maçı sil
+    if match and not match.is_confirmed:
         match.delete()
+        messages.info(request, "ℹ️ Maç daveti reddedildi ve maç silindi.")
+    else:
         messages.info(request, "ℹ️ Maç daveti reddedildi.")
+        
+    # İsteğin üzerine: Reddedilen bildirimi de siliyoruz
+    notification.delete()
     
-    return redirect('match-list')
-
-
+    # Bildirimler sayfasına geri dön (URL adının 'notifications' olduğundan emin ol)
+    return redirect('notifications.html')
 # --- API VIEWSET'LERİ ---
 
 class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
