@@ -360,33 +360,33 @@ def accept_match(request, notification_id):
 # players/views.py dosyasında reject_match fonksiyonunu bul ve bununla değiştir:
 
 @login_required
-def reject_match(request, pk):  # <-- Burası eskiden 'notification_id' idi, 'pk' yaptık.
+def reject_match(request, pk):
     """
-    Gelen maç davetini reddetme
+    Gelen maç davetini reddetme ve bildirimi silme işlemi.
     """
-    # Parametre olarak pk kullandığımız için sorguda da pk=pk diyoruz
+    # 1. Bildirimi ID'sine (pk) göre bul
     notification = get_object_or_404(Notification, pk=pk)
     
+    # 2. Güvenlik: Başkasının bildirimini silemesin
     if notification.recipient != request.user:
-        messages.error(request, "❌ Bu bildirimi göremezsin.")
+        messages.error(request, "❌ Bu bildirimi yönetemezsin.")
         return redirect('home')
     
     match = notification.match
-    notification.is_read = True
-    notification.save()
     
-    # Eğer maç henüz confirmed değilse ve reddediliyorsa maçı sil
+    # 3. Mantık: Maç henüz onaylanmamışsa (taslak gibiyse) ve reddediliyorsa,
+    # maçı da sistemden tamamen siliyoruz.
     if match and not match.is_confirmed:
         match.delete()
-        messages.info(request, "ℹ️ Maç daveti reddedildi ve maç silindi.")
+        messages.info(request, "ℹ️ Maç reddedildi ve silindi.")
     else:
-        messages.info(request, "ℹ️ Maç daveti reddedildi.")
-        
-    # İsteğin üzerine: Reddedilen bildirimi de siliyoruz
+        messages.info(request, "🗑️ Bildirim silindi.")
+
+    # 4. Bildirimi veritabanından sil
     notification.delete()
     
-    # Bildirimler sayfasına geri dön (URL adının 'notifications' olduğundan emin ol)
-    return redirect('notifications.html')
+    # 5. Kullanıcıyı tekrar BİLDİRİMLER sayfasına gönder
+    return redirect('notifications')
 # --- API VIEWSET'LERİ ---
 
 class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
