@@ -3,14 +3,12 @@
 {% block content %}
 <div class="container py-4">
     
-    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-white display-6 mb-0">🔔 Bildirimler</h2>
         </div>
     </div>
 
-    <!-- BİLDİRİMLER LİSTESİ -->
     <div class="row">
         <div class="col-lg-10 col-xl-8">
             
@@ -20,7 +18,6 @@
                     
                     <div class="card-body p-4">
                         
-                        <!-- ÜSTÜ: TİP + TARİH -->
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <h5 class="fw-bold mb-0" style="color: #d9f99d;">
@@ -32,11 +29,9 @@
                             </small>
                         </div>
 
-                        <!-- MAÇ BİLGİLERİ -->
                         {% if notify.match %}
                             <div class="bg-dark rounded-3 p-3 mb-3" style="border: 1px solid #334155;">
                                 <div class="row align-items-center">
-                                    <!-- TAKIM 1 -->
                                     <div class="col-sm-4 text-center text-sm-start">
                                         <small style="color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">Takım 1</small>
                                         <div class="small text-white fw-bold mt-1">
@@ -48,18 +43,17 @@
                                         </div>
                                     </div>
 
-                                    <!-- SKOR -->
                                     <div class="col-sm-4 text-center">
                                         <div class="fw-bold fs-5">
-                                            <span style="color: #d9f99d;">{{ notify.match.score_team1 }}</span>
+                                            <span style="color: #d9f99d;">{{ notify.match.score_team1|default:"0" }}</span>
+                                            
                                             <span style="color: #64748b;">-</span>
-                                            <span class="color: #d9f99d;">{{ notify.match.score_team2}}</span>
-                                            <span>{{ notify.match.score_team2 }}</span>
+                                            
+                                            <span class="text-white">{{ notify.match.score_team2|default:"0" }}</span>
                                         </div>
                                         <small style="color: #94a3b8;">{{ notify.match.match_date|date:"d M Y, H:i" }}</small>
                                     </div>
 
-                                    <!-- TAKIM 2 -->
                                     <div class="col-sm-4 text-center text-sm-end">
                                         <small style="color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">Takım 2</small>
                                         <div class="small text-white fw-bold mt-1">
@@ -74,14 +68,11 @@
                             </div>
                         {% endif %}
 
-                        <!-- MESAJ -->
                         <p class="text-white mb-4 fs-6">
                             {{ notify.message }}
                         </p>
 
-                        <!-- BUTONLAR -->
                         <div class="d-flex gap-2 flex-wrap">
-                            <!-- ONAYLA BUTONU -->
                             <a href="{% url 'accept-match' notify.pk %}" 
                                class="btn fw-bold px-4 py-2 rounded-pill shadow-sm"
                                style="background-color: #d9f99d; color: #0f172a; border: none; transition: transform 0.2s;"
@@ -90,7 +81,6 @@
                                 <i class="bi bi-check-circle me-2"></i> Onayla
                             </a>
 
-                            <!-- REDDET BUTONU -->
                             <a href="{% url 'reject-match' notify.pk %}" 
                                class="btn fw-bold px-4 py-2 rounded-pill shadow-sm"
                                style="background-color: #ef4444; color: #ffffff; border: none; transition: transform 0.2s;"
@@ -99,7 +89,6 @@
                                 <i class="bi bi-x-circle me-2"></i> Reddet
                             </a>
 
-                            <!-- MAÇI GÖR LINKI -->
                             {% if notify.match %}
                                 <a href="{% url 'match-detail' notify.match.pk %}" 
                                    class="btn btn-outline-secondary fw-bold px-4 py-2 rounded-pill"
@@ -111,7 +100,6 @@
                     </div>
                 </div>
             {% empty %}
-                <!-- EMPTY STATE -->
                 <div class="text-center py-5 rounded-4" style="background-color: #1e293b; border: 1px solid #334155;">
                     <div style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;">📭</div>
                     <h4 class="text-white fw-bold">Henüz Bildirim Yok</h4>
