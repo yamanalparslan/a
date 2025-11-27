@@ -8,7 +8,7 @@
             <h2 class="fw-bold text-white display-6">
                 <i class="bi bi-trophy-fill text-warning me-2"></i>Liderlik Tablosu
             </h2>
-            <p class="text-muted small">En iyilerin mücadelesi.</p>
+            <p class="text-white small">En iyilerin mücadelesi.</p>
         </div>
 
         <div class="leaderboard-list">
@@ -31,7 +31,7 @@
                             {% elif forloop.counter == 3 %}
                                 <span class="fs-3">🥉</span>
                             {% else %}
-                                <span class="text-muted fs-5">#{{ forloop.counter }}</span>
+                                <span class="fs-4" style="color: #d9f99d;">#{{ forloop.counter }}</span>
                             {% endif %}
                         </div>
 
@@ -81,7 +81,6 @@
 </div>
 
 <style>
-    /* Genel Kart Ayarı */
     .player-card {
         border-radius: 16px;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -115,15 +114,14 @@
     .rank-3 .score-text { color: #cd7f32; }
     .rank-3 .avatar-img { border-color: #cd7f32 !important; }
 
-    /* --- DİĞERLERİ (STANDART) --- */
+    /* --- DİĞERLERİ (MINT/NEON YEŞİL) --- */
     .rank-normal {
         background-color: #1e293b;
-        border-left: 4px solid #d9f99d !important; /* Sol tarafa şerit */
+        border-left: 4px solid #d9f99d !important; /* Sol şerit Mint */
     }
-    .rank-normal .score-text { color: var(--lime); }
-    .rank-normal .avatar-img { border-color: #d9f99d !important; }
+    .rank-normal .score-text { color: #d9f99d; } /* Puan Mint */
+    .rank-normal .avatar-img { border-color: #d9f99d !important; } /* Avatar çerçevesi Mint */
     
-    /* İsim ve Şehir Metin Renkleri */
     .text-silver { color: #cbd5e1; }
 
 </style>
