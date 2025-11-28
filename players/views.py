@@ -76,6 +76,7 @@ def signup(request):
 
 # --- STANDART GÖRÜNÜMLER ---
 
+@login_required
 def player_list(request):
     """ Tüm oyuncuları listeleyen view. (Yeniden eskiye sıralı) """
     
@@ -98,22 +99,21 @@ def player_list(request):
 def player_detail(request, pk):
     """ 
     Tek bir oyuncunun detaylarını çeken view.
-    DÜZELTME: Maçları birleştirip tek liste olarak gönderiyoruz.
     """
     player = get_object_or_404(Player, pk=pk)
     
     # Oyuncunun içinde bulunduğu (Team 1 veya Team 2) ve ONAYLANMIŞ tüm maçları getir
+    # .distinct() eklendi: Çift kayıt sorununu önler
     matches = Match.objects.filter(
         Q(team1_players=player) | Q(team2_players=player),
         is_confirmed=True
     ).distinct().order_by('-match_date')
     
-    # İstatistikler için opsiyonel hesaplama (Template'de yapmak yerine burada da yapılabilir)
     total_matches = matches.count()
 
     context = {
         'player': player,
-        'matches': matches,       # Template'de {% for match in matches %} kullanacaksın
+        'matches': matches,
         'total_matches': total_matches
     }
     return render(request, 'players/player_detail.html', context)
@@ -121,12 +121,18 @@ def player_detail(request, pk):
 
 @login_required
 def match_list(request):
+    """ 
+    Sadece giriş yapan kullanıcının katıldığı onaylanmış maçları listeler.
+    """
     try:
         player = request.user.player
+        # Filtre: (Takım 1'de ben varım VEYA Takım 2'de ben varım) VE (Maç onaylanmış)
+        # .distinct('-match_date') ile önce tarih sıralı hale getir, sonra benzersizleştir
         my_matches = Match.objects.filter(
             Q(team1_players=player) | Q(team2_players=player),
             is_confirmed=True
-        ).order_by('-match_date')
+        ).order_by('-match_date').distinct('id')
+        
     except:
         my_matches = []
 
@@ -175,6 +181,7 @@ def leaderboard(request):
 
 
 # --- PROFİL DÜZENLEME ---
+
 @login_required
 def edit_profile(request):
     try:
