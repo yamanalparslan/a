@@ -77,8 +77,10 @@ def signup(request):
 # --- STANDART GÖRÜNÜMLER ---
 
 def player_list(request):
-   all_players = Player.objects.all().order_by('-id')
-   query = request.GET.get('q')
+all_players = Player.objects.all().order_by('-id') 
+    
+    # Arama mantığı
+    query = request.GET.get('q')
     if query:
         all_players = all_players.filter(
             Q(first_name__icontains=query) | 
