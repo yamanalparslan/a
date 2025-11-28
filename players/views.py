@@ -121,15 +121,24 @@ def player_detail(request, pk):
 
 @login_required
 def match_list(request):
-
+    """ 
+    Sadece giriş yapan kullanıcının katıldığı onaylanmış maçları listeler.
+    """
     try:
         player = request.user.player
-        # Filtre: (Takım 1'de ben varım VEYA Takım 2'de ben varım) VE (Maç onaylanmış)
-        # PostgreSQL DISTINCT ON kullanımı: ORDER BY'ın ilk sütunu DISTINCT ON'la eşleşmeli
-        my_matches = Match.objects.filter(
+        # Tüm maçları getir (yinelenenler olabilir)
+        all_matches = Match.objects.filter(
             Q(team1_players=player) | Q(team2_players=player),
             is_confirmed=True
-        ).order_by('id', '-match_date').distinct('id')
+        ).order_by('-match_date')
+        
+        # Python'da yinelenenleri kaldır ve unique ID'leri tut
+        seen_ids = set()
+        my_matches = []
+        for match in all_matches:
+            if match.id not in seen_ids:
+                seen_ids.add(match.id)
+                my_matches.append(match)
         
     except:
         my_matches = []
