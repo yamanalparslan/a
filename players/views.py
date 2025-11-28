@@ -77,7 +77,10 @@ def signup(request):
 # --- STANDART GÖRÜNÜMLER ---
 
 def player_list(request):
-all_players = Player.objects.all().order_by('-id') 
+    """ Tüm oyuncuları listeleyen view. (Yeniden eskiye sıralı) """
+    
+    # En son kayıt olan en üstte (ID'ye göre tersten sıralama)
+    all_players = Player.objects.all().order_by('-id') 
     
     # Arama mantığı
     query = request.GET.get('q')
