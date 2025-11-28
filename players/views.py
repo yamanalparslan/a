@@ -77,7 +77,15 @@ def signup(request):
 # --- STANDART GÖRÜNÜMLER ---
 
 def player_list(request):
-    all_players = Player.objects.all().order_by('-rating')
+   all_players = Player.objects.all().order_by('-id')
+   query = request.GET.get('q')
+    if query:
+        all_players = all_players.filter(
+            Q(first_name__icontains=query) | 
+            Q(last_name__icontains=query) |
+            Q(city__icontains=query)
+        )
+
     context = {'players': all_players}
     return render(request, 'players/player_list.html', context)
 
