@@ -121,17 +121,15 @@ def player_detail(request, pk):
 
 @login_required
 def match_list(request):
-    """ 
-    Sadece giriş yapan kullanıcının katıldığı onaylanmış maçları listeler.
-    """
+
     try:
         player = request.user.player
         # Filtre: (Takım 1'de ben varım VEYA Takım 2'de ben varım) VE (Maç onaylanmış)
-        # .distinct('-match_date') ile önce tarih sıralı hale getir, sonra benzersizleştir
+        # PostgreSQL DISTINCT ON kullanımı: ORDER BY'ın ilk sütunu DISTINCT ON'la eşleşmeli
         my_matches = Match.objects.filter(
             Q(team1_players=player) | Q(team2_players=player),
             is_confirmed=True
-        ).order_by('-match_date').distinct('id')
+        ).order_by('id', '-match_date').distinct('id')
         
     except:
         my_matches = []
