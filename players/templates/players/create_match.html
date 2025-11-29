@@ -215,102 +215,109 @@
     
     .cursor-pointer { cursor: pointer; }
 </style>
-
 <script>
-    // ===== GÜVENLİK: OTURUM ZAMAN AŞIMI KONTROLÜ =====
     document.addEventListener("DOMContentLoaded", function() {
-        // Django'dan kalan süreyi saniye cinsinden al (Varsayılan 1800 sn / 30dk)
-        const sessionAgeSeconds = {{ request.session.get_expiry_age|default:1800 }};
         
-        // Milisaniyeye çevir
+        // ===== 1. GÜVENLİK: OTURUM ZAMAN AŞIMI KONTROLÜ =====
+        const sessionAgeSeconds = {{ request.session.get_expiry_age|default:1800 }};
         const sessionTimeoutMs = sessionAgeSeconds * 1000;
 
         if (sessionTimeoutMs > 0) {
             console.log("Güvenli Oturum Başladı. Kalan Süre: " + sessionAgeSeconds + " saniye.");
             
             setTimeout(function() {
-                // 1. Formu kilitle
                 const submitBtn = document.getElementById('submitBtn');
                 if(submitBtn) submitBtn.disabled = true;
 
-                // 2. Overlay'i göster
                 const overlay = document.getElementById('sessionOverlay');
                 if(overlay) {
                     overlay.classList.remove('d-none');
-                    overlay.classList.add('d-flex'); // Flex ile ortalamak için
+                    overlay.classList.add('d-flex');
                 }
-
-                // 3. Kullanıcıya bildirim ver (Toast opsiyonel, overlay zaten var)
                 showToast('⚠️ Güvenliğiniz için oturum süreniz doldu.', 'error');
-                
             }, sessionTimeoutMs);
         }
-    });
 
-    // ===== ARAMA FONKSİYONU =====
-    const searchInput = document.getElementById('opponentSearch');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function() {
-            const filter = this.value.toLowerCase().trim();
-            const items = document.querySelectorAll('.opponent-item');
-            let visibleCount = 0;
+        // ===== 2. ARAMA FONKSİYONU (FİXLENDİ) =====
+        const searchInput = document.getElementById('opponentSearch');
+        
+        if (searchInput) {
+            // 'keyup' yerine 'input' kullanıyoruz (yapıştırma ve silme işlemleri için daha iyi)
+            searchInput.addEventListener('input', function() {
+                // Türkçe karakter desteği için toLocaleLowerCase('tr') kullandık
+                const filter = this.value.toLocaleLowerCase('tr').trim();
+                const items = document.querySelectorAll('.opponent-item');
+                let visibleCount = 0;
 
-            items.forEach(function(item) {
-                const playerName = item.dataset.playerName;
-                if (playerName && playerName.includes(filter)) {
-                    item.style.display = "flex";
-                    visibleCount++;
-                } else {
-                    item.style.display = "none";
+                items.forEach(function(item) {
+                    // Data attribute'u alıyoruz
+                    const rawName = item.getAttribute('data-player-name'); 
+                    // Garanti olsun diye burada da tr dönüşümü yapıyoruz
+                    const playerName = rawName ? rawName.toLocaleLowerCase('tr') : '';
+
+                    if (playerName.includes(filter)) {
+                        item.classList.remove('d-none');
+                        item.classList.add('d-flex');
+                        visibleCount++;
+                    } else {
+                        item.classList.remove('d-flex');
+                        item.classList.add('d-none');
+                    }
+                });
+
+                // Sonuç yok mesajını yönet
+                const noResults = document.getElementById('noResults');
+                if(noResults) {
+                    if (visibleCount === 0) {
+                        noResults.classList.remove('d-none');
+                    } else {
+                        noResults.classList.add('d-none');
+                    }
                 }
             });
+        }
 
-            const noResults = document.getElementById('noResults');
-            if(noResults) noResults.classList.toggle('d-none', visibleCount !== 0);
+        // ===== 3. CHECKBOX LİMİT KONTROLÜ (Mevcut kodunuz) =====
+        const checkboxes = document.querySelectorAll('input[name="team2_players"]');
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                enforceLimit(this);
+            });
         });
-    }
 
-    // ===== CHECKBOX TOGGLE =====
+    }); // DOMContentLoaded Bitişi
+
+    // ===== YARDIMCI FONKSİYONLAR (Global Scope'ta kalabilirler) =====
+
     function handleOpponentClick(event, element) {
-        // Eğer overlay açıksa (süre dolduysa) tıklamayı engelle
         if(!document.getElementById('sessionOverlay').classList.contains('d-none')) return;
 
+        // Tıklanan element checkbox'ın kendisi ise döngüye girmemesi için dur
         if (event.target.type === 'checkbox') {
-            enforceLimit(event.target);
-            return;
+            return; 
         }
 
         const checkbox = element.querySelector('input[type="checkbox"]');
         if (checkbox) {
             checkbox.checked = !checkbox.checked;
+            // Manuel tetiklediğimiz için change event'ini simüle etmemiz veya limiti elle çağırmamız gerek
             enforceLimit(checkbox);
         }
     }
 
-    // ===== CHECKBOX LİMİT KONTROLÜ =====
     function enforceLimit(checkbox) {
         const checkedBoxes = document.querySelectorAll('input[name="team2_players"]:checked');
-        
-        // Seçili sayısını göster
         const counter = document.getElementById('selectedCount');
+        
         if(counter) counter.textContent = checkedBoxes.length;
 
         if (checkedBoxes.length > 2) {
             checkbox.checked = false;
-            // Sayacı düzelt
             if(counter) counter.textContent = document.querySelectorAll('input[name="team2_players"]:checked').length;
             showToast('⚠️ Maksimum 2 rakip seçebilirsiniz!', 'warning');
         }
     }
 
-    // Tüm checkbox'lara listener ekle
-    document.querySelectorAll('input[name="team2_players"]').forEach(cb => {
-        cb.addEventListener('change', function() {
-            enforceLimit(this);
-        });
-    });
-
-    // ===== TOAST NOTIFICATION =====
     function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
         
@@ -334,7 +341,6 @@
             max-width: 300px;
         `;
         toast.innerHTML = message;
-        
         container.appendChild(toast);
 
         setTimeout(() => {
@@ -343,18 +349,21 @@
         }, 3000);
     }
 
-    // ===== FORM SUBMIT =====
-    document.getElementById('matchForm').addEventListener('submit', function(e) {
-        const submitBtn = document.getElementById('submitBtn');
-        const submitText = document.getElementById('submitText');
-        const submitSpinner = document.getElementById('submitSpinner');
+    // Form Submit Animasyonu
+    const matchForm = document.getElementById('matchForm');
+    if(matchForm) {
+        matchForm.addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
 
-        if(submitBtn) submitBtn.disabled = true;
-        if(submitText) submitText.textContent = 'Gönderiliyor...';
-        if(submitSpinner) submitSpinner.classList.remove('d-none');
-    });
+            if(submitBtn) submitBtn.disabled = true;
+            if(submitText) submitText.textContent = 'Gönderiliyor...';
+            if(submitSpinner) submitSpinner.classList.remove('d-none');
+        });
+    }
 
-    // ===== ANIMATION CSS =====
+    // CSS Animasyonları ekle
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideIn {
