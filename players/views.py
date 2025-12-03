@@ -347,42 +347,42 @@ def delete_match(request, pk):
 
 @login_required
 def notifications(request):
-    my_notifications = Notification.objects.filter(
-        recipient=request.user
-    ).order_by('-created_at')
     
-    unread = my_notifications.filter(is_read=False)
-    unread.update(is_read=True)
+    my_notifications = Notification.objects.filter(
+        recipient=request.user, 
+        is_read=False  # <--- BU SATIR ÇOK ÖNEMLİ (Sadece okunmamışları getir)
+    ).order_by('-created_at')
     
     return render(request, 'players/notifications.html', {'notifications': my_notifications})
 
-
 @login_required
 def accept_match(request, notification_id):
+
+
     notification = get_object_or_404(Notification, pk=notification_id)
     
+    # Güvenlik: Başkasının bildirimini onaylayamazsın
     if notification.recipient != request.user:
-        messages.error(request, "❌ Bu bildirimi göremezsin.")
         return redirect('home')
         
     match = notification.match
     
+    # 1. Bildirimi "Onaylandı/Okundu" olarak işaretle ve KAYDET
     if not notification.is_read:
         notification.is_read = True
-        notification.save()
+        notification.save() # <--- BU KAYIT İŞLEMİ LİSTEDEN SİLER
     
-    if hasattr(match, 'check_consensus_and_calculate'):
-        match.check_consensus_and_calculate()
+    # 2. Konsensüs Kontrolü (Puan Hesaplama)
+    # Not: Notification modelinde is_read=True olduğu için sayaca dahil edilir.
+    match.check_consensus_and_calculate()
     
-    messages.success(request, "✅ Maç onaylandı!")
-    return redirect('match-detail', pk=match.pk)
+    # İşlem bitince kullanıcıyı Maç Listesine gönder
+    return redirect('match-list')
 
 
 @login_required
 def reject_match(request, pk):
-    """
-    Gelen maç davetini reddetme ve bildirimi silme işlemi.
-    """
+
     notification = get_object_or_404(Notification, pk=pk)
     
     if notification.recipient != request.user:
