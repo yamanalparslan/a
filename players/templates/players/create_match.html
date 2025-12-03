@@ -14,7 +14,7 @@
             <div class="card-body p-3 p-md-4 position-relative">
                 
                 <div id="sessionOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center flex-column text-center rounded-4" 
-                     style="background: rgba(15, 23, 42, 0.95); z-index: 50; backdrop-filter: blur(4px);">
+                    style="background: rgba(15, 23, 42, 0.95); z-index: 50; backdrop-filter: blur(4px);">
                     <i class="bi bi-shield-lock-fill text-danger mb-3" style="font-size: 3rem;"></i>
                     <h4 class="fw-bold">Oturum Süreniz Doldu</h4>
                     <p class="text-muted px-4">Güvenliğiniz için sayfa zaman aşımına uğradı. Lütfen sayfayı yenileyin.</p>
@@ -42,7 +42,7 @@
                         
                         <div class="d-flex align-items-center mb-4 px-2 pb-3" style="border-bottom: 1px solid #334155;">
                             <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold" 
-                                 style="width: 44px; height: 44px; flex-shrink: 0; font-size: 1rem;">
+                                style="width: 44px; height: 44px; flex-shrink: 0; font-size: 1rem;">
                                 {{ user.username|first|upper }}
                             </div>
                             <div>
@@ -77,22 +77,22 @@
                                 <i class="bi bi-search"></i>
                             </span>
                             <input type="text" id="opponentSearch" class="form-control border-secondary text-white rounded-end-3" 
-                                   placeholder="Oyuncu ara (ad, soyadı)..." style="background-color: #0f172a; padding: 0.7rem;">
+                                placeholder="Oyuncu ara (ad, soyadı)..." style="background-color: #0f172a; padding: 0.7rem;">
                         </div>
 
                         <div class="opponent-list p-2 rounded-3 border border-secondary" 
-                             style="max-height: 240px; overflow-y: auto; background-color: #0f172a;">
+                            style="max-height: 240px; overflow-y: auto; background-color: #0f172a;">
                             
                             {% for value, label in form.fields.team2_players.choices %}
                                 <div class="opponent-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 
-                                     data-player-name="{{ label|lower }}"
-                                     onclick="handleOpponentClick(event, this)">
+                                    data-player-name="{{ label|lower }}"
+                                    onclick="handleOpponentClick(event, this)">
                                     
                                     <input class="form-check-input me-3" type="checkbox" name="team2_players" 
-                                           value="{{ value }}" id="id_team2_{{ forloop.counter }}"
-                                           style="background-color: #1e293b; border-color: #64748b; width: 1.3em; height: 1.3em; cursor: pointer;">
+                                        value="{{ value }}" id="id_team2_{{ forloop.counter }}"
+                                        style="background-color: #1e293b; border-color: #64748b; width: 1.3em; height: 1.3em; cursor: pointer; flex-shrink: 0;">
                                     
-                                    <label class="form-check-label flex-grow-1" style="font-size: 0.95rem; cursor: pointer; user-select: none;">
+                                    <label class="form-check-label flex-grow-1 text-white" style="font-size: 0.95rem; cursor: pointer; user-select: none;">
                                         {{ label }}
                                     </label>
                                 </div>
@@ -131,7 +131,7 @@
                                 <i class="bi bi-diagram-3 me-1"></i>Takım 1 Skoru
                             </label>
                             <input type="number" name="score_team1" class="form-control text-center score-input" 
-                                   value="{{ form.score_team1.value|default:0 }}" min="0" max="99" step="1" required>
+                                value="{{ form.score_team1.value|default:0 }}" min="0" max="99" step="1" required>
                             {% if form.score_team1.errors %}
                                 <small class="text-danger d-block mt-1">
                                     {% for error in form.score_team1.errors %}{{ error }}{% endfor %}
@@ -143,7 +143,7 @@
                                 <i class="bi bi-diagram-3 me-1"></i>Takım 2 Skoru
                             </label>
                             <input type="number" name="score_team2" class="form-control text-center score-input" 
-                                   value="{{ form.score_team2.value|default:0 }}" min="0" max="99" step="1" required>
+                                value="{{ form.score_team2.value|default:0 }}" min="0" max="99" step="1" required>
                             {% if form.score_team2.errors %}
                                 <small class="text-danger d-block mt-1">
                                     {% for error in form.score_team2.errors %}{{ error }}{% endfor %}
@@ -174,8 +174,7 @@
     </div>
 </div>
 
-<div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1060; pointer-events: none;">
-</div>
+<div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1060; pointer-events: none;"></div>
 
 <style>
     .opponent-item:hover { 
@@ -183,9 +182,7 @@
         border-radius: 0.5rem;
     }
     
-    .opponent-item { 
-        transition: background-color 0.2s;
-    }
+    .opponent-item { transition: background-color 0.2s; }
     
     .form-check-input:checked { 
         background-color: #d9f99d !important;
@@ -193,6 +190,7 @@
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%230f172a' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
     }
     
+    /* Scrollbar */
     .opponent-list::-webkit-scrollbar { width: 6px; }
     .opponent-list::-webkit-scrollbar-track { background: #0f172a; }
     .opponent-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -215,6 +213,7 @@
     
     .cursor-pointer { cursor: pointer; }
 </style>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         
@@ -223,18 +222,11 @@
         const sessionTimeoutMs = sessionAgeSeconds * 1000;
 
         if (sessionTimeoutMs > 0) {
-            console.log("Güvenli Oturum Başladı. Kalan Süre: " + sessionAgeSeconds + " saniye.");
-            
             setTimeout(function() {
                 const submitBtn = document.getElementById('submitBtn');
                 if(submitBtn) submitBtn.disabled = true;
-
-                const overlay = document.getElementById('sessionOverlay');
-                if(overlay) {
-                    overlay.classList.remove('d-none');
-                    overlay.classList.add('d-flex');
-                }
-                showToast('⚠️ Güvenliğiniz için oturum süreniz doldu.', 'error');
+                document.getElementById('sessionOverlay').classList.remove('d-none');
+                document.getElementById('sessionOverlay').classList.add('d-flex');
             }, sessionTimeoutMs);
         }
 
@@ -242,17 +234,13 @@
         const searchInput = document.getElementById('opponentSearch');
         
         if (searchInput) {
-            // 'keyup' yerine 'input' kullanıyoruz (yapıştırma ve silme işlemleri için daha iyi)
             searchInput.addEventListener('input', function() {
-                // Türkçe karakter desteği için toLocaleLowerCase('tr') kullandık
                 const filter = this.value.toLocaleLowerCase('tr').trim();
                 const items = document.querySelectorAll('.opponent-item');
                 let visibleCount = 0;
 
                 items.forEach(function(item) {
-                    // Data attribute'u alıyoruz
                     const rawName = item.getAttribute('data-player-name'); 
-                    // Garanti olsun diye burada da tr dönüşümü yapıyoruz
                     const playerName = rawName ? rawName.toLocaleLowerCase('tr') : '';
 
                     if (playerName.includes(filter)) {
@@ -265,7 +253,6 @@
                     }
                 });
 
-                // Sonuç yok mesajını yönet
                 const noResults = document.getElementById('noResults');
                 if(noResults) {
                     if (visibleCount === 0) {
@@ -277,7 +264,7 @@
             });
         }
 
-        // ===== 3. CHECKBOX LİMİT KONTROLÜ (Mevcut kodunuz) =====
+        // ===== 3. CHECKBOX LİMİT KONTROLÜ =====
         const checkboxes = document.querySelectorAll('input[name="team2_players"]');
         checkboxes.forEach(cb => {
             cb.addEventListener('change', function() {
@@ -287,20 +274,15 @@
 
     }); // DOMContentLoaded Bitişi
 
-    // ===== YARDIMCI FONKSİYONLAR (Global Scope'ta kalabilirler) =====
+    // ===== YARDIMCI FONKSİYONLAR =====
 
     function handleOpponentClick(event, element) {
         if(!document.getElementById('sessionOverlay').classList.contains('d-none')) return;
-
-        // Tıklanan element checkbox'ın kendisi ise döngüye girmemesi için dur
-        if (event.target.type === 'checkbox') {
-            return; 
-        }
+        if (event.target.type === 'checkbox') return; 
 
         const checkbox = element.querySelector('input[type="checkbox"]');
         if (checkbox) {
             checkbox.checked = !checkbox.checked;
-            // Manuel tetiklediğimiz için change event'ini simüle etmemiz veya limiti elle çağırmamız gerek
             enforceLimit(checkbox);
         }
     }
@@ -320,62 +302,26 @@
 
     function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
-        
-        const bgColor = {
-            'success': '#22c55e',
-            'error': '#ef4444',
-            'warning': '#f59e0b',
-            'info': '#3b82f6'
-        }[type] || '#3b82f6';
+        const bgColor = {'success': '#22c55e', 'error': '#ef4444', 'warning': '#f59e0b'}[type] || '#3b82f6';
 
         const toast = document.createElement('div');
         toast.className = 'toast show';
-        toast.style.cssText = `
-            background-color: ${bgColor};
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.3s ease-out;
-            max-width: 300px;
-        `;
+        toast.style.cssText = `background-color: ${bgColor}; color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;`;
         toast.innerHTML = message;
         container.appendChild(toast);
 
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease-out';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        setTimeout(() => { toast.remove(); }, 3000);
     }
 
     // Form Submit Animasyonu
     const matchForm = document.getElementById('matchForm');
     if(matchForm) {
         matchForm.addEventListener('submit', function(e) {
-            const submitBtn = document.getElementById('submitBtn');
-            const submitText = document.getElementById('submitText');
-            const submitSpinner = document.getElementById('submitSpinner');
-
-            if(submitBtn) submitBtn.disabled = true;
-            if(submitText) submitText.textContent = 'Gönderiliyor...';
-            if(submitSpinner) submitSpinner.classList.remove('d-none');
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            document.getElementById('submitText').textContent = 'Gönderiliyor...';
+            document.getElementById('submitSpinner').classList.remove('d-none');
         });
     }
-
-    // CSS Animasyonları ekle
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(400px); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(style);
 </script>
-
 {% endblock %}

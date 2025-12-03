@@ -13,54 +13,48 @@
         <div class="col-lg-10 col-xl-8">
             
             {% for notify in notifications %}
-                <div class="card shadow-sm mb-3 border-0 rounded-3 overflow-hidden" 
+                <div class="card shadow-sm mb-3 border-0 rounded-4 overflow-hidden" 
                      style="background-color: #1e293b; border-left: 5px solid {% if notify.is_read %}#64748b{% else %}#d9f99d{% endif %};">
                     
                     <div class="card-body p-4">
                         
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
                                 <h5 class="fw-bold mb-0" style="color: #d9f99d;">
                                     <i class="bi bi-envelope-paper-fill me-2"></i> Maç Daveti
                                 </h5>
                             </div>
-                            <small style="color: #94a3b8;">
-                                <i class="bi bi-clock me-1"></i> {{ notify.created_at|date:"d M Y, H:i" }}
+                            <small style="color: #94a3b8; font-size: 0.75rem;">
+                                <i class="bi bi-clock me-1"></i> {{ notify.created_at|date:"d M, H:i" }}
                             </small>
                         </div>
 
                         {% if notify.match %}
-                            <div class="bg-dark rounded-3 p-3 mb-3" style="border: 1px solid #334155;">
-                                <div class="row align-items-center">
-                                    <div class="col-sm-4 text-center text-sm-start">
-                                        <small style="color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">Takım 1</small>
-                                        <div class="small text-white fw-bold mt-1">
+                            <div class="rounded-3 p-3 mb-3" style="background-color: #0f172a; border: 1px solid #334155;">
+                                <div class="row align-items-center g-2">
+                                    
+                                    <div class="col-4 text-center text-sm-start">
+                                        <small class="text-uppercase fw-bold" style="color: #64748b; font-size: 0.65rem;">Takım 1</small>
+                                        <div class="small text-white fw-bold mt-1 text-truncate">
                                             {% for player in notify.match.team1_players.all %}
-                                                <div>{{ player.first_name }} {{ player.last_name }}</div>
-                                            {% empty %}
-                                                <div style="color: #94a3b8;">Oyuncu yok</div>
+                                                <div>{{ player.first_name }}</div>
                                             {% endfor %}
                                         </div>
                                     </div>
 
-                                    <div class="col-sm-4 text-center">
-                                        <div class="fw-bold fs-5">
-                                            <span style="color: #d9f99d;">{{ notify.match.score_team1|default:"0" }}</span>
-                                            
+                                    <div class="col-4 text-center">
+                                        <div class="fw-bold fs-4 font-monospace bg-dark border border-secondary rounded px-2 py-1 d-inline-block">
+                                            <span style="color: #d9f99d;">{{ notify.match.score_team1 }}</span>
                                             <span style="color: #64748b;">-</span>
-                                            
-                                            <span class="text-white">{{ notify.match.score_team2|default:"0" }}</span>
+                                            <span class="text-white">{{ notify.match.score_team2 }}</span>
                                         </div>
-                                        <small style="color: #94a3b8;">{{ notify.match.match_date|date:"d M Y, H:i" }}</small>
                                     </div>
 
-                                    <div class="col-sm-4 text-center text-sm-end">
-                                        <small style="color: #94a3b8; text-transform: uppercase; font-size: 0.75rem;">Takım 2</small>
-                                        <div class="small text-white fw-bold mt-1">
+                                    <div class="col-4 text-center text-sm-end">
+                                        <small class="text-uppercase fw-bold" style="color: #64748b; font-size: 0.65rem;">Takım 2</small>
+                                        <div class="small text-white fw-bold mt-1 text-truncate">
                                             {% for player in notify.match.team2_players.all %}
-                                                <div>{{ player.first_name }} {{ player.last_name }}</div>
-                                            {% empty %}
-                                                <div style="color: #94a3b8;">Oyuncu yok</div>
+                                                <div>{{ player.first_name }}</div>
                                             {% endfor %}
                                         </div>
                                     </div>
@@ -74,33 +68,29 @@
 
                         <div class="d-flex gap-2 flex-wrap">
                             <a href="{% url 'accept-match' notify.pk %}" 
-                               class="btn fw-bold px-4 py-2 rounded-pill shadow-sm"
-                               style="background-color: #d9f99d; color: #0f172a; border: none; transition: transform 0.2s;"
-                               onmouseover="this.style.transform='scale(1.05)';"
-                               onmouseout="this.style.transform='scale(1)';">
-                                <i class="bi bi-check-circle me-2"></i> Onayla
+                               class="btn fw-bold px-4 py-2 rounded-pill shadow-sm flex-grow-1 flex-md-grow-0"
+                               style="background-color: #d9f99d; color: #0f172a; border: none;">
+                                <i class="bi bi-check-circle-fill me-2"></i> Onayla
                             </a>
 
                             <a href="{% url 'reject-match' notify.pk %}" 
-                               class="btn fw-bold px-4 py-2 rounded-pill shadow-sm"
-                               style="background-color: #ef4444; color: #ffffff; border: none; transition: transform 0.2s;"
-                               onmouseover="this.style.transform='scale(1.05)';"
-                               onmouseout="this.style.transform='scale(1)';">
+                               class="btn fw-bold px-4 py-2 rounded-pill shadow-sm flex-grow-1 flex-md-grow-0"
+                               style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444;">
                                 <i class="bi bi-x-circle me-2"></i> Reddet
                             </a>
 
                             {% if notify.match %}
                                 <a href="{% url 'match-detail' notify.match.pk %}" 
-                                   class="btn btn-outline-secondary fw-bold px-4 py-2 rounded-pill"
-                                   style="border-color: #64748b; color: #94a3b8; transition: all 0.2s;">
-                                    <i class="bi bi-arrow-up-right me-2"></i> Maçı Gör
+                                   class="btn btn-sm btn-link text-decoration-none ms-auto d-none d-md-block"
+                                   style="color: #94a3b8;">
+                                    Detaylar &rarr;
                                 </a>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             {% empty %}
-                <div class="text-center py-5 rounded-4" style="background-color: #1e293b; border: 1px solid #334155;">
+                <div class="text-center py-5 rounded-4 border border-secondary border-opacity-25" style="background-color: #1e293b;">
                     <div style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;">📭</div>
                     <h4 class="text-white fw-bold">Henüz Bildirim Yok</h4>
                     <p style="color: #94a3b8; margin-bottom: 0;">Kimse seni maça davet etmemiş.</p>

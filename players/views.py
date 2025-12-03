@@ -362,6 +362,23 @@ def reject_match(request, pk):
     notification.delete()
     return redirect('notifications')
 
+@login_required
+def reject_match(request, notification_id):
+    """
+    Gelen maç davetini reddetme.
+    """
+    notification = get_object_or_404(Notification, pk=notification_id)
+    
+    # Güvenlik: Başkasının bildirimini silemezsin
+    if notification.recipient != request.user:
+        return redirect('home')
+    
+    # Bildirimi veritabanından sil (Reddedildiği için artık gerek yok)
+    notification.delete()
+    
+    # Bildirimler sayfasına geri dön
+    return redirect('notifications')
+
 
 # --- API VIEWSET'LERİ ---
 
