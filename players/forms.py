@@ -54,10 +54,15 @@ class MatchForm(forms.ModelForm):
     num_sets = forms.ChoiceField(choices=SET_CHOICES, label="Set Sayısı", initial='2', 
                                  widget=forms.Select(attrs={'class': 'form-select', 'id': 'numSetsSelector'}))
 
+    new_court_name = forms.CharField(
+        required=False, 
+        label="Yeni Kort Adı",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Örn: Bostanlı Padel'})
+    )
     class Meta:
         model = Match
         # Set skorlarını ekledik (score_team1 ve 2'yi kaldırdık, onları otomatik hesaplayacağız)
-        fields = ['court','teammate', 'team2_players', 
+        fields = ['court','new_court_name','teammate', 'team2_players', 
                   'set1_team1', 'set1_team2', 
                   'set2_team1', 'set2_team2', 
                   'set3_team1', 'set3_team2']

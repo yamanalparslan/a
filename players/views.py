@@ -13,7 +13,7 @@ from rest_framework import viewsets, permissions
 from .serializers import PlayerSerializer, MatchSerializer
 
 # Modeller ve Formlar
-from .models import Player, Match, Notification
+from .models import Player, Match, Notification, Court
 from .forms import PlayerForm, CustomUserCreationForm, MatchForm
 
 # --- KİMLİK DOĞRULAMA ---
@@ -254,6 +254,21 @@ def create_match(request):
             
             match.save() 
             
+            new_court_name = form.cleaned_data.get('new_court_name')
+            
+            if new_court_name:
+                # Eğer kullanıcı yeni isim yazdıysa:
+                # get_or_create: Varsa onu getir, yoksa yeni oluştur.
+                court_obj, created = Court.objects.get_or_create(
+                    name=new_court_name,
+                    defaults={'city': request.user.player.city} # Varsayılan şehir kullanıcının şehri olsun
+                )
+                match.court = court_obj
+            # -------------------------
+
+            match.calculate_set_winner()
+            match.save()
+
             # 2. Takım 1'e Kendini Ekle
             try:
                 match.team1_players.add(request.user.player)

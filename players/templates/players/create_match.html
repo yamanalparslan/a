@@ -8,7 +8,7 @@
             
             <div class="card-header text-center py-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <h3 class="fw-bold mb-1" style="color: #d9f99d;">⚔️ Maç ve Skor</h3>
-                <small style="color: #cbd5e1;">Kortu, takımları ve skorları gir.</small>
+                <small style="color: #cbd5e1;">Kortu, takımları ve set skorlarını gir.</small>
             </div>
             
             <div class="card-body p-3 p-md-4 position-relative">
@@ -46,10 +46,18 @@
                         </div>
 
                         <div class="scrollable-list p-2 rounded-3 border border-secondary" 
-                             style="max-height: 150px; overflow-y: auto; background-color: #0f172a;">
+                             style="max-height: 180px; overflow-y: auto; background-color: #0f172a;">
                             
-                            <div class="court-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" onclick="selectRadio(this)">
-                                <input class="form-check-input me-3" type="radio" name="court" value="" id="id_court_none" checked
+                            <div class="court-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" onclick="toggleNewCourt(true, this)">
+                                <input class="form-check-input me-3 rounded-circle" type="radio" name="court" value="" id="id_court_new"
+                                       style="background-color: #1e293b; border-color: #d9f99d; cursor: pointer;">
+                                <label class="form-check-label flex-grow-1 text-white fw-bold" for="id_court_new" style="cursor: pointer; color: #d9f99d !important;">
+                                    <i class="bi bi-plus-circle me-1"></i> Yeni Kort Ekle
+                                </label>
+                            </div>
+
+                            <div class="court-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" onclick="toggleNewCourt(false, this)">
+                                <input class="form-check-input me-3 rounded-circle" type="radio" name="court" value="" id="id_court_none" checked
                                        style="background-color: #1e293b; border-color: #64748b; cursor: pointer;">
                                 <label class="form-check-label flex-grow-1 text-muted fst-italic" for="id_court_none" style="cursor: pointer;">
                                     -- Seçilmedi --
@@ -59,8 +67,8 @@
                             {% for value, label in form.fields.court.choices %}
                                 {% if value %}
                                     <div class="court-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 
-                                         data-court-name="{{ label|lower }}" onclick="selectRadio(this)">
-                                        <input class="form-check-input me-3" type="radio" name="court" value="{{ value }}" id="id_court_{{ forloop.counter }}"
+                                         data-court-name="{{ label|lower }}" onclick="toggleNewCourt(false, this)">
+                                        <input class="form-check-input me-3 rounded-circle" type="radio" name="court" value="{{ value }}" id="id_court_{{ forloop.counter }}"
                                                style="background-color: #1e293b; border-color: #64748b; cursor: pointer;">
                                         <label class="form-check-label flex-grow-1 text-white" for="id_court_{{ forloop.counter }}" style="cursor: pointer;">
                                             {{ label }}
@@ -69,6 +77,12 @@
                                 {% endif %}
                             {% endfor %}
                             <div id="noCourts" class="text-center text-muted py-2 d-none"><small>Bulunamadı.</small></div>
+                        </div>
+
+                        <div id="newCourtInputDiv" class="mt-2 d-none fade-in">
+                            <input type="text" name="new_court_name" class="form-control border-secondary text-white" 
+                                   placeholder="Yeni kortun adını yazın..." style="background-color: #0f172a;">
+                            <div class="form-text text-silver small ms-1">Bu kort sisteme kaydedilecek.</div>
                         </div>
                     </div>
 
@@ -105,10 +119,10 @@
                                  style="max-height: 180px; overflow-y: auto; background-color: #1e293b;">
                                 
                                 <div class="teammate-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" onclick="selectRadio(this)">
-                                    <input class="form-check-input me-3" type="radio" name="teammate" value="" id="id_teammate_none" checked
+                                    <input class="form-check-input me-3 rounded-circle" type="radio" name="teammate" value="" id="id_teammate_none" checked
                                            style="background-color: #0f172a; border-color: #64748b; cursor: pointer;">
                                     <label class="form-check-label flex-grow-1 text-white fst-italic opacity-75" for="id_teammate_none" style="cursor: pointer;">
-                                        -- Tek Oynadım --
+                                        -- Tek Oynadım / Partner Yok --
                                     </label>
                                 </div>
 
@@ -116,7 +130,7 @@
                                     {% if value %}
                                         <div class="teammate-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 
                                              data-player-name="{{ label|lower }}" onclick="selectRadio(this)">
-                                            <input class="form-check-input me-3" type="radio" name="teammate" value="{{ value }}" id="id_teammate_{{ forloop.counter }}"
+                                            <input class="form-check-input me-3 rounded-circle" type="radio" name="teammate" value="{{ value }}" id="id_teammate_{{ forloop.counter }}"
                                                    style="background-color: #0f172a; border-color: #64748b; cursor: pointer;">
                                             <label class="form-check-label flex-grow-1 text-white" for="id_teammate_{{ forloop.counter }}" style="cursor: pointer;">
                                                 {{ label }}
@@ -160,7 +174,9 @@
                                 </div>
                             {% endfor %}
                             
-                            <div id="noOpponents" class="text-center text-white py-3 d-none"><small>Bulunamadı.</small></div>
+                            <div id="noOpponents" class="text-center text-white py-3 d-none">
+                                <small>Oyuncu bulunamadı.</small>
+                            </div>
                         </div>
                         
                         <div class="form-text text-white small mt-2 ps-1">
@@ -210,9 +226,11 @@
                             Maçı Kaydet 🚀
                         </button>
                     </div>
-                     <div class="text-center mt-3">
+                    
+                    <div class="text-center mt-3">
                         <a href="{% url 'match-list' %}" class="text-decoration-none small" style="color: #94a3b8;">İptal et</a>
                     </div>
+
                 </form>
             </div>
         </div>
@@ -247,6 +265,8 @@
     .score-input:focus { border-color: #d9f99d !important; box-shadow: 0 0 0 3px rgba(217, 249, 157, 0.2) !important; }
     
     .cursor-pointer { cursor: pointer; }
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
 <script>
@@ -303,9 +323,38 @@
         if(noResult) noResult.classList.toggle('d-none', visibleCount !== 0);
     }
 
+    // YENİ KORT EKLEME MANTIĞI
+    function toggleNewCourt(show, element) {
+        const radio = element.querySelector('input[type="radio"]');
+        if(radio) radio.checked = true;
+
+        const inputDiv = document.getElementById('newCourtInputDiv');
+        const inputField = document.querySelector('input[name="new_court_name"]');
+        
+        if (show) {
+            inputDiv.classList.remove('d-none');
+            inputField.required = true;
+            inputField.focus();
+        } else {
+            inputDiv.classList.add('d-none');
+            inputField.required = false;
+            inputField.value = "";
+        }
+    }
+
     function selectRadio(element) {
         const radio = element.querySelector('input[type="radio"]');
         if(radio) radio.checked = true;
+        
+        // Eğer tıklanan partner listesi ise ve kort listesi değilse, yeni kort inputunu kapat
+        if (element.classList.contains('teammate-item')) {
+            // Partner seçimi kortla ilgili değildir, buraya özel işlem gerekmez
+        } 
+        // Eğer tıklanan kort listesi ise ve "Yeni Kort Ekle" DEĞİLSE (örn: Mevcut kort veya Seçilmedi)
+        else if (element.classList.contains('court-item') && !element.getAttribute('onclick').includes('true')) {
+             const inputDiv = document.getElementById('newCourtInputDiv');
+             if(inputDiv) inputDiv.classList.add('d-none');
+        }
     }
 
     function handleOpponentClick(event, element) {
