@@ -97,27 +97,56 @@ def player_list(request):
 
 
 def player_detail(request, pk):
-    """ 
-    Tek bir oyuncunun detaylarını çeken view.
-    """
+    """ Tek bir oyuncunun detaylarını ve istatistiklerini gösteren view. """
     player = get_object_or_404(Player, pk=pk)
     
-    # Oyuncunun içinde bulunduğu (Team 1 veya Team 2) ve ONAYLANMIŞ tüm maçları getir
-    # .distinct() eklendi: Çift kayıt sorununu önler
-    matches = Match.objects.filter(
+    # --- İSTATİSTİK HESAPLAMA ---
+    
+    # 1. Tüm maçlarını al (Takım 1 veya Takım 2 olduğu ve Onaylanmış maçlar)
+    all_matches = Match.objects.filter(
         Q(team1_players=player) | Q(team2_players=player),
         is_confirmed=True
-    ).distinct().order_by('-match_date')
+    )
     
-    total_matches = matches.count()
+    total_matches = all_matches.count()
+    wins = 0
+    losses = 0
+    
+    for match in all_matches:
+        # Beraberlik durumu (Puan değişimi olmayan durum)
+        if match.score_team1 == match.score_team2:
+            continue
+            
+        # Takım 1'de miyim?
+        is_team1 = player in match.team1_players.all()
+        
+        # Kazananı kontrol et
+        if is_team1:
+            if match.score_team1 > match.score_team2:
+                wins += 1
+            else:
+                losses += 1
+        else: # Takım 2'deyim
+            if match.score_team2 > match.score_team1:
+                wins += 1
+            else:
+                losses += 1
+    
+    # Kazanma Oranı (%)
+    if total_matches > 0:
+        win_rate = int((wins / total_matches) * 100)
+    else:
+        win_rate = 0
 
     context = {
         'player': player,
-        'matches': matches,
-        'total_matches': total_matches
+        'total_matches': total_matches,
+        'wins': wins,
+        'losses': losses,
+        'win_rate': win_rate,
     }
+    
     return render(request, 'players/player_detail.html', context)
-
 
 @login_required
 def match_list(request):
@@ -219,33 +248,42 @@ def create_match(request):
             match = form.save(commit=False)
             match.created_by = request.user 
             match.is_confirmed = False 
+            
+            # 1. Set Skorlarına Göre Kazananı Hesapla (2-0, 2-1 vb.)
+            match.calculate_set_winner()
+            
             match.save() 
             
+            # 2. Takım 1'e Kendini Ekle
             try:
                 match.team1_players.add(request.user.player)
             except:
-                messages.error(request, "❌ Profil bulunamadı.")
+                messages.error(request, "❌ Profil bulunamadı. Lütfen yönetici ile iletişime geçin.")
                 match.delete()
                 return redirect('home')
             
+            # 3. Partner Ekle
             teammate = form.cleaned_data.get('teammate')
             if teammate:
                 match.team1_players.add(teammate)
+                # Partnerine bildirim gönder
                 if teammate.user != request.user:
                     Notification.objects.create(
                         recipient=teammate.user,
                         match=match,
-                        message=f"🤝 {request.user.username} seni takım arkadaşı olarak ekledi! Skor: {match.score_team1}-{match.score_team2}. Onaylıyor musun?"
+                        message=f"🤝 {request.user.username} seni takım arkadaşı olarak ekledi! Maç Skoru: {match.score_team1}-{match.score_team2}. Onaylıyor musun?"
                     )
             
+            # 4. Rakipleri Ekle
             form.save_m2m() 
             
+            # 5. Rakiplere Bildirim Gönder
             for opponent in match.team2_players.all():
                 if opponent.user != request.user:
                     Notification.objects.create(
                         recipient=opponent.user,
                         match=match,
-                        message=f"⚔️ {request.user.username} seni rakip olarak ekledi! Skor: {match.score_team1}-{match.score_team2}. Onaylıyor musun?"
+                        message=f"⚔️ {request.user.username} seni rakip olarak ekledi! Maç Skoru: {match.score_team1}-{match.score_team2}. Onaylıyor musun?"
                     )
             
             messages.success(request, "✅ Maç başarıyla oluşturuldu ve davetler gönderildi!")
@@ -254,14 +292,14 @@ def create_match(request):
         form = MatchForm()
         try:
             current_player = request.user.player
+            # Listelerden kendini çıkar
             form.fields['teammate'].queryset = Player.objects.exclude(pk=current_player.pk)
             form.fields['team2_players'].queryset = Player.objects.exclude(pk=current_player.pk)
         except:
-            messages.error(request, "❌ Profil bulunamadı.")
+            messages.error(request, "❌ Profiliniz bulunamadı. Lütfen önce profil oluşturun.")
             return redirect('home')
     
     return render(request, 'players/create_match.html', {'form': form})
-
 
 @login_required
 def edit_match(request, pk):

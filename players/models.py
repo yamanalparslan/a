@@ -44,60 +44,86 @@ class Player(models.Model):
 
 class Match(models.Model):
     match_date = models.DateTimeField(auto_now_add=True)
-
-    created_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='created_matches',
-        null=True
-    )
-
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_matches', null=True)
     team1_players = models.ManyToManyField(Player, related_name="team1_matches", blank=True)
     team2_players = models.ManyToManyField(Player, related_name="team2_matches", blank=True)
+    
+    # --- YENİ SET SKORLARI ---
+    # Set 1
+    set1_team1 = models.IntegerField(default=0)
+    set1_team2 = models.IntegerField(default=0)
+    
+    # Set 2
+    set2_team1 = models.IntegerField(default=0)
+    set2_team2 = models.IntegerField(default=0)
+    
+    # Set 3 (Opsiyonel, oynanmayabilir)
+    set3_team1 = models.IntegerField(default=0, blank=True, null=True)
+    set3_team2 = models.IntegerField(default=0, blank=True, null=True)
 
+    # Maç Sonucu (Örn: 2 - 1) - Bunu otomatik hesaplayacağız
     score_team1 = models.IntegerField(default=0)
     score_team2 = models.IntegerField(default=0)
-
+    
     is_rated = models.BooleanField(default=False)
     is_confirmed = models.BooleanField(default=False)
-
+    
     def __str__(self):
         return f"Maç - {self.match_date.strftime('%d %b %H:%M')}"
 
+    # --- OTOMATİK SKOR HESAPLAMA ---
+    def calculate_set_winner(self):
+        """Set skorlarına bakarak maç sonucunu (2-0, 2-1 vb.) hesaplar."""
+        t1_sets = 0
+        t2_sets = 0
+
+        # Set 1 Kontrolü
+        if self.set1_team1 > self.set1_team2: t1_sets += 1
+        elif self.set1_team2 > self.set1_team1: t2_sets += 1
+
+        # Set 2 Kontrolü
+        if self.set2_team1 > self.set2_team2: t1_sets += 1
+        elif self.set2_team2 > self.set2_team1: t2_sets += 1
+
+        # Set 3 Kontrolü (Eğer oynandıysa)
+        if self.set3_team1 is not None and self.set3_team2 is not None:
+            if self.set3_team1 > 0 or self.set3_team2 > 0: # Skor girilmişse
+                if self.set3_team1 > self.set3_team2: t1_sets += 1
+                elif self.set3_team2 > self.set3_team1: t2_sets += 1
+
+        # Sonucu kaydet
+        self.score_team1 = t1_sets
+        self.score_team2 = t2_sets
+        self.save()
+
     # --- KONSENSÜS VE PUANLAMA ---
     def check_consensus_and_calculate(self):
-        """
-        Oyuncuların %74'ü onayladıysa puanları hesaplar.
-        """
-        if self.is_rated:
-            return
+        if self.is_rated: return
 
         total_players = self.team1_players.count() + self.team2_players.count()
-        if total_players == 0:
-            return
+        if total_players == 0: return 
 
-        # Onaylayanlar: kurucu + bildirim onaylayanlar
-        approval_count = 1
+        approval_count = 1 
         approved_notifications = self.notification_set.filter(is_read=True).count()
         approval_count += approved_notifications
 
         approval_ratio = approval_count / total_players
-
+        
         if approval_ratio >= 0.74:
             self.calculate_ratings()
             self.is_confirmed = True
             self.save()
 
     def calculate_ratings(self):
-        """ Puan hesaplama mantığı """
-        if self.is_rated:
-            return
+        if self.is_rated: return
+        
+        # Önce setlerden kazananı hesapla
+        self.calculate_set_winner()
 
-        if self.score_team1 == self.score_team2:
-            return
+        if self.score_team1 == self.score_team2: return # Beraberlik yok
 
         WIN_POINTS = 150
-        LOSE_POINTS = 100
+        LOSE_POINTS = 100 # Kaybedenden ne kadar gidecek? (İsteğe göre ayarla)
 
         if self.score_team1 > self.score_team2:
             winners = self.team1_players.all()
@@ -105,21 +131,15 @@ class Match(models.Model):
         else:
             winners = self.team2_players.all()
             losers = self.team1_players.all()
-
-        if not winners or not losers:
-            return
-
-        # Kazananlara puan ekle
+        
         for player in winners:
             player.rating += WIN_POINTS
             player.save()
 
-        # Kaybedenlerden puan düş (0 altına inmeyecek)
         for player in losers:
             player.rating = max(0, player.rating - LOSE_POINTS)
             player.save()
 
-        # İşaretle ve kapat
         self.is_rated = True
         self.save()
 

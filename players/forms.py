@@ -45,35 +45,36 @@ class PlayerForm(forms.ModelForm):
 # 3. Maç Ekleme Formu
 class MatchForm(forms.ModelForm):
     teammate = forms.ModelChoiceField(
-        queryset=Player.objects.all(),
-        required=False, 
-        label="Takım Arkadaşın (Opsiyonel)",
+        queryset=Player.objects.all(), required=False, label="Partnerin",
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+    
+    # KAÇ SET OYNANDI? (Sanal Alan)
+    SET_CHOICES = [('1', '1 Set (Tek Setlik Maç)'), ('2', '2 Set (Normal Maç)'), ('3', '3 Set (Uzatmalı)')]
+    num_sets = forms.ChoiceField(choices=SET_CHOICES, label="Set Sayısı", initial='2', 
+                                 widget=forms.Select(attrs={'class': 'form-select', 'id': 'numSetsSelector'}))
 
     class Meta:
         model = Match
-        fields = ['teammate', 'team2_players', 'score_team1', 'score_team2']
+        # Set skorlarını ekledik (score_team1 ve 2'yi kaldırdık, onları otomatik hesaplayacağız)
+        fields = ['teammate', 'team2_players', 
+                  'set1_team1', 'set1_team2', 
+                  'set2_team1', 'set2_team2', 
+                  'set3_team1', 'set3_team2']
         
         widgets = {
             'team2_players': forms.SelectMultiple(attrs={'class': 'form-control', 'style': 'height: 150px;'}),
-            'score_team1': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'SİZİN Skorunuz'}),
-            'score_team2': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'RAKİP Skoru'}),
-        }
-        
-        labels = {
-            'team2_players': 'Rakip Oyuncuları Seçin',
-            'score_team1': 'Sizin Takımın Skoru',
-            'score_team2': 'Rakip Takımın Skoru',
+            # Set Skorları İçin Küçük Kutular
+            'set1_team1': forms.NumberInput(attrs={'class': 'form-control text-center', 'placeholder': '0'}),
+            'set1_team2': forms.NumberInput(attrs={'class': 'form-control text-center', 'placeholder': '0'}),
+            'set2_team1': forms.NumberInput(attrs={'class': 'form-control text-center', 'placeholder': '0'}),
+            'set2_team2': forms.NumberInput(attrs={'class': 'form-control text-center', 'placeholder': '0'}),
+            'set3_team1': forms.NumberInput(attrs={'class': 'form-control text-center', 'placeholder': '0'}),
+            'set3_team2': forms.NumberInput(attrs={'class': 'form-control text-center', 'placeholder': '0'}),
         }
 
     def clean_team2_players(self):
         players = self.cleaned_data['team2_players']
-        
-        if len(players) > 2:
-            raise forms.ValidationError("En fazla 2 rakip oyuncu seçebilirsiniz.")
-        
-        if len(players) < 1:
-             raise forms.ValidationError("En az 1 rakip seçmelisiniz.")
-             
+        if len(players) > 2: raise forms.ValidationError("En fazla 2 rakip.")
+        if len(players) < 1: raise forms.ValidationError("En az 1 rakip.")
         return players
