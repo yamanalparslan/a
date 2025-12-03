@@ -52,4 +52,3 @@ urlpatterns = [
     path('notification/<int:pk>/reject/', views.reject_match, name='reject-match'),
     path('reject-match/<int:notification_id>/', views.reject_match, name='reject-match'),
 ]
-]
