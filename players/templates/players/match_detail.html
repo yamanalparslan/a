@@ -3,223 +3,143 @@
 {% block content %}
 <div class="container py-4">
     
-    <!-- BAŞLIK -->
     <div class="mb-4">
-        <h2 class="fw-bold text-white mb-1">⚔️ Maç Detayı</h2>
-        <small style="color: #94a3b8;">
-            <i class="bi bi-calendar-event me-1"></i>
-            {{ match.match_date|date:"d M Y, H:i" }}
-        </small>
-    </div>
-
-    <!-- SKOR - PROMINENT DISPLAY -->
-    <div class="card border-0 shadow-lg mb-4" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
-        <div class="card-body p-5">
-            <div class="row g-4 align-items-center">
-                <!-- TAKIM 1 SKORU -->
-                <div class="col-md-4 text-center">
-                    <div class="small mb-2 fw-bold" style="color: #94a3b8;">TAKIM 1</div>
-                    <div class="display-4 fw-bold" style="color: #d9f99d;">
-                        {{ match.score_team1 }}
-                    </div>
-                </div>
-                
-                <!-- ORTADA -->
-                <div class="col-md-4 text-center">
-                    <div style="color: #64748b; font-size: 2rem;">vs</div>
-                </div>
-                
-                <!-- TAKIM 2 SKORU -->
-                <div class="col-md-4 text-center">
-                    <div class="small mb-2 fw-bold" style="color: #94a3b8;">TAKIM 2</div>
-                    <div class="display-4 fw-bold" style="color: #cbd5e1;">
-                        {{ match.score_team2 }}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- MAÇA DURUMU -->
-            <div class="mt-4 text-center">
-                {% if match.status == 'completed' %}
-                    <span class="badge bg-success fs-6 px-3 py-2">
-                        <i class="bi bi-check-circle me-1"></i> Tamamlandı
-                    </span>
-                    {% if match.score_team1 > match.score_team2 %}
-                        <div class="small mt-2" style="color: #d9f99d;">
-                            <strong>🎉 TAKIM 1 KAZANDI!</strong>
-                        </div>
-                    {% elif match.score_team2 > match.score_team1 %}
-                        <div class="small mt-2" style="color: #d9f99d;">
-                            <strong>🎉 TAKIM 2 KAZANDI!</strong>
-                        </div>
-                    {% else %}
-                        <div class="small mt-2" style="color: #fbbf24;">
-                            <strong>🤝 BERABERE!</strong>
-                        </div>
-                    {% endif %}
-                {% elif match.status == 'pending' %}
-                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">
-                        <i class="bi bi-hourglass-split me-1"></i> Beklemede
-                    </span>
-                {% elif match.status == 'cancelled' %}
-                    <span class="badge bg-danger fs-6 px-3 py-2">
-                        <i class="bi bi-x-circle me-1"></i> İptal
-                    </span>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- TAKIMLAR -->
-    <div class="row g-4 mb-4">
-        
-        <!-- TAKIM 1 -->
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100" style="background-color: #1e293b;">
-                <div class="card-header py-3 fw-bold" style="border-bottom: 2px solid #d9f99d; color: #d9f99d;">
-                    <i class="bi bi-people-fill me-2"></i> TAKIM 1
-                </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush bg-transparent">
-                        {% for player in match.team1_players.all %}
-                        <li class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3 px-4">
-                            <div class="d-flex align-items-center flex-grow-1">
-                                <!-- PROFIL FOTOĞRAFI -->
-                                {% if player.profile_picture %}
-                                    <img src="{{ player.profile_picture.url }}" 
-                                         alt="{{ player.first_name }}"
-                                         class="rounded-circle me-3 border border-secondary"
-                                         style="width: 40px; height: 40px; object-fit: cover;">
-                                {% else %}
-                                    <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold"
-                                         style="width: 40px; height: 40px; font-size: 0.9rem;">
-                                        {{ player.first_name|first|upper }}
-                                    </div>
-                                {% endif %}
-                                
-                                <!-- OYUNCU BİLGİSİ -->
-                                <div>
-                                    <a href="{% url 'player-detail' player.pk %}" class="text-decoration-none fw-bold text-white">
-                                        {{ player.first_name }} {{ player.last_name }}
-                                    </a>
-                                    <div class="small" style="color: #94a3b8;">
-                                        <i class="bi bi-graph-up me-1"></i>{{ player.skill_level }}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- PUAN -->
-                            <div class="text-end ms-3">
-                                <div class="badge px-3 py-2" style="background-color: #0f172a; color: #d9f99d; border: 1px solid #d9f99d;">
-                                    +{{ player.rating|default:"0" }} puan
-                                </div>
-                            </div>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item bg-transparent text-center text-muted py-4">
-                            <i class="bi bi-info-circle me-2"></i> Oyuncu atanmamış
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAKIM 2 -->
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100" style="background-color: #1e293b;">
-                <div class="card-header py-3 fw-bold" style="border-bottom: 2px solid #cbd5e1; color: #cbd5e1;">
-                    <i class="bi bi-people-fill me-2"></i> TAKIM 2
-                </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush bg-transparent">
-                        {% for player in match.team2_players.all %}
-                        <li class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3 px-4">
-                            <div class="d-flex align-items-center flex-grow-1">
-                                <!-- PROFIL FOTOĞRAFI -->
-                                {% if player.profile_picture %}
-                                    <img src="{{ player.profile_picture.url }}" 
-                                         alt="{{ player.first_name }}"
-                                         class="rounded-circle me-3 border border-secondary"
-                                         style="width: 40px; height: 40px; object-fit: cover;">
-                                {% else %}
-                                    <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold"
-                                         style="width: 40px; height: 40px; font-size: 0.9rem;">
-                                        {{ player.first_name|first|upper }}
-                                    </div>
-                                {% endif %}
-                                
-                                <!-- OYUNCU BİLGİSİ -->
-                                <div>
-                                    <a href="{% url 'player-detail' player.pk %}" class="text-decoration-none fw-bold text-white">
-                                        {{ player.first_name }} {{ player.last_name }}
-                                    </a>
-                                    <div class="small" style="color: #94a3b8;">
-                                        <i class="bi bi-graph-up me-1"></i>{{ player.skill_level }}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- PUAN -->
-                            <div class="text-end ms-3">
-                                <div class="badge px-3 py-2" style="background-color: #0f172a; color: #cbd5e1;">
-                                    +{{ player.rating|default:"0" }} puan
-                                </div>
-                            </div>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item bg-transparent text-center text-muted py-4">
-                            <i class="bi bi-info-circle me-2"></i> Oyuncu atanmamış
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MAÇ BİLGİLERİ -->
-    <div class="card border-0 shadow-sm" style="background-color: #1e293b;">
-        <div class="card-header py-3 fw-bold text-white" style="border-bottom: 1px solid #334155;">
-            <i class="bi bi-info-circle me-2"></i> Maç Bilgileri
-        </div>
-        <div class="card-body">
-            <div class="row g-4">
-                <div class="col-sm-6 col-md-3">
-                    <small style="color: #94a3b8; text-transform: uppercase;">Oluşturan</small>
-                    <div class="fw-bold text-white mt-1">
-                        <a href="{% url 'player-detail' match.created_by.pk %}" class="text-decoration-none" style="color: #d9f99d;">
-                            {{ match.created_by.first_name }} {{ match.created_by.last_name }}
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="col-sm-6 col-md-3">
-                    <small style="color: #94a3b8; text-transform: uppercase;">Tarih</small>
-                    <div class="fw-bold text-white mt-1">
-                        {{ match.match_date|date:"d M Y" }}
-                    </div>
-                </div>
-                
-                <div class="col-sm-6 col-md-3">
-                    <small style="color: #94a3b8; text-transform: uppercase;">Saat</small>
-                    <div class="fw-bold text-white mt-1">
-                        {{ match.match_date|date:"H:i" }}
-                    </div>
-                </div>
-                
-
-            </div>
-        </div>
-    </div>
-
-    <!-- GERİ DÖNÜŞ LINKI -->
-    <div class="mt-4">
         <a href="{% url 'match-list' %}" class="text-decoration-none small fw-bold" style="color: #94a3b8;">
-            <i class="bi bi-arrow-left me-1"></i> Maçlara Dön
+            <i class="bi bi-arrow-left me-1"></i> Maç Listesine Dön
         </a>
     </div>
 
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background-color: #1e293b; color: white;">
+                
+                <div class="card-header text-center py-3" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span class="badge bg-dark border border-secondary text-white fw-normal px-3 py-2 rounded-pill mb-2">
+                        Tamamlandı
+                    </span>
+                    <div class="small" style="color: #94a3b8;">
+                        <i class="bi bi-calendar3 me-1"></i> {{ match.match_date|date:"d F Y, l - H:i" }}
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="row align-items-center">
+                        
+                        <div class="col-md-4 text-center order-2 order-md-1 mb-4 mb-md-0">
+                            <h4 class="fw-bold mb-3" style="color: #38bdf8;">Takım 1</h4>
+                            <div class="d-flex flex-column align-items-center gap-3">
+                                {% for player in match.team1_players.all %}
+                                    <a href="{% url 'player-detail' player.pk %}" class="text-decoration-none group-hover-scale">
+                                        <div class="d-flex flex-column align-items-center">
+                                            {% if player.profile_picture %}
+                                                <img src="{{ player.profile_picture.url }}" class="rounded-circle border border-2 border-info object-fit-cover mb-2" 
+                                                     style="width: 60px; height: 60px;" alt="Avatar">
+                                            {% else %}
+                                                <div class="rounded-circle bg-dark border border-2 border-info d-flex justify-content-center align-items-center text-white fw-bold mb-2" 
+                                                     style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                                    {{ player.first_name|first|upper }}
+                                                </div>
+                                            {% endif %}
+                                            <span class="text-white fw-bold">{{ player.first_name }} {{ player.last_name }}</span>
+                                            <small style="color: #64748b;">{{ player.skill_level }}</small>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 text-center order-1 order-md-2 mb-5 mb-md-0">
+                            
+                            <div class="d-flex justify-content-center align-items-center mb-4">
+                                <div class="display-3 fw-bold" style="color: #38bdf8;">{{ match.score_team1 }}</div>
+                                <div class="display-6 text-muted mx-3 opacity-50">-</div>
+                                <div class="display-3 fw-bold" style="color: #f472b6;">{{ match.score_team2 }}</div>
+                            </div>
+
+                            <div class="d-flex justify-content-center gap-2">
+                                
+                                <div class="score-box p-2 rounded text-center" style="background-color: #0f172a; min-width: 60px; border: 1px solid #334155;">
+                                    <small class="d-block text-uppercase text-muted mb-1" style="font-size: 0.6rem;">1. Set</small>
+                                    <div class="fw-bold fs-5">
+                                        <span class="{% if match.set1_team1 > match.set1_team2 %}text-white{% else %}text-muted{% endif %}">{{ match.set1_team1 }}</span>
+                                        <span class="text-secondary mx-1">:</span>
+                                        <span class="{% if match.set1_team2 > match.set1_team1 %}text-white{% else %}text-muted{% endif %}">{{ match.set1_team2 }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="score-box p-2 rounded text-center" style="background-color: #0f172a; min-width: 60px; border: 1px solid #334155;">
+                                    <small class="d-block text-uppercase text-muted mb-1" style="font-size: 0.6rem;">2. Set</small>
+                                    <div class="fw-bold fs-5">
+                                        <span class="{% if match.set2_team1 > match.set2_team2 %}text-white{% else %}text-muted{% endif %}">{{ match.set2_team1 }}</span>
+                                        <span class="text-secondary mx-1">:</span>
+                                        <span class="{% if match.set2_team2 > match.set2_team1 %}text-white{% else %}text-muted{% endif %}">{{ match.set2_team2 }}</span>
+                                    </div>
+                                </div>
+
+                                {% if match.set3_team1 > 0 or match.set3_team2 > 0 %}
+                                <div class="score-box p-2 rounded text-center" style="background-color: #0f172a; min-width: 60px; border: 1px solid #334155;">
+                                    <small class="d-block text-uppercase text-muted mb-1" style="font-size: 0.6rem;">3. Set</small>
+                                    <div class="fw-bold fs-5">
+                                        <span class="{% if match.set3_team1 > match.set3_team2 %}text-white{% else %}text-muted{% endif %}">{{ match.set3_team1 }}</span>
+                                        <span class="text-secondary mx-1">:</span>
+                                        <span class="{% if match.set3_team2 > match.set3_team1 %}text-white{% else %}text-muted{% endif %}">{{ match.set3_team2 }}</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                            </div>
+                            
+                            <div class="mt-3">
+                                <small class="badge bg-dark text-secondary border border-secondary rounded-pill px-3">Set Sonuçları</small>
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-4 text-center order-3 order-md-3">
+                            <h4 class="fw-bold mb-3" style="color: #f472b6;">Takım 2</h4>
+                            <div class="d-flex flex-column align-items-center gap-3">
+                                {% for player in match.team2_players.all %}
+                                    <a href="{% url 'player-detail' player.pk %}" class="text-decoration-none group-hover-scale">
+                                        <div class="d-flex flex-column align-items-center">
+                                            {% if player.profile_picture %}
+                                                <img src="{{ player.profile_picture.url }}" class="rounded-circle border border-2 border-danger object-fit-cover mb-2" 
+                                                     style="width: 60px; height: 60px;" alt="Avatar">
+                                            {% else %}
+                                                <div class="rounded-circle bg-dark border border-2 border-danger d-flex justify-content-center align-items-center text-white fw-bold mb-2" 
+                                                     style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                                    {{ player.first_name|first|upper }}
+                                                </div>
+                                            {% endif %}
+                                            <span class="text-white fw-bold">{{ player.first_name }} {{ player.last_name }}</span>
+                                            <small style="color: #64748b;">{{ player.skill_level }}</small>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                
+                <div class="card-footer text-center py-3 border-top border-secondary border-opacity-10 bg-dark bg-opacity-50">
+                    <small style="color: #64748b;">
+                        <i class="bi bi-info-circle me-1"></i> Maç ID: #{{ match.id }} • Kaydeden: {{ match.created_by.username }}
+                    </small>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
 
+<style>
+    .group-hover-scale { transition: transform 0.2s; display: block; }
+    .group-hover-scale:hover { transform: scale(1.05); }
+    
+    /* Set kazananının skorunu beyaz, kaybedeni sönük yapmak için */
+    .text-muted { color: #64748b !important; }
+</style>
 {% endblock %}
