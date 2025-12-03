@@ -2,7 +2,15 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from cloudinary.models import CloudinaryField # Cloudinary kütüphanesi
+from cloudinary.models import CloudinaryField
+
+# --- YENİ MODEL: KORTLAR ---
+class Court(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Kort Adı")
+    city = models.CharField(max_length=100, default="İzmir", verbose_name="Şehir")
+    
+    def __str__(self):
+        return f"{self.name} ({self.city})"
 
 class Player(models.Model):
     # --- PADEL SEVİYE SEÇENEKLERİ ---
@@ -23,8 +31,7 @@ class Player(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     
-    # YENİ EKLENEN ALAN: Profil Fotoğrafı
-    # Cloudinary üzerinde 'avatars' klasöründe tutulacak.
+    # Profil Fotoğrafı
     profile_picture = CloudinaryField('image', folder='avatars', blank=True, null=True)
 
     phone = models.CharField(max_length=20, default='', blank=True)
@@ -45,23 +52,25 @@ class Player(models.Model):
 class Match(models.Model):
     match_date = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_matches', null=True)
+    
+    # --- YENİ EKLENEN ALAN: KORT BİLGİSİ ---
+    # Kort silinirse maç silinmez, sadece boş kalır (SET_NULL)
+    court = models.ForeignKey(Court, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Oynanan Kort")
+
     team1_players = models.ManyToManyField(Player, related_name="team1_matches", blank=True)
     team2_players = models.ManyToManyField(Player, related_name="team2_matches", blank=True)
     
-    # --- YENİ SET SKORLARI ---
-    # Set 1
+    # Set Skorları
     set1_team1 = models.IntegerField(default=0)
     set1_team2 = models.IntegerField(default=0)
     
-    # Set 2
     set2_team1 = models.IntegerField(default=0)
     set2_team2 = models.IntegerField(default=0)
     
-    # Set 3 (Opsiyonel, oynanmayabilir)
     set3_team1 = models.IntegerField(default=0, blank=True, null=True)
     set3_team2 = models.IntegerField(default=0, blank=True, null=True)
 
-    # Maç Sonucu (Örn: 2 - 1) - Bunu otomatik hesaplayacağız
+    # Maç Sonucu (Hesaplanan)
     score_team1 = models.IntegerField(default=0)
     score_team2 = models.IntegerField(default=0)
     
@@ -77,21 +86,20 @@ class Match(models.Model):
         t1_sets = 0
         t2_sets = 0
 
-        # Set 1 Kontrolü
+        # Set 1
         if self.set1_team1 > self.set1_team2: t1_sets += 1
         elif self.set1_team2 > self.set1_team1: t2_sets += 1
 
-        # Set 2 Kontrolü
+        # Set 2
         if self.set2_team1 > self.set2_team2: t1_sets += 1
         elif self.set2_team2 > self.set2_team1: t2_sets += 1
 
-        # Set 3 Kontrolü (Eğer oynandıysa)
+        # Set 3
         if self.set3_team1 is not None and self.set3_team2 is not None:
-            if self.set3_team1 > 0 or self.set3_team2 > 0: # Skor girilmişse
+            if self.set3_team1 > 0 or self.set3_team2 > 0:
                 if self.set3_team1 > self.set3_team2: t1_sets += 1
                 elif self.set3_team2 > self.set3_team1: t2_sets += 1
 
-        # Sonucu kaydet
         self.score_team1 = t1_sets
         self.score_team2 = t2_sets
         self.save()
@@ -117,13 +125,12 @@ class Match(models.Model):
     def calculate_ratings(self):
         if self.is_rated: return
         
-        # Önce setlerden kazananı hesapla
         self.calculate_set_winner()
 
-        if self.score_team1 == self.score_team2: return # Beraberlik yok
+        if self.score_team1 == self.score_team2: return
 
         WIN_POINTS = 150
-        LOSE_POINTS = 100 # Kaybedenden ne kadar gidecek? (İsteğe göre ayarla)
+        LOSE_POINTS = 100
 
         if self.score_team1 > self.score_team2:
             winners = self.team1_players.all()

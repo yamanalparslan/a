@@ -18,6 +18,13 @@
                     <span class="badge bg-dark border border-secondary text-white fw-normal px-3 py-2 rounded-pill mb-2">
                         <i class="bi bi-check-circle-fill me-1 text-success"></i> Tamamlandı
                     </span>
+                    
+                    {% if match.court %}
+                        <div class="fw-bold text-white fs-5 my-1">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ match.court.name }}
+                        </div>
+                    {% endif %}
+                    
                     <div class="small mt-1" style="color: #94a3b8;">
                         <i class="bi bi-calendar3 me-1"></i> {{ match.match_date|date:"d F Y, l - H:i" }}
                     </div>

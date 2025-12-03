@@ -57,14 +57,17 @@ class MatchForm(forms.ModelForm):
     class Meta:
         model = Match
         # Set skorlarını ekledik (score_team1 ve 2'yi kaldırdık, onları otomatik hesaplayacağız)
-        fields = ['teammate', 'team2_players', 
+        fields = ['court','teammate', 'team2_players', 
                   'set1_team1', 'set1_team2', 
                   'set2_team1', 'set2_team2', 
                   'set3_team1', 'set3_team2']
         
         widgets = {
+            'court': forms.Select(attrs={
+                'class': 'form-select', 
+                'style': 'background-color: #1e293b; color: white; border: 1px solid #64748b;'
+            }),
             'team2_players': forms.SelectMultiple(attrs={'class': 'form-control', 'style': 'height: 150px;'}),
-            # Set Skorları İçin Küçük Kutular
             'set1_team1': forms.NumberInput(attrs={'class': 'form-control text-center', 'placeholder': '0'}),
             'set1_team2': forms.NumberInput(attrs={'class': 'form-control text-center', 'placeholder': '0'}),
             'set2_team1': forms.NumberInput(attrs={'class': 'form-control text-center', 'placeholder': '0'}),
