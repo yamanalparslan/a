@@ -8,7 +8,7 @@
             
             <div class="card-header text-center py-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <h3 class="fw-bold mb-1" style="color: #d9f99d;">⚔️ Maç ve Skor</h3>
-                <small style="color: #cbd5e1;">Takımları seç ve set skorlarını gir.</small>
+                <small style="color: #cbd5e1;">Kortu, takımları ve skorları gir.</small>
             </div>
             
             <div class="card-body p-3 p-md-4 position-relative">
@@ -36,13 +36,41 @@
                         <label class="fw-bold mb-2 text-white small text-uppercase opacity-75">
                             <i class="bi bi-geo-alt-fill me-1"></i> Nerede Oynadınız?
                         </label>
-                        <div class="form-floating">
-                            {{ form.court }}
-                            <label for="id_court" class="text-white">Kort Seçiniz (Opsiyonel)</label>
+                        
+                        <div class="input-group mb-2">
+                            <span class="input-group-text border-secondary text-white" style="background-color: #0f172a;">
+                                <i class="bi bi-search small"></i>
+                            </span>
+                            <input type="text" id="courtSearch" class="form-control border-secondary text-white" 
+                                   placeholder="Kort ara..." style="background-color: #0f172a; font-size: 0.9rem;">
+                        </div>
+
+                        <div class="scrollable-list p-2 rounded-3 border border-secondary" 
+                             style="max-height: 150px; overflow-y: auto; background-color: #0f172a;">
+                            
+                            <div class="court-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" onclick="selectRadio(this)">
+                                <input class="form-check-input me-3" type="radio" name="court" value="" id="id_court_none" checked
+                                       style="background-color: #1e293b; border-color: #64748b; cursor: pointer;">
+                                <label class="form-check-label flex-grow-1 text-muted fst-italic" for="id_court_none" style="cursor: pointer;">
+                                    -- Seçilmedi --
+                                </label>
+                            </div>
+
+                            {% for value, label in form.fields.court.choices %}
+                                {% if value %}
+                                    <div class="court-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 
+                                         data-court-name="{{ label|lower }}" onclick="selectRadio(this)">
+                                        <input class="form-check-input me-3" type="radio" name="court" value="{{ value }}" id="id_court_{{ forloop.counter }}"
+                                               style="background-color: #1e293b; border-color: #64748b; cursor: pointer;">
+                                        <label class="form-check-label flex-grow-1 text-white" for="id_court_{{ forloop.counter }}" style="cursor: pointer;">
+                                            {{ label }}
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            <div id="noCourts" class="text-center text-muted py-2 d-none"><small>Bulunamadı.</small></div>
                         </div>
                     </div>
-
-                    <div class="p-3 rounded-4 mb-4"...
 
                     <div class="p-3 rounded-4 mb-4" style="background-color: #0f172a; border: 1px solid #334155;">
                         <label class="fw-bold mb-3 d-block" style="color: #d9f99d;">
@@ -80,7 +108,7 @@
                                     <input class="form-check-input me-3" type="radio" name="teammate" value="" id="id_teammate_none" checked
                                            style="background-color: #0f172a; border-color: #64748b; cursor: pointer;">
                                     <label class="form-check-label flex-grow-1 text-white fst-italic opacity-75" for="id_teammate_none" style="cursor: pointer;">
-                                        -- Tek Oynadım / Partner Yok --
+                                        -- Tek Oynadım --
                                     </label>
                                 </div>
 
@@ -132,18 +160,12 @@
                                 </div>
                             {% endfor %}
                             
-                            <div id="noOpponents" class="text-center text-white py-3 d-none">
-                                <small>Oyuncu bulunamadı.</small>
-                            </div>
+                            <div id="noOpponents" class="text-center text-white py-3 d-none"><small>Bulunamadı.</small></div>
                         </div>
                         
                         <div class="form-text text-white small mt-2 ps-1">
                             <i class="bi bi-info-circle me-1"></i> <span id="selectedCount">0</span>/2 rakip seçildi
                         </div>
-                        
-                        {% if form.team2_players.errors %}
-                            <div class="alert alert-danger alert-sm mt-2 mb-0">{{ form.team2_players.errors }}</div>
-                        {% endif %}
                     </div>
                     
                     <hr class="my-4 opacity-25 border-secondary">
@@ -188,11 +210,9 @@
                             Maçı Kaydet 🚀
                         </button>
                     </div>
-                    
-                    <div class="text-center mt-3">
+                     <div class="text-center mt-3">
                         <a href="{% url 'match-list' %}" class="text-decoration-none small" style="color: #94a3b8;">İptal et</a>
                     </div>
-
                 </form>
             </div>
         </div>
@@ -203,7 +223,9 @@
 
 <style>
     /* ORTAK STİLLER */
-    .teammate-item:hover, .opponent-item:hover { background-color: rgba(217, 249, 157, 0.1) !important; }
+    .court-item:hover, .teammate-item:hover, .opponent-item:hover { 
+        background-color: rgba(217, 249, 157, 0.1) !important; 
+    }
     .form-check-input:checked { 
         background-color: #d9f99d !important;
         border-color: #d9f99d !important;
@@ -218,15 +240,11 @@
     .scrollable-list::-webkit-scrollbar-track { background: #0f172a; }
     .scrollable-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     
-    /* Skor Input Stili (Setler İçin) */
-    input[type="number"] {
-        background-color: #0f172a !important;
-        color: white !important;
-        border: 1px solid #334155 !important;
-        text-align: center; font-size: 1.1rem; font-weight: bold; padding: 0.6rem !important;
-        border-radius: 0.5rem;
+    .score-input {
+        background-color: #0f172a !important; color: white !important; border: 1px solid #334155 !important;
+        text-align: center; font-size: 1.1rem; font-weight: bold; padding: 0.6rem !important; border-radius: 0.5rem;
     }
-    input[type="number"]:focus { border-color: #d9f99d !important; box-shadow: 0 0 0 3px rgba(217, 249, 157, 0.2) !important; }
+    .score-input:focus { border-color: #d9f99d !important; box-shadow: 0 0 0 3px rgba(217, 249, 157, 0.2) !important; }
     
     .cursor-pointer { cursor: pointer; }
 </style>
@@ -240,61 +258,46 @@
             document.getElementById('sessionOverlay')?.classList.replace('d-none', 'd-flex');
         }, {{ request.session.get_expiry_age|default:1800 }} * 1000);
 
-        // --- SET AÇ/KAPA MANTIĞI (YENİ) ---
+        // Set Aç/Kapa
         const numSetsSelect = document.getElementById('numSetsSelector');
         const set2Row = document.getElementById('set2_row');
         const set3Row = document.getElementById('set3_row');
-
         function updateSets() {
             const val = numSetsSelect.value;
-            if (val === '1') {
-                set2Row.classList.add('d-none');
-                set3Row.classList.add('d-none');
-            } else if (val === '2') {
-                set2Row.classList.remove('d-none');
-                set3Row.classList.add('d-none');
-            } else {
-                set2Row.classList.remove('d-none');
-                set3Row.classList.remove('d-none');
+            if (val === '1') { set2Row.classList.add('d-none'); set3Row.classList.add('d-none'); }
+            else if (val === '2') { set2Row.classList.remove('d-none'); set3Row.classList.add('d-none'); }
+            else { set2Row.classList.remove('d-none'); set3Row.classList.remove('d-none'); }
+        }
+        if (numSetsSelect) { numSetsSelect.addEventListener('change', updateSets); updateSets(); }
+
+        // Arama Fonksiyonları
+        const searchIds = ['courtSearch', 'teammateSearch', 'opponentSearch'];
+        const listClasses = ['.court-item', '.teammate-item', '.opponent-item'];
+        const noResultIds = ['noCourts', 'noTeammates', 'noOpponents'];
+
+        searchIds.forEach((id, index) => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', function() {
+                    filterList(this.value, listClasses[index], noResultIds[index], index === 0 ? 'data-court-name' : 'data-player-name');
+                });
             }
-        }
+        });
 
-        if (numSetsSelect) {
-            numSetsSelect.addEventListener('change', updateSets);
-            // Sayfa yüklendiğinde de çalıştır (Default 2 set)
-            updateSets();
-        }
-
-        // Partner Arama
-        const teamSearch = document.getElementById('teammateSearch');
-        if (teamSearch) {
-            teamSearch.addEventListener('input', function() { filterList(this.value, '.teammate-item', 'noTeammates'); });
-        }
-        // Rakip Arama
-        const oppSearch = document.getElementById('opponentSearch');
-        if (oppSearch) {
-            oppSearch.addEventListener('input', function() { filterList(this.value, '.opponent-item', 'noOpponents'); });
-        }
         // Limit
         document.querySelectorAll('input[name="team2_players"]').forEach(cb => {
             cb.addEventListener('change', () => enforceLimit(cb));
         });
     });
 
-    function filterList(query, itemClass, noResultId) {
+    function filterList(query, itemClass, noResultId, dataAttr) {
         const filter = query.toLocaleLowerCase('tr').trim();
         const items = document.querySelectorAll(itemClass);
         let visibleCount = 0;
         items.forEach(item => {
-            const name = item.getAttribute('data-player-name');
-            if (name && name.includes(filter)) {
-                item.classList.remove('d-none');
-                item.classList.add('d-flex');
-                visibleCount++;
-            } else if (name) {
-                item.classList.remove('d-flex');
-                item.classList.add('d-none');
-            }
+            const name = item.getAttribute(dataAttr);
+            if (name && name.includes(filter)) { item.classList.remove('d-none', 'd-flex'); item.classList.add('d-flex'); visibleCount++; }
+            else if (name) { item.classList.remove('d-flex'); item.classList.add('d-none'); }
         });
         const noResult = document.getElementById(noResultId);
         if(noResult) noResult.classList.toggle('d-none', visibleCount !== 0);
@@ -308,10 +311,7 @@
     function handleOpponentClick(event, element) {
         if(event.target.type === 'checkbox') return;
         const checkbox = element.querySelector('input[type="checkbox"]');
-        if (checkbox) {
-            checkbox.checked = !checkbox.checked;
-            enforceLimit(checkbox);
-        }
+        if (checkbox) { checkbox.checked = !checkbox.checked; enforceLimit(checkbox); }
     }
 
     function enforceLimit(checkbox) {
@@ -333,6 +333,15 @@
         toast.innerHTML = msg;
         container.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
+    }
+
+    const matchForm = document.getElementById('matchForm');
+    if(matchForm) {
+        matchForm.addEventListener('submit', function(e) {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            // Buton metnini değiştirme kodu kaldırıldı, sadece spinner çalışsın
+        });
     }
 </script>
 {% endblock %}
