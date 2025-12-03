@@ -8,7 +8,7 @@
             
             <div class="card-header text-center py-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <h3 class="fw-bold mb-1" style="color: #d9f99d;">⚔️ Maç Daveti</h3>
-                <small style="color: #94a3b8;">Takım arkadaşını ve rakiplerini seç.</small>
+                <small style="color: #cbd5e1;">Takım arkadaşını ve rakiplerini seç.</small>
             </div>
             
             <div class="card-body p-3 p-md-4 position-relative">
@@ -17,7 +17,7 @@
                     style="background: rgba(15, 23, 42, 0.95); z-index: 50; backdrop-filter: blur(4px);">
                     <i class="bi bi-shield-lock-fill text-danger mb-3" style="font-size: 3rem;"></i>
                     <h4 class="fw-bold">Oturum Süreniz Doldu</h4>
-                    <p class="text-muted px-4">Güvenliğiniz için sayfa zaman aşımına uğradı.</p>
+                    <p class="text-white px-4">Güvenliğiniz için sayfa zaman aşımına uğradı.</p>
                     <button onclick="window.location.reload()" class="btn btn-light fw-bold px-4 py-2 rounded-pill">
                         <i class="bi bi-arrow-clockwise me-2"></i>Yenile
                     </button>
@@ -44,12 +44,12 @@
                             </div>
                             <div>
                                 <h6 class="mb-0 fw-bold text-white">{{ user.username }}</h6>
-                                <small class="text-white" style="font-size: 0.75rem; color: #d9f99d;">✓ Maç Kurucusu</small>
+                                <small class="text-white opacity-75" style="font-size: 0.75rem;">✓ Maç Kurucusu</small>
                             </div>
                         </div>
 
                         <div class="mb-2">
-                            <label class="form-label fw-bold mb-2 small text-muted text-uppercase">
+                            <label class="form-label fw-bold mb-2 small text-white text-uppercase opacity-75">
                                 <i class="bi bi-person-plus me-1"></i>Takım Arkadaşı (Opsiyonel)
                             </label>
                             
@@ -67,13 +67,14 @@
                                 <div class="teammate-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" onclick="selectRadio(this)">
                                     <input class="form-check-input me-3" type="radio" name="teammate" value="" id="id_teammate_none" checked
                                            style="background-color: #0f172a; border-color: #64748b; cursor: pointer;">
-                                    <label class="form-check-label flex-grow-1 text-muted fst-italic" for="id_teammate_none" style="cursor: pointer;">
+                                    <label class="form-check-label flex-grow-1 text-white fst-italic opacity-75" for="id_teammate_none" style="cursor: pointer;">
                                         -- Tek Oynadım / Partner Yok --
                                     </label>
                                 </div>
 
                                 {% for value, label in form.fields.teammate.choices %}
-                                    {% if value %} <div class="teammate-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 
+                                    {% if value %}
+                                        <div class="teammate-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 
                                              data-player-name="{{ label|lower }}" onclick="selectRadio(this)">
                                             
                                             <input class="form-check-input me-3" type="radio" name="teammate" value="{{ value }}" id="id_teammate_{{ forloop.counter }}"
@@ -86,7 +87,7 @@
                                     {% endif %}
                                 {% endfor %}
                                 
-                                <div id="noTeammates" class="text-center text-muted py-2 d-none"><small>Bulunamadı.</small></div>
+                                <div id="noTeammates" class="text-center text-white py-2 d-none"><small>Bulunamadı.</small></div>
                             </div>
                         </div>
                     </div>
@@ -112,7 +113,7 @@
                                     data-player-name="{{ label|lower }}"
                                     onclick="handleOpponentClick(event, this)">
                                     
-                                    <input class="form-check-input me-3" type="checkbox" name="team2_players" 
+                                    <input class="form-check-input me-3 rounded-circle" type="checkbox" name="team2_players" 
                                         value="{{ value }}" id="id_team2_{{ forloop.counter }}"
                                         style="background-color: #1e293b; border-color: #64748b; width: 1.3em; height: 1.3em; cursor: pointer; flex-shrink: 0;">
                                     
@@ -122,12 +123,12 @@
                                 </div>
                             {% endfor %}
                             
-                            <div id="noOpponents" class="text-center text-muted py-3 d-none">
+                            <div id="noOpponents" class="text-center text-white py-3 d-none">
                                 <small>Oyuncu bulunamadı.</small>
                             </div>
                         </div>
                         
-                        <div class="form-text text-white small mt-2 opacity-75 ps-1">
+                        <div class="form-text text-white small mt-2 ps-1">
                             <i class="bi bi-info-circle me-1"></i> <span id="selectedCount">0</span>/2 rakip seçildi
                         </div>
                         
@@ -152,16 +153,12 @@
                     <div class="d-grid mt-4">
                         <button type="submit" id="submitBtn" class="btn btn-lg fw-bold shadow-sm py-3" 
                                 style="background-color: #d9f99d; color: #0f172a; border: none; transition: all 0.3s;">
-                            <i class="bi bi-send-fill me-2"></i>
-                            <span id="submitText">Davet Gönder</span>
-                            <span id="submitSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true" style="color: #0f172a;"></span>
+                            Davet Gönder <i class="bi bi-send-fill ms-2"></i>
                         </button>
                     </div>
-                    
-                    <div class="text-center mt-3">
+                     <div class="text-center mt-3">
                         <a href="{% url 'match-list' %}" class="text-decoration-none small" style="color: #94a3b8;">İptal et</a>
                     </div>
-
                 </form>
             </div>
         </div>
@@ -177,17 +174,11 @@
         background-color: rgba(217, 249, 157, 0.1) !important; 
     }
     
+    /* Tik Kutularının İçi */
     .form-check-input:checked { 
         background-color: #d9f99d !important;
         border-color: #d9f99d !important;
-    }
-
-    /* Radyo butonu (Yuvarlak) için özel ikon */
-    input[type="radio"].form-check-input:checked {
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%230f172a'/%3e%3c/svg%3e") !important;
-    }
-    /* Checkbox (Kare) için özel ikon */
-    input[type="checkbox"].form-check-input:checked {
+        /* Yuvarlak tik ikonu */
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%230f172a' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
     }
 
@@ -208,14 +199,14 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Güvenlik Zamanlayıcısı
+        // Güvenlik
         setTimeout(function() {
             const btn = document.getElementById('submitBtn');
             if(btn) btn.disabled = true;
             document.getElementById('sessionOverlay')?.classList.replace('d-none', 'd-flex');
         }, {{ request.session.get_expiry_age|default:1800 }} * 1000);
 
-        // --- 1. PARTNER ARAMA ---
+        // Partner Arama
         const teamSearch = document.getElementById('teammateSearch');
         if (teamSearch) {
             teamSearch.addEventListener('input', function() {
@@ -223,7 +214,7 @@
             });
         }
 
-        // --- 2. RAKİP ARAMA ---
+        // Rakip Arama
         const oppSearch = document.getElementById('opponentSearch');
         if (oppSearch) {
             oppSearch.addEventListener('input', function() {
@@ -231,13 +222,12 @@
             });
         }
 
-        // --- 3. LİMİT KONTROLÜ ---
+        // Limit Kontrolü
         document.querySelectorAll('input[name="team2_players"]').forEach(cb => {
             cb.addEventListener('change', () => enforceLimit(cb));
         });
     });
 
-    // Ortak Liste Filtreleme Fonksiyonu
     function filterList(query, itemClass, noResultId) {
         const filter = query.toLocaleLowerCase('tr').trim();
         const items = document.querySelectorAll(itemClass);
@@ -249,7 +239,7 @@
                 item.classList.remove('d-none');
                 item.classList.add('d-flex');
                 visibleCount++;
-            } else if (name) { // "Yok" seçeneğini gizleme
+            } else if (name) {
                 item.classList.remove('d-flex');
                 item.classList.add('d-none');
             }
@@ -259,13 +249,11 @@
         if(noResult) noResult.classList.toggle('d-none', visibleCount !== 0);
     }
 
-    // Radyo Butonu Seçimi (Partner İçin)
     function selectRadio(element) {
         const radio = element.querySelector('input[type="radio"]');
         if(radio) radio.checked = true;
     }
 
-    // Checkbox Seçimi (Rakip İçin)
     function handleOpponentClick(event, element) {
         if(event.target.type === 'checkbox') return;
         const checkbox = element.querySelector('input[type="checkbox"]');
@@ -291,13 +279,12 @@
         const color = type === 'warning' ? '#f59e0b' : '#3b82f6';
         const toast = document.createElement('div');
         toast.className = 'toast show';
-        toast.style.cssText = `background:${color}; color:white; padding:1rem; border-radius:0.5rem; margin-bottom:1rem;`;
+        toast.style.cssText = `background:${color}; color:white; padding:1rem; border-radius:0.5rem; margin-bottom:1rem; animation: slideIn 0.3s ease-out;`;
         toast.innerHTML = msg;
         container.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
 
-    // Form Submit Animasyonu
     const matchForm = document.getElementById('matchForm');
     if(matchForm) {
         matchForm.addEventListener('submit', function(e) {
