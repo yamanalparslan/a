@@ -18,14 +18,15 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-)d8ce(xmnq+n%08ff#w&j
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
-    'courtmax-padel-mate.onrender.com',
-    'courtmaxpadel.com',
-    'www.courtmaxpadel.com',
+    'courtmax-padel-mate.onrender.com',  # Render adresi
+    'courtmaxpadel.com',                 # Yeni domain (kısa)
+    'www.courtmaxpadel.com',             # Yeni domain (uzun)
     'localhost',
     '127.0.0.1'
 ]
 
-# 2. Form güvenliği
+# 2. Form güvenliği (Giriş yapabilmek için ŞART)
+# Buraya domainlerin başında 'https://' olacak şekilde yazmalısın.
 CSRF_TRUSTED_ORIGINS = [
     'https://courtmax-padel-mate.onrender.com',
     'https://courtmaxpadel.com',
@@ -35,23 +36,29 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
+
     'players.apps.PlayersConfig',
 
-    'cloudinary_storage', # En başta olmalı
+    # Cloudinary (En başta)
+    'cloudinary_storage',
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles', # WhiteNoise için gerekli
+    'django.contrib.staticfiles',
 
+    # Diğerleri
     'cloudinary',
     'rest_framework',
+    
+    # SİZİN UYGULAMANIZ (Sadece bu olmalı)
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # WhiteNoise Middleware (En üstlerde olmalı)
+    # WhiteNoise Middleware (CSS dosyaları için)
     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -66,7 +73,7 @@ ROOT_URLCONF = "padel_community.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [], 
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -83,8 +90,11 @@ WSGI_APPLICATION = "padel_community.wsgi.application"
 
 
 # Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
 DATABASES = {
     'default': dj_database_url.config(
+        # Render'daki veritabanı bağlantı adresi
         default='postgresql://padel_mate_user:8WkbvDFbSmXGsCn2e2BCEC9ZR82PSVJQ@dpg-d4eq99rgk3sc73btca50-a.frankfurt-postgres.render.com/padel_mate',
         conn_max_age=600
     )
@@ -93,10 +103,18 @@ DATABASES = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    { "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator" },
-    { "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator" },
-    { "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator" },
-    { "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator" },
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
 ]
 
 
@@ -110,9 +128,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# --- YENİ EKLENEN: MEDIA URL ---
 MEDIA_URL = '/media/'
 
-# --- DOSYA DEPOLAMA AYARLARI (KRİTİK DÜZELTME) ---
+
+# --- DOSYA DEPOLAMA AYARLARI ---
 
 # 1. Yeni Yöntem (STORAGES)
 STORAGES = {
@@ -120,13 +141,12 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
-# 2. Eski Yöntem (Uyumluluk İçin ŞART - Hata Sebebi Buydu)
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+# 2. Eski Yöntem
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 
 # Default primary key field type
@@ -135,6 +155,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Login/Logout Yönlendirmeleri
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
+
+# Güvenlik (CSRF)
+CSRF_TRUSTED_ORIGINS = [
+    'https://courtmax-padel-mate.onrender.com',
+]
 
 # --- CLOUDINARY API AYARLARI ---
 CLOUDINARY_STORAGE = {
@@ -145,13 +170,18 @@ CLOUDINARY_STORAGE = {
     'MEDIA_TAG': 'media',
 }
 
-# --- E-POSTA AYARLARI ---
+# --- E-POSTA AYARLARI (Şifre Sıfırlama İçin) ---
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+# Gmail Adresiniz (Gönderen Kişi)
 EMAIL_HOST_USER = 'courtmaxpm@gmail.com' 
+
+# Gmail Uygulama Şifresi
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'wgtl soqn xpxz ybyh')
+
 DEFAULT_FROM_EMAIL = 'Courtmax Padel Mate <noreply@courtmax.com>'
 
 LOGIN_URL = 'login'
