@@ -18,14 +18,14 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-)d8ce(xmnq+n%08ff#w&j
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
-    'courtmax-padel-mate.onrender.com',  # Render adresi
-    'courtmaxpadel.com',                 # Yeni domain (kısa)
-    'www.courtmaxpadel.com',             # Yeni domain (uzun)
+    'courtmax-padel-mate.onrender.com',
+    'courtmaxpadel.com',
+    'www.courtmaxpadel.com',
     'localhost',
     '127.0.0.1'
 ]
 
-# 2. Form güvenliği (Giriş yapabilmek için ŞART)
+# 2. Form güvenliği
 CSRF_TRUSTED_ORIGINS = [
     'https://courtmax-padel-mate.onrender.com',
     'https://courtmaxpadel.com',
@@ -37,25 +37,21 @@ CSRF_TRUSTED_ORIGINS = [
 INSTALLED_APPS = [
     'players.apps.PlayersConfig',
 
-    # Cloudinary (En başta)
-    'cloudinary_storage',
-    
-    # 'jazzmin' KALDIRILDI - Orijinal Admin Kullanılıyor
+    'cloudinary_storage', # En başta olmalı
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles', # WhiteNoise için gerekli
 
-    # Diğerleri
     'cloudinary',
     'rest_framework',
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # WhiteNoise Middleware (CSS dosyaları için - En üstlerde olmalı)
+    # WhiteNoise Middleware (En üstlerde olmalı)
     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -70,7 +66,7 @@ ROOT_URLCONF = "padel_community.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],  # Orijinal Admin Şablonları İçin Boş Bırakıldı
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -114,22 +110,23 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# --- YENİ EKLENEN: MEDIA URL ---
 MEDIA_URL = '/media/'
 
+# --- DOSYA DEPOLAMA AYARLARI (KRİTİK DÜZELTME) ---
 
-# --- DOSYA DEPOLAMA AYARLARI (GÜNCELLENDİ) ---
-# WhiteNoise ile statik dosyaların sıkıştırılarak sunulması sağlanıyor.
+# 1. Yeni Yöntem (STORAGES)
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        # WhiteNoise: Statik dosyaları sıkıştırır ve hash'ler (Admin panelini düzeltir)
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# 2. Eski Yöntem (Uyumluluk İçin ŞART - Hata Sebebi Buydu)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 
 # Default primary key field type
