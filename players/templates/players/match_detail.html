@@ -15,25 +15,23 @@
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background-color: #1e293b; color: white;">
                 
                 <div class="card-header text-center py-3" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    
                     <span class="badge bg-dark border border-secondary text-white fw-normal px-3 py-2 rounded-pill mb-2">
                         <i class="bi bi-check-circle-fill me-1 text-success"></i> Tamamlandı
                     </span>
                     
                     {% if match.court %}
-                        <div class="fw-bold text-white fs-5 my-1">
-                            <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ match.court.name }}
+                        <div class="fw-bold text-white fs-5 my-2 d-flex align-items-center justify-content-center">
+                            <i class="bi bi-geo-alt-fill text-danger me-2"></i> {{ match.court.name }}
                         </div>
                     {% endif %}
                     
-                    <div class="small mt-1" style="color: #94a3b8;">
+                    <div class="small text-muted mt-1" style="color: #94a3b8 !important;">
                         <i class="bi bi-calendar3 me-1"></i> {{ match.match_date|date:"d F Y, l - H:i" }}
                     </div>
                 </div>
 
-                <div class="card-body p-4 p-md-5">
-                    <div class="row align-items-center">
-                        
-                        <div class="col-md-4 text-center order-2 order-md-1 mb-4 mb-md-0">
+                <div class="card-body p-3 p-md-5"> <div class="row align-items-center gy-5"> <div class="col-md-4 text-center order-2 order-md-1">
                             <h4 class="fw-bold mb-3" style="color: #d9f99d;">Takım 1</h4>
                             <div class="d-flex flex-column align-items-center gap-3">
                                 {% for player in match.team1_players.all %}
@@ -56,7 +54,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4 text-center order-1 order-md-2 mb-5 mb-md-0">
+                        <div class="col-md-4 text-center order-1 order-md-2">
                             
                             <div class="d-flex justify-content-center align-items-center mb-4">
                                 <div class="display-3 fw-bold" style="color: #d9f99d;">{{ match.score_team1 }}</div>
@@ -64,8 +62,7 @@
                                 <div class="display-3 fw-bold" style="color: #3b82f6;">{{ match.score_team2 }}</div>
                             </div>
 
-                            <div class="d-flex justify-content-center gap-2">
-                                <div class="score-box p-2 rounded text-center" style="background-color: #0f172a; min-width: 60px; border: 1px solid #334155;">
+                            <div class="d-flex justify-content-center gap-2 flex-wrap"> <div class="score-box p-2 rounded text-center" style="background-color: #0f172a; min-width: 60px; border: 1px solid #334155;">
                                     <small class="d-block text-uppercase mb-1" style="font-size: 0.6rem; color: #64748b;">1. Set</small>
                                     <div class="fw-bold fs-5">
                                         <span class="{% if match.set1_team1 > match.set1_team2 %}text-white{% else %}text-secondary{% endif %}">{{ match.set1_team1 }}</span>
