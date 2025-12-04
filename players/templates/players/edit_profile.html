@@ -71,11 +71,18 @@
                     </div>
 
                     <div class="d-grid gap-3 mt-4">
+                        
                         <button type="submit" class="btn btn-lg fw-bold rounded-3 shadow-sm hover-effect"
                                 style="background-color: #d9f99d; color: #0f172a; border: none;">
                             Değişiklikleri Kaydet ✅
                         </button>
                         
+                        <button type="button" class="btn btn-outline-light fw-bold rounded-3 shadow-sm py-2" 
+                                data-bs-toggle="modal" data-bs-target="#howToUseModal"
+                                style="border: 1px solid rgba(255,255,255,0.2);">
+                            <i class="bi bi-question-circle me-2"></i>Nasıl Kullanılır?
+                        </button>
+
                         <a href="{% url 'home' %}" class="btn btn-link text-decoration-none" style="color: #94a3b8;">
                             İptal Et
                         </a>
@@ -85,6 +92,84 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<div class="modal fade" id="howToUseModal" tabindex="-1" aria-labelledby="howToUseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 text-white" style="background-color: #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold" id="howToUseModalLabel" style="color: #d9f99d;">
+                    <i class="bi bi-info-circle-fill me-2"></i>Courtmax Nasıl Kullanılır?
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            
+            <div class="modal-body p-4">
+                
+                <div class="d-flex gap-3 mb-4">
+                    <div class="flex-shrink-0">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                             style="width: 40px; height: 40px; background-color: #d9f99d; color: #0f172a;">1</div>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-white">Profilini Tamamla</h6>
+                        <p class="small text-muted mb-0">
+                            Doğru eşleşmeler için seviyeni ve şehrini doğru seçmen önemlidir. Profil fotoğrafı yükleyerek diğer oyuncuların seni tanımasını sağla.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div class="flex-shrink-0">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                             style="width: 40px; height: 40px; background-color: #0f172a; border: 1px solid #d9f99d; color: #d9f99d;">2</div>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-white">Maç Oluştur</h6>
+                        <p class="small text-muted mb-0">
+                            Maç yaptıktan sonra ana sayfadaki <strong>"Maç Ekle"</strong> butonuna tıkla. Kortu, partnerini ve rakiplerini seçip set skorlarını gir.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div class="flex-shrink-0">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                             style="width: 40px; height: 40px; background-color: #0f172a; border: 1px solid #d9f99d; color: #d9f99d;">3</div>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-white">Onay Süreci</h6>
+                        <p class="small text-muted mb-0">
+                            Maç eklendiğinde puanlar hemen işlenmez. Rakiplerine <strong>Bildirim</strong> gider. Maçın onaylanması (Confirmed) için rakiplerinin kabul etmesi gerekir.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <div class="flex-shrink-0">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                             style="width: 40px; height: 40px; background-color: #0f172a; border: 1px solid #d9f99d; color: #d9f99d;">4</div>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-white">Puanlama ve Sıralama</h6>
+                        <p class="small text-muted mb-0">
+                            Onaylanan her maç için kazanan puan alır, kaybeden puan kaybeder. Puanın arttıkça <strong>Liderlik Tablosu</strong>'nda yükselirsin!
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer border-top border-secondary border-opacity-25 justify-content-center">
+                <button type="button" class="btn fw-bold px-5 rounded-pill" data-bs-dismiss="modal" 
+                        style="background-color: #d9f99d; color: #0f172a;">
+                    Anladım, Teşekkürler 👍
+                </button>
+            </div>
+
+        </div>
     </div>
 </div>
 {% endblock %}
