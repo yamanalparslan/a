@@ -81,12 +81,24 @@ def signup(request):
 
 @login_required
 def player_list(request):
-    """ Tüm oyuncuları listeleyen view. (Sayfalamalı - 20 Kişi) """
+   # 1. Sıralama Parametresini Al (Varsayılan: 'newest')
+    sort_by = request.GET.get('sort', 'newest')
     
-    # En son kayıt olan en üstte (ID'ye göre tersten sıralama)
-    all_players = Player.objects.all().order_by('-id') 
+    # 2. Temel Sorgu
+    all_players = Player.objects.all()
     
-    # Arama mantığı
+    # 3. Sıralama Mantığı
+    if sort_by == 'city':
+        # Şehre göre (A-Z), şehirleri aynı olanları puana göre sırala
+        all_players = all_players.order_by('city', '-rating')
+    elif sort_by == 'rating':
+        # Puana göre (En yüksek en üstte)
+        all_players = all_players.order_by('-rating')
+    else: 
+        # Varsayılan: En yeni üyeler en üstte
+        all_players = all_players.order_by('-id')
+
+    # 4. Arama Mantığı (Mevcut kodun aynısı)
     query = request.GET.get('q')
     if query:
         all_players = all_players.filter(
@@ -95,12 +107,15 @@ def player_list(request):
             Q(city__icontains=query)
         )
 
-    # --- SAYFALAMA (PAGINATION) ---
+    # 5. Sayfalama (Pagination)
     paginator = Paginator(all_players, 20) # Sayfada 20 oyuncu
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    context = {'players': page_obj}
+    context = {
+        'players': page_obj,
+        'current_sort': sort_by  # Şablonda hangi sıralamanın seçili olduğunu göstermek için
+    }
     return render(request, 'players/player_list.html', context)
 
 

@@ -5,20 +5,57 @@
 <div class="container">
     
     <div class="row align-items-center mb-4 mb-md-5">
-        <div class="col-md-6 mb-3 mb-md-0">
+        <div class="col-md-5 mb-3 mb-md-0">
             <h1 class="fw-bold display-5 text-white">Oyuncular</h1>
-            <p class="mb-0 text-white-50">Topluluğumuza katılan en son üyeler.</p>
+            <p class="mb-0 text-white-50">Topluluğumuza katılan üyeler.</p>
         </div>
-        <div class="col-md-6">
-            <form method="GET" action="" class="d-flex gap-2">
-                <input type="text" name="q" class="form-control border-0 py-3 ps-4 shadow-sm text-white" 
-                       placeholder="İsim ile ara..." 
-                       value="{{ request.GET.q|default:'' }}"
-                       style="background-color: #1e293b; border-radius: 15px;">
-                <button type="submit" class="btn btn-primary px-4 rounded-4 fw-bold">
-                    <i class="bi bi-search"></i>
-                </button>
-            </form>
+        
+        <div class="col-md-7">
+            <div class="d-flex gap-2">
+                
+                <form method="GET" action="" class="d-flex gap-2 flex-grow-1">
+                    {% if current_sort %}
+                        <input type="hidden" name="sort" value="{{ current_sort }}">
+                    {% endif %}
+                    
+                    <input type="text" name="q" class="form-control border-0 py-3 ps-4 shadow-sm text-white" 
+                           placeholder="İsim veya şehir ara..." 
+                           value="{{ request.GET.q|default:'' }}"
+                           style="background-color: #1e293b; border-radius: 15px;">
+                    <button type="submit" class="btn btn-primary px-4 rounded-4 fw-bold">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+
+                <div class="dropdown">
+                    <button class="btn btn-dark border-0 py-3 px-3 shadow-sm rounded-4 dropdown-toggle d-flex align-items-center gap-2 h-100" 
+                            type="button" data-bs-toggle="dropdown" style="background-color: #1e293b;">
+                        <i class="bi bi-filter-left fs-4"></i>
+                        <span class="d-none d-sm-inline small fw-bold">Sırala</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 p-2">
+                        <li>
+                            <a class="dropdown-item rounded-3 {% if current_sort == 'newest' %}active fw-bold{% endif %}" 
+                               href="?sort=newest{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                               <i class="bi bi-clock-history me-2"></i> En Yeni (Varsayılan)
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item rounded-3 {% if current_sort == 'city' %}active fw-bold{% endif %}" 
+                               href="?sort=city{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                               <i class="bi bi-geo-alt me-2"></i> Şehre Göre (A-Z)
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item rounded-3 {% if current_sort == 'rating' %}active fw-bold{% endif %}" 
+                               href="?sort=rating{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                               <i class="bi bi-trophy me-2"></i> Puana Göre (Yüksek)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -115,7 +152,7 @@
             {% if players.has_previous %}
                 <li class="page-item">
                     <a class="page-link bg-dark text-white border-secondary hover-effect" 
-                       href="?page={{ players.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                       href="?page={{ players.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
                         <i class="bi bi-chevron-left"></i>
                     </a>
                 </li>
@@ -137,7 +174,7 @@
                     {% if i > players.number|add:'-3' and i < players.number|add:'3' %}
                         <li class="page-item">
                             <a class="page-link bg-dark text-white border-secondary hover-effect" 
-                               href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                               href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
                                 {{ i }}
                             </a>
                         </li>
@@ -148,7 +185,7 @@
             {% if players.has_next %}
                 <li class="page-item">
                     <a class="page-link bg-dark text-white border-secondary hover-effect" 
-                       href="?page={{ players.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                       href="?page={{ players.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
                         <i class="bi bi-chevron-right"></i>
                     </a>
                 </li>
