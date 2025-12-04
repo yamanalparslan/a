@@ -108,7 +108,7 @@ def player_list(request):
         )
 
     # 5. Sayfalama (Pagination)
-    paginator = Paginator(all_players, 20) # Sayfada 20 oyuncu
+    paginator = Paginator(all_players, 10) # Sayfada 20 oyuncu
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
