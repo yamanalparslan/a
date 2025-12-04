@@ -37,6 +37,8 @@ CSRF_TRUSTED_ORIGINS = [
 
 INSTALLED_APPS = [
 
+    'unfold',
+
     'players.apps.PlayersConfig',
 
     # Cloudinary (En başta)
