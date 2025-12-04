@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Player  # Modelin adını Player olarak yazıyorum, sizinkinin adına göre değiştirin
+from .models import Player, Match, Court, Notification
 
 # Admin site customization
 admin.site.site_header = "Courtmax Padel Mate Admin"
@@ -7,19 +7,62 @@ admin.site.site_title = "Admin Paneli"
 admin.site.index_title = "Hoş Geldiniz"
 
 
-@admin.register(Player)  # Model adını buraya yazın
+@admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'email', 'phone', 'created_at']  # Listelemek istediğiniz alanlar
-    list_filter = ['created_at']  # Filtreleme için
-    search_fields = ['name', 'email', 'phone']  # Arama yapılabilecek alanlar
-    readonly_fields = ['created_at', 'id']  # Sadece okunabilir alanlar
+    list_display = ['id', 'user', 'first_name', 'last_name', 'skill_level', 'rating', 'city']
+    list_filter = ['skill_level', 'city', 'rating']
+    search_fields = ['user__username', 'first_name', 'last_name', 'phone']
+    readonly_fields = ['rating']
     
     fieldsets = (
-        ('Temel Bilgiler', {
-            'fields': ('name', 'email', 'phone')
+        ('Kullanıcı Bilgisi', {
+            'fields': ('user', 'first_name', 'last_name')
         }),
-        ('Tarihler', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)  # Daraltılabilir section
+        ('İletişim', {
+            'fields': ('phone', 'city')
+        }),
+        ('Padel Bilgisi', {
+            'fields': ('skill_level', 'rating')
+        }),
+        ('Profil Fotoğrafı', {
+            'fields': ('profile_picture',)
         }),
     )
+
+
+@admin.register(Court)
+class CourtAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'city']
+    list_filter = ['city']
+    search_fields = ['name', 'city']
+
+
+@admin.register(Match)
+class MatchAdmin(admin.ModelAdmin):
+    list_display = ['id', 'match_date', 'court', 'score_team1', 'score_team2', 'is_confirmed', 'is_rated']
+    list_filter = ['match_date', 'court', 'is_confirmed', 'is_rated']
+    search_fields = ['created_by__username']
+    readonly_fields = ['match_date', 'score_team1', 'score_team2']
+    
+    fieldsets = (
+        ('Maç Bilgisi', {
+            'fields': ('match_date', 'created_by', 'court')
+        }),
+        ('Takım 1', {
+            'fields': ('team1_players', 'set1_team1', 'set2_team1', 'set3_team1')
+        }),
+        ('Takım 2', {
+            'fields': ('team2_players', 'set1_team2', 'set2_team2', 'set3_team2')
+        }),
+        ('Sonuç', {
+            'fields': ('score_team1', 'score_team2', 'is_confirmed', 'is_rated')
+        }),
+    )
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['id', 'recipient', 'match', 'is_read', 'created_at']
+    list_filter = ['is_read', 'created_at']
+    search_fields = ['recipient__username', 'message']
+    readonly_fields = ['created_at']
