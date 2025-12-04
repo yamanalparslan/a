@@ -19,7 +19,7 @@ class Player(models.Model):
         ('1.5 Novice', '🟩 1.5: Yeni Öğrenen (Novice)'),
         ('2.0-2.5 Improver', '🟨 2.0 – 2.5: Gelişen Oyuncu (Improver)'),
         ('3.0 Intermediate', '🟨 3.0: Orta Seviye (Intermediate)'),
-        ('3.5 Upper Intermediate', '🟨 3.5: Orta-Üst Seviye (Upper Intermediate)'),
+        ('3.5 Upper Int', '🟨 3.5: Orta-Üst Seviye (Upper Int)'),
         ('4.0 Advanced', '🟧 4.0: İyi Seviye (Advanced)'),
         ('4.5 High Advanced', '🟧 4.5: İleri (High Advanced)'),
         ('5.0 Semi Pro', '🟥 5.0: Yarı-Pro (Semi Pro)'),
