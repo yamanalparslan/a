@@ -13,7 +13,7 @@
             <form method="GET" action="" class="d-flex gap-2">
                 <input type="text" name="q" class="form-control border-0 py-3 ps-4 shadow-sm text-white" 
                        placeholder="İsim ile ara..." 
-                       value="{{ request.GET.q }}"
+                       value="{{ request.GET.q|default:'' }}"
                        style="background-color: #1e293b; border-radius: 15px;">
                 <button type="submit" class="btn btn-primary px-4 rounded-4 fw-bold">
                     <i class="bi bi-search"></i>
@@ -107,6 +107,60 @@
             <div class="text-center py-5 text-white-50">Kayıtlı oyuncu yok.</div>
         {% endfor %}
     </div>
+
+    {% if players.has_other_pages %}
+    <nav aria-label="Sayfa navigasyonu" class="mt-5 pb-5">
+        <ul class="pagination justify-content-center">
+            
+            {% if players.has_previous %}
+                <li class="page-item">
+                    <a class="page-link bg-dark text-white border-secondary hover-effect" 
+                       href="?page={{ players.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link bg-dark text-secondary border-secondary opacity-50"><i class="bi bi-chevron-left"></i></span>
+                </li>
+            {% endif %}
+
+            {% for i in players.paginator.page_range %}
+                {% if players.number == i %}
+                    <li class="page-item active">
+                        <span class="page-link fw-bold border-success" 
+                              style="background-color: #d9f99d; color: #0f172a; border-color: #d9f99d;">
+                            {{ i }}
+                        </span>
+                    </li>
+                {% else %}
+                    {% if i > players.number|add:'-3' and i < players.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link bg-dark text-white border-secondary hover-effect" 
+                               href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                                {{ i }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            {% if players.has_next %}
+                <li class="page-item">
+                    <a class="page-link bg-dark text-white border-secondary hover-effect" 
+                       href="?page={{ players.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link bg-dark text-secondary border-secondary opacity-50"><i class="bi bi-chevron-right"></i></span>
+                </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+    {% endif %}
 
 </div>
 

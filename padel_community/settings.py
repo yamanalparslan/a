@@ -12,10 +12,10 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-)d8ce(xmnq+n%08ff#w&j5uqu8xg18sjwxe=u$2$vp$v%wtark"
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-)d8ce(xmnq+n%08ff#w&j5uqu8xg18sjwxe=u$2$vp$v%wtark")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
     'courtmax-padel-mate.onrender.com',  # Render adresi

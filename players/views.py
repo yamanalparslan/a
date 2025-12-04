@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import F, Q
 from django.http import Http404
 from django.contrib import messages
+from django.core.paginator import Paginator # <--- YENİ EKLENEN IMPORT
 
 # REST Framework
 from rest_framework import viewsets, permissions
@@ -78,7 +79,7 @@ def signup(request):
 
 @login_required
 def player_list(request):
-    """ Tüm oyuncuları listeleyen view. (Yeniden eskiye sıralı) """
+    """ Tüm oyuncuları listeleyen view. (Sayfalamalı - 20 Kişi) """
     
     # En son kayıt olan en üstte (ID'ye göre tersten sıralama)
     all_players = Player.objects.all().order_by('-id') 
@@ -92,7 +93,12 @@ def player_list(request):
             Q(city__icontains=query)
         )
 
-    context = {'players': all_players}
+    # --- SAYFALAMA (PAGINATION) ---
+    paginator = Paginator(all_players, 20) # Sayfada 20 oyuncu
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {'players': page_obj}
     return render(request, 'players/player_list.html', context)
 
 
@@ -151,7 +157,7 @@ def player_detail(request, pk):
 @login_required
 def match_list(request):
     """ 
-    Sadece giriş yapan kullanıcının katıldığı onaylanmış maçları listeler.
+    Sadece giriş yapan kullanıcının katıldığı onaylanmış maçları listeler. (Sayfalamalı - 10 Maç)
     """
     try:
         player = request.user.player
@@ -172,7 +178,12 @@ def match_list(request):
     except:
         my_matches = []
 
-    context = {'matches': my_matches}
+    # --- SAYFALAMA (PAGINATION) ---
+    paginator = Paginator(my_matches, 10) # Sayfada 10 maç
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {'matches': page_obj}
     return render(request, 'players/match_list.html', context)
 
 
