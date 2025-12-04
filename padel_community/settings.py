@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     # Cloudinary (En başta)
     'cloudinary_storage',
     
-    # 'jazzmin' KALDIRILDI
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -74,7 +73,7 @@ ROOT_URLCONF = "padel_community.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [], # Orijinal haline döndü (Boş liste)
+        "DIRS": [], 
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
