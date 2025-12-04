@@ -1,6 +1,8 @@
 # players/views.py
 
 import base64
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
@@ -211,6 +213,7 @@ def match_detail(request, pk):
 
 
 def home(request):
+    # 1. Herkes için genel veriler (Son maçlar ve yeni üyeler)
     recent_matches = Match.objects.filter(is_confirmed=True).order_by('-match_date')[:5]
     recent_players = Player.objects.all().order_by('-rating')[:5]
     
@@ -218,6 +221,57 @@ def home(request):
         'recent_matches': recent_matches,
         'recent_players': recent_players,
     }
+
+    # 2. Eğer kullanıcı giriş yapmışsa -> Puan Grafiği Verisini Hazırla
+    if request.user.is_authenticated:
+        try:
+            player = request.user.player
+            
+            # Oyuncunun tüm onaylanmış maçlarını ESKİDEN YENİYE doğru çek
+            my_matches = Match.objects.filter(
+                Q(team1_players=player) | Q(team2_players=player),
+                is_confirmed=True
+            ).order_by('match_date')
+
+            # Grafik Verileri (Başlangıç Puanı: 1000)
+            dates = ["Başlangıç"]
+            ratings = [1000]
+            current_rating = 1000
+            
+            for match in my_matches:
+                # Beraberlikte puan değişmez
+                if match.score_team1 == match.score_team2:
+                    continue
+
+                # Oyuncu Takım 1'de mi?
+                is_team1 = player in match.team1_players.all()
+                
+                # Kazanma/Kaybetme Durumu
+                won = False
+                if is_team1 and match.score_team1 > match.score_team2:
+                    won = True
+                elif not is_team1 and match.score_team2 > match.score_team1:
+                    won = True
+                
+                # Puan Hesapla (+150 / -100 mantığı)
+                if won:
+                    current_rating += 150
+                else:
+                    current_rating = max(0, current_rating - 100) # 0'ın altına düşmesin
+
+                # Listeye Ekle
+                dates.append(match.match_date.strftime('%d %b')) # Örn: 12 May
+                ratings.append(current_rating)
+
+            # Verileri JSON formatına çevirip şablona gönder
+            context['chart_dates'] = json.dumps(dates, cls=DjangoJSONEncoder)
+            context['chart_ratings'] = json.dumps(ratings, cls=DjangoJSONEncoder)
+            context['current_rating'] = current_rating
+
+        except Exception as e:
+            # Oyuncu profili yoksa veya hata olursa grafiği boş geç
+            pass
+
     return render(request, 'players/home.html', context)
 
 

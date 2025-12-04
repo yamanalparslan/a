@@ -2,6 +2,8 @@
 
 {% block content %}
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <div class="row mb-5 align-items-center">
     <div class="col-lg-8">
         <h1 class="display-4 fw-bold mb-2 text-white">Hoş Geldin, <span style="color: #d9f99d;">{{ user.username }}</span></h1>
@@ -13,6 +15,11 @@
                style="background-color: #d9f99d; color: #0f172a; border: none;">
                 <i class="bi bi-plus-lg me-2"></i> Maç Ekle
             </a>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-lg fw-bold px-5 rounded-pill shadow-sm"
+               style="background-color: #d9f99d; color: #0f172a; border: none;">
+               Giriş Yap
+            </a>
         {% endif %}
     </div>
 </div>
@@ -20,42 +27,65 @@
 <div class="row g-4">
     
     <div class="col-lg-7">
-        <div class="d-flex justify-content-between align-items-end mb-3">
-            <h4 class="mb-0 fw-bold text-white">
-                <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Son Aktiviteler
-            </h4>
-            <a href="{% url 'match-list' %}" class="text-decoration-none small fw-bold" style="color: #d9f99d;">Tümünü Gör &rarr;</a>
-        </div>
+        
+        {% if user.is_authenticated and chart_ratings %}
+            <div class="d-flex justify-content-between align-items-end mb-3">
+                <h4 class="mb-0 fw-bold text-white">
+                    <i class="bi bi-graph-up-arrow text-warning me-2"></i>Performans Grafiği
+                </h4>
+                <div class="badge bg-dark border border-secondary text-white p-2">
+                    Güncel Puan: <span style="color: #d9f99d;">{{ current_rating }}</span>
+                </div>
+            </div>
 
-        {% for match in recent_matches %}
-        <div class="card mb-3 border-0 hover-effect shadow-sm" style="background-color: #1e293b;">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="small mb-1" style="color: #94a3b8;">
-                        <i class="bi bi-calendar-event me-1"></i> {{ match.match_date|date:"d M, H:i" }}
+            <div class="card border-0 shadow-lg p-3" style="background-color: #1e293b; border-radius: 20px;">
+                <canvas id="ratingChart" height="200"></canvas>
+            </div>
+            
+            <div class="mt-3 text-end">
+                <a href="{% url 'match-list' %}" class="text-decoration-none small text-muted hover-effect">
+                    Tüm Maç Geçmişini Gör &rarr;
+                </a>
+            </div>
+
+        {% else %}
+            <div class="d-flex justify-content-between align-items-end mb-3">
+                <h4 class="mb-0 fw-bold text-white">
+                    <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Son Aktiviteler
+                </h4>
+                <a href="{% url 'match-list' %}" class="text-decoration-none small fw-bold" style="color: #d9f99d;">Tümünü Gör &rarr;</a>
+            </div>
+
+            {% for match in recent_matches %}
+            <div class="card mb-3 border-0 hover-effect shadow-sm" style="background-color: #1e293b;">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small mb-1" style="color: #94a3b8;">
+                            <i class="bi bi-calendar-event me-1"></i> {{ match.match_date|date:"d M, H:i" }}
+                        </div>
+                        
+                        <div class="fw-bold fs-5">
+                            <span style="color: #d9f99d;">Takım 1</span> 
+                            <span style="color: #64748b;" class="mx-1">vs</span> 
+                            <span style="color: #ffffff;">Takım 2</span>
+                        </div>
                     </div>
                     
-                    <div class="fw-bold fs-5">
-                        <span style="color: #d9f99d;">Takım 1</span> 
-                        <span style="color: #64748b;" class="mx-1">vs</span> 
-                        <span style="color: #ffffff;">Takım 2</span>
-                    </div>
-                </div>
-                
-                <div class="text-end">
-                    <div class="badge bg-black border border-secondary p-2 fs-5 font-monospace">
-                        <span style="color: #d9f99d;">{{ match.score_team1 }}</span> 
-                        <span style="color: #64748b;">-</span> 
-                        <span style="color: #ffffff;">{{ match.score_team2 }}</span>
+                    <div class="text-end">
+                        <div class="badge bg-black border border-secondary p-2 fs-5 font-monospace">
+                            <span style="color: #d9f99d;">{{ match.score_team1 }}</span> 
+                            <span style="color: #64748b;">-</span> 
+                            <span style="color: #ffffff;">{{ match.score_team2 }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        {% empty %}
-            <div class="alert alert-dark border-secondary text-center" style="background-color: #1e293b; color: #94a3b8;">
-                Henüz maç aktivitesi yok.
-            </div>
-        {% endfor %}
+            {% empty %}
+                <div class="alert alert-dark border-secondary text-center" style="background-color: #1e293b; color: #94a3b8;">
+                    Henüz maç aktivitesi yok.
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
 
     <div class="col-lg-5">
@@ -66,20 +96,20 @@
             <a href="{% url 'player-list' %}" class="text-decoration-none small fw-bold" style="color: #d9f99d;">Tümünü Gör &rarr;</a>
         </div>
 
-        <div class="card border-0 shadow-sm" style="background-color: #1e293b;">
+        <div class="card border-0 shadow-sm" style="background-color: #1e293b; border-radius: 20px;">
             <ul class="list-group list-group-flush bg-transparent">
                 {% for player in recent_players %}
-                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-secondary py-3">
+                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-secondary py-3 px-4">
                     <div class="d-flex align-items-center">
                         
                         {% if player.profile_picture %}
                             <img src="{{ player.profile_picture.url }}" 
                                  alt="{{ player.first_name }}" 
                                  class="rounded-circle me-3 border border-secondary"
-                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                 style="width: 45px; height: 45px; object-fit: cover;">
                         {% else %}
                             <div class="rounded-circle d-flex justify-content-center align-items-center me-3 text-white fw-bold" 
-                                 style="width: 40px; height: 40px; background-color: #0f172a; border: 1px solid #334155;">
+                                 style="width: 45px; height: 45px; background-color: #0f172a; border: 1px solid #334155;">
                                 {{ player.first_name|first|upper }}
                             </div>
                         {% endif %}
@@ -93,7 +123,7 @@
                     
                     <span class="badge border border-secondary fw-bold px-3 py-2 rounded-pill" 
                           style="background-color: #0f172a; color: #d9f99d;">
-                        {{ player.skill_level }}
+                        {{ player.rating }}
                     </span>
                 </li>
                 {% empty %}
@@ -104,4 +134,74 @@
     </div>
 
 </div>
+
+{% if user.is_authenticated and chart_ratings %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('ratingChart').getContext('2d');
+        
+        // Django'dan gelen verileri al (unsafe filtresi JSON için gereklidir)
+        const dates = {{ chart_dates|safe }};
+        const ratings = {{ chart_ratings|safe }};
+
+        // Gradyan Oluşturma (Çizgi Altındaki Alan İçin)
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(217, 249, 157, 0.5)'); // #d9f99d (Lime) - Üst
+        gradient.addColorStop(1, 'rgba(217, 249, 157, 0.0)'); // Alt kısım şeffaf
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Puan Gelişimi',
+                    data: ratings,
+                    borderColor: '#d9f99d',      // Çizgi Rengi (Lime)
+                    backgroundColor: gradient,    // Altındaki Alan
+                    borderWidth: 3,
+                    pointBackgroundColor: '#0f172a', // Nokta İçi
+                    pointBorderColor: '#d9f99d',     // Nokta Çerçevesi
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true, // Altını doldur
+                    tension: 0.3 // Hafif kavisli çizgi
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }, // Efsaneyi gizle
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#d9f99d',
+                        bodyColor: '#fff',
+                        borderColor: '#334155',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return ' Puan: ' + context.parsed.y;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' },
+                        suggestedMin: 800 // Grafik çok aşağıdan başlamasın
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+
 {% endblock %}
