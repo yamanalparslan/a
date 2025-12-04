@@ -475,43 +475,26 @@ def accept_match(request, notification_id):
     return redirect('match-list')
 
 
-@login_required
-def reject_match(request, pk):
-
-    notification = get_object_or_404(Notification, pk=pk)
-    
-    if notification.recipient != request.user:
-        messages.error(request, "❌ Bu bildirimi yönetemezsin.")
-        return redirect('home')
-    
-    match = notification.match
-    
-    if match and not match.is_confirmed:
-        match.delete()
-        messages.info(request, "ℹ️ Maç reddedildi ve silindi.")
-    else:
-        messages.info(request, "🗑️ Bildirim silindi.")
-
-    notification.delete()
-    return redirect('notifications')
-
-@login_required
 def reject_match(request, notification_id):
-    """
-    Gelen maç davetini reddetme.
-    """
-    notification = get_object_or_404(Notification, pk=notification_id)
+    # 1. İlgili bildirimi çek (Sadece alıcısı işlem yapabilsin diye recipient kontrolü ekledik)
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
     
-    # Güvenlik: Başkasının bildirimini silemezsin
-    if notification.recipient != request.user:
-        return redirect('home')
+    # 2. Bildirimin bağlı olduğu maçı al
+    match_to_delete = notification.match
     
-    # Bildirimi veritabanından sil (Reddedildiği için artık gerek yok)
-    notification.delete()
-    
-    # Bildirimler sayfasına geri dön
-    return redirect('notifications')
+    # 3. Güvenlik önlemi: Maç zaten onaylanıp puanlanmışsa silinemesin (Opsiyonel ama önerilir)
+    if match_to_delete.is_rated:
+        messages.error(request, "Bu maç zaten onaylanıp puanlandığı için silinemez.")
+        return redirect('dashboard') # veya bildirimler sayfası
 
+    # 4. MAÇI SİL
+    # Not: Match modelinde notification için on_delete=models.CASCADE olduğu için
+    # maçı silince ona bağlı tüm bildirimler de otomatik silinir.
+    match_to_delete.delete()
+    
+    messages.warning(request, "Maçı reddettiniz. Maç kaydı ve tüm bildirimler silindi.")
+    
+    return redirect('notifications') # Kullanıcıyı yönlendirmek istediğin sayfa
 
 # --- API VIEWSET'LERİ ---
 

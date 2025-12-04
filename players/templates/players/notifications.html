@@ -66,7 +66,9 @@
                             {{ notify.message }}
                         </p>
 
+                        {% if not notify.is_read %}
                         <div class="d-flex gap-2 flex-wrap">
+                            
                             <a href="{% url 'accept-match' notify.pk %}" 
                                class="btn fw-bold px-4 py-2 rounded-pill shadow-sm flex-grow-1 flex-md-grow-0"
                                style="background-color: #d9f99d; color: #0f172a; border: none;">
@@ -75,7 +77,8 @@
 
                             <a href="{% url 'reject-match' notify.pk %}" 
                                class="btn fw-bold px-4 py-2 rounded-pill shadow-sm flex-grow-1 flex-md-grow-0"
-                               style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444;">
+                               style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444;"
+                               onclick="return confirm('Bu maçı reddetmek istediğinize emin misiniz?\n\nBunu yaparsanız maç kaydı tamamen silinecek ve diğer oyunculardan da kaldırılacaktır.');">
                                 <i class="bi bi-x-circle me-2"></i> Reddet
                             </a>
 
@@ -87,13 +90,19 @@
                                 </a>
                             {% endif %}
                         </div>
+                        {% else %}
+                            <div class="alert alert-secondary py-2 border-0 bg-opacity-10 text-white-50 small mb-0">
+                                <i class="bi bi-check2-all me-2"></i> Bu bildirimle ilgili işlem yapıldı.
+                            </div>
+                        {% endif %}
+
                     </div>
                 </div>
             {% empty %}
                 <div class="text-center py-5 rounded-4 border border-secondary border-opacity-25" style="background-color: #1e293b;">
                     <div style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;">📭</div>
                     <h4 class="text-white fw-bold">Henüz Bildirim Yok</h4>
-                    <p style="color: #94a3b8; margin-bottom: 0;">Kimse seni maça davet etmemiş.</p>
+                    <p style="color: #94a3b8; margin-bottom: 0;">Bekleyen maç davetin bulunmuyor.</p>
                 </div>
             {% endfor %}
 
