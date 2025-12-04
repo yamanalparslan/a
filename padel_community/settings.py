@@ -26,7 +26,6 @@ ALLOWED_HOSTS = [
 ]
 
 # 2. Form güvenliği (Giriş yapabilmek için ŞART)
-# Buraya domainlerin başında 'https://' olacak şekilde yazmalısın.
 CSRF_TRUSTED_ORIGINS = [
     'https://courtmax-padel-mate.onrender.com',
     'https://courtmaxpadel.com',
@@ -36,12 +35,12 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
-
     'players.apps.PlayersConfig',
 
     # Cloudinary (En başta)
     'cloudinary_storage',
     
+    # 'jazzmin' KALDIRILDI - Orijinal Admin Kullanılıyor
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,13 +51,11 @@ INSTALLED_APPS = [
     # Diğerleri
     'cloudinary',
     'rest_framework',
-    
-    # SİZİN UYGULAMANIZ (Sadece bu olmalı)
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # WhiteNoise Middleware (CSS dosyaları için)
+    # WhiteNoise Middleware (CSS dosyaları için - En üstlerde olmalı)
     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -73,7 +70,7 @@ ROOT_URLCONF = "padel_community.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [], 
+        "DIRS": [],  # Orijinal Admin Şablonları İçin Boş Bırakıldı
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -90,11 +87,8 @@ WSGI_APPLICATION = "padel_community.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     'default': dj_database_url.config(
-        # Render'daki veritabanı bağlantı adresi
         default='postgresql://padel_mate_user:8WkbvDFbSmXGsCn2e2BCEC9ZR82PSVJQ@dpg-d4eq99rgk3sc73btca50-a.frankfurt-postgres.render.com/padel_mate',
         conn_max_age=600
     )
@@ -103,18 +97,10 @@ DATABASES = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    { "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator" },
+    { "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator" },
+    { "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator" },
+    { "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator" },
 ]
 
 
@@ -133,20 +119,17 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 
 
-# --- DOSYA DEPOLAMA AYARLARI ---
-
-# 1. Yeni Yöntem (STORAGES)
+# --- DOSYA DEPOLAMA AYARLARI (GÜNCELLENDİ) ---
+# WhiteNoise ile statik dosyaların sıkıştırılarak sunulması sağlanıyor.
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        # WhiteNoise: Statik dosyaları sıkıştırır ve hash'ler (Admin panelini düzeltir)
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-
-# 2. Eski Yöntem
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 
 # Default primary key field type
@@ -155,11 +138,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Login/Logout Yönlendirmeleri
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
-
-# Güvenlik (CSRF)
-CSRF_TRUSTED_ORIGINS = [
-    'https://courtmax-padel-mate.onrender.com',
-]
 
 # --- CLOUDINARY API AYARLARI ---
 CLOUDINARY_STORAGE = {
@@ -170,18 +148,13 @@ CLOUDINARY_STORAGE = {
     'MEDIA_TAG': 'media',
 }
 
-# --- E-POSTA AYARLARI (Şifre Sıfırlama İçin) ---
+# --- E-POSTA AYARLARI ---
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
-# Gmail Adresiniz (Gönderen Kişi)
 EMAIL_HOST_USER = 'courtmaxpm@gmail.com' 
-
-# Gmail Uygulama Şifresi
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'wgtl soqn xpxz ybyh')
-
 DEFAULT_FROM_EMAIL = 'Courtmax Padel Mate <noreply@courtmax.com>'
 
 LOGIN_URL = 'login'
