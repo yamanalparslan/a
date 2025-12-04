@@ -41,8 +41,8 @@ INSTALLED_APPS = [
 
     # Cloudinary (En başta)
     'cloudinary_storage',
-
-    'jazzmin',
+    
+    # 'jazzmin' KALDIRILDI
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,11 +55,8 @@ INSTALLED_APPS = [
     'rest_framework',
     
     # SİZİN UYGULAMANIZ (Sadece bu olmalı)
-    
-    
-    # DİKKAT: Burada 'accounts' varsa SİLİN!
-
 ]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     # WhiteNoise Middleware (CSS dosyaları için)
@@ -77,7 +74,7 @@ ROOT_URLCONF = "padel_community.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [], # Orijinal haline döndü (Boş liste)
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -181,94 +178,17 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 # Gmail Adresiniz (Gönderen Kişi)
-EMAIL_HOST_USER = 'courtmaxpm@gmail.com'  # <-- BURAYA KENDİ GMAIL ADRESİNİZİ YAZIN
+EMAIL_HOST_USER = 'courtmaxpm@gmail.com' 
 
-# Gmail Uygulama Şifresi (Verdiğiniz şifre buraya eklendi)
+# Gmail Uygulama Şifresi
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'wgtl soqn xpxz ybyh')
 
 DEFAULT_FROM_EMAIL = 'Courtmax Padel Mate <noreply@courtmax.com>'
 
-LOGIN_URL = 'login'  # login view'unuzun URL name'i
-PASSWORD_CHANGE_REDIRECT_URL = 'home'  # Şifre değişim sonrası yönlendirme
+LOGIN_URL = 'login'
+PASSWORD_CHANGE_REDIRECT_URL = 'home'
 
 SESSION_COOKIE_AGE = 1000
-
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-
 SESSION_SAVE_EVERY_REQUEST = True
-
 CSRF_USE_SESSIONS = True
-
-JAZZMIN_SETTINGS = {
-    # Site Başlığı (Browser Tab)
-    "site_title": "Courtmax Admin",
-
-    # Giriş Ekranı Başlığı
-    "site_header": "Courtmax Padel",
-
-    # Logo yerine geçecek metin
-    "site_brand": "Courtmax Yöneticisi",
-
-    # Hoşgeldin mesajı
-    "welcome_sign": "Yönetim Paneline Hoş Geldiniz",
-
-    # Telif Hakkı
-    "copyright": "Courtmax Padel Mate Ltd",
-
-    # Kullanıcı Menüsü
-    "user_avatar": "profile_picture",  # Profil fotosunu çeker (varsa)
-
-    # Menü Ayarları
-    "topmenu_links": [
-        {"name": "Ana Sayfa",  "url": "home", "permissions": ["auth.view_user"]},
-        {"name": "Siteyi Görüntüle", "url": "/", "new_window": True},
-    ],
-
-    # Modelleri Gruplama ve Sıralama
-    "order_with_respect_to": ["players", "players.Player", "players.Match", "players.Court", "auth"],
-
-    # İkonlar (Bootstrap Icons)
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "auth.user": "fas fa-user",
-        "auth.Group": "fas fa-users",
-        "players.Player": "fas fa-running",
-        "players.Match": "fas fa-table-tennis",
-        "players.Court": "fas fa-map-marker-alt",
-        "players.Notification": "fas fa-bell",
-    },
-}
-
-# --- ARAYÜZ RENK VE TEMA AYARLARI ---
-JAZZMIN_UI_TWEAKS = {
-    "navbar_small_text": False,
-    "footer_small_text": False,
-    "body_small_text": False,
-    "brand_small_text": False,
-    "brand_colour": "navbar-dark",
-    "accent": "accent-lime",
-    "navbar": "navbar-dark",
-    "no_navbar_border": False,
-    "navbar_fixed": False,
-    "layout_boxed": False,
-    "footer_fixed": False,
-    "sidebar_fixed": True,
-    "sidebar": "sidebar-dark-lime", # Koyu tema ve yeşil vurgular
-    "sidebar_nav_small_text": False,
-    "sidebar_disable_expand": False,
-    "sidebar_nav_child_indent": False,
-    "sidebar_nav_compact_style": False,
-    "sidebar_nav_legacy_style": False,
-    "sidebar_nav_flat_style": True,
-    "theme": "darkly", # Tamamen koyu tema (Sitenle uyumlu olması için)
-    # Alternatif açık tema istersen: "theme": "flatly", 
-    "dark_mode_theme": "darkly",
-    "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success"
-    }
-}
