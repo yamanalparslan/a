@@ -125,18 +125,19 @@ def player_detail(request, pk):
     
     # --- İSTATİSTİK HESAPLAMA ---
     
-    # 1. Tüm maçlarını al (Takım 1 veya Takım 2 olduğu ve Onaylanmış maçlar)
+    # 1. Tüm maçlarını al
+    # GÜNCELLEME: Sonuna .distinct() ekledik.
     all_matches = Match.objects.filter(
         Q(team1_players=player) | Q(team2_players=player),
         is_confirmed=True
-    )
+    ).distinct() # <--- BU KOMUT AYNI MAÇIN 2 KERE SAYILMASINI ENGELLER
     
     total_matches = all_matches.count()
     wins = 0
     losses = 0
     
     for match in all_matches:
-        # Beraberlik durumu (Puan değişimi olmayan durum)
+        # Beraberlik durumu
         if match.score_team1 == match.score_team2:
             continue
             
