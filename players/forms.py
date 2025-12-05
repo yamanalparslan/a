@@ -59,6 +59,7 @@ class MatchForm(forms.ModelForm):
         label="Yeni Kort Adı",
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Örn: Bostanlı Padel'})
     )
+    
     class Meta:
         model = Match
         # Set skorlarını ekledik (score_team1 ve 2'yi kaldırdık, onları otomatik hesaplayacağız)
