@@ -242,16 +242,20 @@ def home(request):
         try:
             player = request.user.player
             
-            # Oyuncunun tüm onaylanmış maçlarını ESKİDEN YENİYE doğru çek
+            # --- DÜZELTME BURADA ---
+            # is_confirmed=True YERİNE is_rated=True kullanıyoruz.
+            # Böylece sadece puanı gerçekten etkilemiş maçlar grafiğe girer.
             my_matches = Match.objects.filter(
                 Q(team1_players=player) | Q(team2_players=player),
-                is_confirmed=True
+                is_rated=True 
             ).order_by('match_date')
 
             # Grafik Verileri (Başlangıç Puanı: 1000)
             dates = ["Başlangıç"]
             ratings = [1000]
-            current_rating = 1000
+            
+            # Döngü içinde hesaplanan geçici puan
+            calc_rating = 1000 
             
             for match in my_matches:
                 # Beraberlikte puan değişmez
@@ -270,18 +274,20 @@ def home(request):
                 
                 # Puan Hesapla (+150 / -100 mantığı)
                 if won:
-                    current_rating += 150
+                    calc_rating += 150
                 else:
-                    current_rating = max(0, current_rating - 100) # 0'ın altına düşmesin
+                    calc_rating = max(0, calc_rating - 100) # 0'ın altına düşmesin
 
                 # Listeye Ekle
                 dates.append(match.match_date.strftime('%d %b')) # Örn: 12 May
-                ratings.append(current_rating)
+                ratings.append(calc_rating)
 
             # Verileri JSON formatına çevirip şablona gönder
             context['chart_dates'] = json.dumps(dates, cls=DjangoJSONEncoder)
             context['chart_ratings'] = json.dumps(ratings, cls=DjangoJSONEncoder)
-            context['current_rating'] = current_rating
+            
+            # HTML'deki badge için hesaplanan değil, veritabanındaki GERÇEK puanı gönderiyoruz
+            context['current_rating'] = player.rating 
 
         except Exception as e:
             # Oyuncu profili yoksa veya hata olursa grafiği boş geç
