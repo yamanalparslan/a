@@ -513,6 +513,15 @@ def reject_match(request, notification_id):
     
     return redirect('notifications') # Kullanıcıyı yönlendirmek istediğin sayfa
 
+def leaderboard(request):
+    # Tüm oyuncuları puana göre (yüksekten düşüğe) sırala
+    all_players_sorted = Player.objects.all().order_by('-rating')
+    
+    context = {
+        'players': all_players_sorted
+    }
+    return render(request, 'players/leaderboard.html', context)
+
 # --- API VIEWSET'LERİ ---
 
 class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
