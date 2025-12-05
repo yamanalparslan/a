@@ -228,7 +228,7 @@ def match_detail(request, pk):
 
 
 def home(request):
-    # 1. Herkes için genel veriler (Son maçlar ve yeni üyeler)
+    # 1. Herkes için genel veriler
     recent_matches = Match.objects.filter(is_confirmed=True).order_by('-match_date')[:5]
     recent_players = Player.objects.all().order_by('-rating')[:5]
     
@@ -237,69 +237,79 @@ def home(request):
         'recent_players': recent_players,
     }
 
-    # 2. Eğer kullanıcı giriş yapmışsa -> Puan Grafiği Verisini Hazırla
+    # 2. PUAN GRAFİĞİ (GERİYE DOĞRU HESAPLAMA YÖNTEMİ)
     if request.user.is_authenticated:
         try:
             player = request.user.player
             
-            # --- DÜZELTME BURADA ---
-            # is_confirmed=True YERİNE is_rated=True kullanıyoruz.
-            # Böylece sadece puanı gerçekten etkilemiş maçlar grafiğe girer.
+            # ŞU ANKİ GERÇEK PUANI AL
+            current_real_rating = player.rating
+            
+            # Maçları YENİDEN ESKİYE doğru çekiyoruz (Tersten gideceğiz)
             my_matches = Match.objects.filter(
                 Q(team1_players=player) | Q(team2_players=player),
                 is_rated=True 
-            ).order_by('match_date')
+            ).order_by('-match_date') # <-- DİKKAT: Yeni tarih en başta
 
-            # Grafik Verileri (Başlangıç Puanı: 1000)
-            dates = ["Başlangıç"]
-            ratings = [1000]
+            # Listeleri hazırla
+            dates = []
+            ratings = []
+
+            # Döngüye şu anki durumla başla
+            temp_rating = current_real_rating
             
-            # Döngü içinde hesaplanan geçici puan
-            calc_rating = 1000 
-            
+            # İlk nokta (Bugün / En son durum)
+            dates.append("Şimdi")
+            ratings.append(temp_rating)
+
             for match in my_matches:
-                # Beraberlikte puan değişmez
-                if match.score_team1 == match.score_team2:
-                    continue
-
-                # Oyuncu Takım 1'de mi?
+                dates.append(match.match_date.strftime('%d %b'))
+                
+                # --- MATEMATİĞİ TERSE ÇEVİRİYORUZ ---
+                # Normalde: Kazanırsa +150 ekliyorduk.
+                # Şimdi: Geçmişi bulmak için, kazandığı maçtan 150 ÇIKARACAĞIZ.
+                
                 is_team1 = player in match.team1_players.all()
                 
-                # Kazanma/Kaybetme Durumu
+                # Maç sonucuna bak
                 won = False
                 if is_team1 and match.score_team1 > match.score_team2:
                     won = True
                 elif not is_team1 and match.score_team2 > match.score_team1:
                     won = True
                 
-                # Puan Hesapla (+150 / -100 mantığı)
+                # Beraberlik varsa puan değişmemiştir, aynen devam
+                if match.score_team1 == match.score_team2:
+                    ratings.append(temp_rating)
+                    continue
+
                 if won:
-                    calc_rating += 150
+                    # Bu maçı kazanarak buraya geldiyse, maçtan önce puanı düşüktü.
+                    temp_rating -= 150 
                 else:
-                    calc_rating = max(0, calc_rating - 100) # 0'ın altına düşmesin
+                    # Bu maçı kaybederek buraya geldiyse, maçtan önce puanı yüksekti.
+                    temp_rating += 100
 
-                # Listeye Ekle
-                dates.append(match.match_date.strftime('%d %b')) # Örn: 12 May
-                ratings.append(calc_rating)
+                # 0'ın altına inme kontrolü (Opsiyonel, geçmişte 0'dıysa diye)
+                if temp_rating < 0: temp_rating = 0
+                
+                ratings.append(temp_rating)
 
-            # Verileri JSON formatına çevirip şablona gönder
+            # Listeler şu an tersten oluştu (Bugün -> Geçmiş)
+            # Grafiğin düzgün çizilmesi için listeleri çeviriyoruz (Geçmiş -> Bugün)
+            dates.reverse()
+            ratings.reverse()
+
             context['chart_dates'] = json.dumps(dates, cls=DjangoJSONEncoder)
             context['chart_ratings'] = json.dumps(ratings, cls=DjangoJSONEncoder)
-            
-            # HTML'deki badge için hesaplanan değil, veritabanındaki GERÇEK puanı gönderiyoruz
-            context['current_rating'] = player.rating 
+            context['current_rating'] = current_real_rating
 
         except Exception as e:
-            # Oyuncu profili yoksa veya hata olursa grafiği boş geç
+            # Hata durumunda (örn: player yoksa) sessizce geç
+            print(f"Grafik Hatası: {e}")
             pass
 
     return render(request, 'players/home.html', context)
-
-
-def leaderboard(request):
-    all_players_sorted = Player.objects.all().order_by('-rating')
-    context = {'players': all_players_sorted}
-    return render(request, 'players/leaderboard.html', context)
 
 
 # --- PROFİL DÜZENLEME ---
