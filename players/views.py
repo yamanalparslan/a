@@ -247,21 +247,19 @@ def home(request):
             my_matches = Match.objects.filter(
                 Q(team1_players=player) | Q(team2_players=player),
                 is_rated=True 
-            ).order_by('match_date') # <-- Eskiden yeniye
+            ).order_by('match_date')  # <-- Eskiden yeniye
 
             # --- BAŞLANGIÇ NOKTASI ---
-            dates = ["Başlangıç"]
-            ratings = [1000] # Herkes 1000 ile başlar
+            dates = []
+            ratings = [1000]  # Herkes 1000 ile başlar
             
             # Hesaplama için geçici değişken
             running_rating = 1000 
 
             for match in my_matches:
-                # Beraberlik varsa grafiğe ekleme veya düz çizgi çek (tercihe bağlı)
+                # Beraberlik varsa GRAFİĞE EKLEME (puan değişmediğinden)
                 if match.score_team1 == match.score_team2:
-                    dates.append(match.match_date.strftime('%d %b'))
-                    ratings.append(running_rating)
-                    continue
+                    continue  # <-- Sadece atla, listeye ekleme
 
                 # Oyuncu Takım 1'de mi?
                 is_team1 = player in match.team1_players.all()
@@ -278,9 +276,10 @@ def home(request):
                     running_rating += 150  # Kazanırsa +150
                 else:
                     running_rating -= 100  # Kaybederse -100
-                    if running_rating < 0: running_rating = 0 # 0'ın altına inemez
+                    if running_rating < 0:
+                        running_rating = 0  # 0'ın altına inemez
 
-                # Listelere ekle
+                # Listelere ekle (sadece puan değişen maçlar)
                 dates.append(match.match_date.strftime('%d %b'))
                 ratings.append(running_rating)
 
@@ -288,9 +287,6 @@ def home(request):
             context['chart_ratings'] = json.dumps(ratings, cls=DjangoJSONEncoder)
             
             # KARTTAKİ "GÜNCEL PUAN" YAZISI
-            # Grafiğin sonundaki puan ile veritabanındaki puanın tutarlı olması için
-            # burada grafiğin son değerini veya veritabanını kullanabilirsin.
-            # En doğrusu veritabanıdır:
             context['current_rating'] = player.rating
 
         except Exception as e:
@@ -299,7 +295,6 @@ def home(request):
             pass
 
     return render(request, 'players/home.html', context)
-
 
 # --- PROFİL DÜZENLEME ---
 
