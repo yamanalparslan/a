@@ -485,7 +485,7 @@ def reject_match(request, notification_id):
     # 3. Güvenlik önlemi: Maç zaten onaylanıp puanlanmışsa silinemesin (Opsiyonel ama önerilir)
     if match_to_delete.is_rated:
         messages.error(request, "Bu maç zaten onaylanıp puanlandığı için silinemez.")
-        return redirect('dashboard') # veya bildirimler sayfası
+        return redirect('notifications') # veya bildirimler sayfası
 
     # 4. MAÇI SİL
     # Not: Match modelinde notification için on_delete=models.CASCADE olduğu için
