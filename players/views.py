@@ -260,8 +260,8 @@ def home(request):
             temp_rating = current_real_rating
             
             # İlk nokta (Bugün / En son durum)
-            dates.append("Şimdi")
-            ratings.append(temp_rating)
+            dates.append("Başlangıç")
+            ratings.append(1000)
 
             for match in my_matches:
                 dates.append(match.match_date.strftime('%d %b'))
