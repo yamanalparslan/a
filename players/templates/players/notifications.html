@@ -21,7 +21,11 @@
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
                                 <h5 class="fw-bold mb-0" style="color: #d9f99d;">
-                                    <i class="bi bi-envelope-paper-fill me-2"></i> Maç Daveti
+                                    {% if notify.match %}
+                                        <i class="bi bi-envelope-paper-fill me-2"></i> Maç Daveti
+                                    {% else %}
+                                        <i class="bi bi-info-circle-fill me-2"></i> Yeni Bildirim
+                                    {% endif %}
                                 </h5>
                             </div>
                             <small style="color: #94a3b8; font-size: 0.75rem;">
@@ -69,26 +73,33 @@
                         {% if not notify.is_read %}
                         <div class="d-flex gap-2 flex-wrap">
                             
-                            <a href="{% url 'accept-match' notify.pk %}" 
-                               class="btn fw-bold px-4 py-2 rounded-pill shadow-sm flex-grow-1 flex-md-grow-0"
-                               style="background-color: #d9f99d; color: #0f172a; border: none;">
-                                <i class="bi bi-check-circle-fill me-2"></i> Onayla
-                            </a>
-
-                            <a href="{% url 'reject-match' notify.pk %}" 
-                               class="btn fw-bold px-4 py-2 rounded-pill shadow-sm flex-grow-1 flex-md-grow-0"
-                               style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444;"
-                               onclick="return confirm('Bu maçı reddetmek istediğinize emin misiniz?\n\nBunu yaparsanız maç kaydı tamamen silinecek ve diğer oyunculardan da kaldırılacaktır.');">
-                                <i class="bi bi-x-circle me-2"></i> Reddet
-                            </a>
-
                             {% if notify.match %}
+                                <a href="{% url 'accept-match' notify.pk %}" 
+                                   class="btn fw-bold px-4 py-2 rounded-pill shadow-sm flex-grow-1 flex-md-grow-0"
+                                   style="background-color: #d9f99d; color: #0f172a; border: none;">
+                                    <i class="bi bi-check-circle-fill me-2"></i> Onayla
+                                </a>
+
+                                <a href="{% url 'reject-match' notify.pk %}" 
+                                   class="btn fw-bold px-4 py-2 rounded-pill shadow-sm flex-grow-1 flex-md-grow-0"
+                                   style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444;"
+                                   onclick="return confirm('Bu maçı reddetmek istediğinize emin misiniz?\n\nBunu yaparsanız maç kaydı tamamen silinecek ve diğer oyunculardan da kaldırılacaktır.');">
+                                    <i class="bi bi-x-circle me-2"></i> Reddet
+                                </a>
+                                
                                 <a href="{% url 'match-detail' notify.match.pk %}" 
                                    class="btn btn-sm btn-link text-decoration-none ms-auto d-none d-md-block"
                                    style="color: #94a3b8;">
                                     Detaylar &rarr;
                                 </a>
+                            
+                            {% else %}
+                                <a href="{% url 'match-lookup-my-listings' %}" 
+                                   class="btn btn-outline-light rounded-pill px-4 py-2 flex-grow-1 flex-md-grow-0">
+                                    <i class="bi bi-list-ul me-2"></i> İlanlarıma Git
+                                </a>
                             {% endif %}
+
                         </div>
                         {% else %}
                             <div class="alert alert-secondary py-2 border-0 bg-opacity-10 text-white-50 small mb-0">
@@ -102,7 +113,7 @@
                 <div class="text-center py-5 rounded-4 border border-secondary border-opacity-25" style="background-color: #1e293b;">
                     <div style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;">📭</div>
                     <h4 class="text-white fw-bold">Henüz Bildirim Yok</h4>
-                    <p style="color: #94a3b8; margin-bottom: 0;">Bekleyen maç davetin bulunmuyor.</p>
+                    <p style="color: #94a3b8; margin-bottom: 0;">Bekleyen yeni bir bildirimin bulunmuyor.</p>
                 </div>
             {% endfor %}
 
