@@ -679,17 +679,12 @@ def match_lookup_respond(request, pk):
 
 @login_required
 def match_lookup_my_listings(request):
-    """Kullanıcının kendi ilanları"""
+   # Kullanıcının kendi ilanlarını getir
+    lookups = MatchLookup.objects.filter(player=request.user.player).order_by('-created_at')
     
-    try:
-        player = request.user.player
-        my_lookups = MatchLookup.objects.filter(player=player).order_by('-created_at')
-        
-        context = {'my_lookups': my_lookups}
-        return render(request, 'players/match_lookup_my_listings.html', context)
-    except:
-        messages.error(request, "❌ Profil bulunamadı.")
-        return redirect('home')
+    return render(request, 'players/match_lookup_my_listings.html', {
+        'lookups': lookups
+    })
 
 
 @login_required
