@@ -501,13 +501,12 @@ def reject_match(request, notification_id):
     return redirect('notifications') # Kullanıcıyı yönlendirmek istediğin sayfa
 
 def leaderboard(request):
-    # Tüm oyuncuları puana göre (yüksekten düşüğe) sırala
-    all_players_sorted = Player.objects.all().order_by('-rating')
+  # Rating'e göre yüksekten düşüğe sırala ve SADECE ilk 10 kişiyi al
+    players = Player.objects.order_by('-rating')[:10]
     
-    context = {
-        'players': all_players_sorted
-    }
-    return render(request, 'players/leaderboard.html', context)
+    return render(request, 'players/leaderboard.html', {
+        'players': players
+    })
 
 # --- API VIEWSET'LERİ ---
 
