@@ -1,0 +1,254 @@
+{% extends 'players/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    
+    <!-- Geri Dön -->
+    <div class="mb-4">
+        <a href="{% url 'match-lookup-list' %}" class="text-decoration-none small fw-bold" style="color: #cbd5e1;">
+            <i class="bi bi-arrow-left me-1"></i> İlanlara Dön
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4 mb-lg-0">
+            
+            <!-- İlan Kartı -->
+            <div class="card border-0 shadow-lg rounded-4 mb-4" style="background-color: #1e293b;">
+                
+                <!-- Üst Banner -->
+                <div class="card-header border-0 py-4 px-4" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="badge px-3 py-2 rounded-pill border" 
+                             style="background-color: #0f172a; border-color: #d9f99d !important; color: #d9f99d;">
+                            {{ lookup.get_looking_for_display }}
+                        </div>
+                        
+                        {% if lookup.is_active %}
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success px-3 py-2 rounded-pill">
+                                <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Aktif
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary px-3 py-2 rounded-pill">
+                                Kapandı
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    
+                    <!-- Oyuncu Bilgisi -->
+                    <div class="d-flex align-items-center mb-4 pb-4 border-bottom border-secondary border-opacity-25">
+                        <a href="{% url 'player-detail' lookup.player.pk %}" class="text-decoration-none d-flex align-items-center flex-grow-1">
+                            {% if lookup.player.profile_picture %}
+                                <img src="{{ lookup.player.profile_picture.url }}" 
+                                     class="rounded-circle border border-secondary me-3 shadow-sm"
+                                     style="width: 60px; height: 60px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold shadow-sm"
+                                     style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                    {{ lookup.player.first_name|first|upper }}
+                                </div>
+                            {% endif %}
+                            
+                            <div>
+                                <h5 class="mb-1 text-white fw-bold">{{ lookup.player.first_name }} {{ lookup.player.last_name }}</h5>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-dark border border-secondary text-white small">
+                                        {{ lookup.player.skill_level }}
+                                    </span>
+                                    <small class="text-white-50">
+                                        <i class="bi bi-star-fill text-warning me-1"></i>{{ lookup.player.rating }} Puan
+                                    </small>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <!-- Sil Butonu (Sadece İlan Sahibi Görür) -->
+                        {% if is_owner %}
+                        <a href="{% url 'match-lookup-delete' lookup.pk %}" 
+                           class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                           onclick="return confirm('Bu ilanı silmek istediğinize emin misiniz?')">
+                            <i class="bi bi-trash3"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Detaylar Grid -->
+                    <div class="row g-2 g-md-3 mb-4">
+                        <div class="col-6 col-md-6">
+                            <div class="p-2 p-md-3 rounded-3" style="background-color: #0f172a; border: 1px solid #334155;">
+                                <small class="text-white-50 d-block mb-1" style="font-size: 0.7rem;">
+                                    <i class="bi bi-calendar3 text-info me-1"></i>Tarih
+                                </small>
+                                <div class="text-white fw-bold" style="font-size: 0.85rem;">{{ lookup.preferred_date|date:"d M Y" }}</div>
+                            </div>
+                        </div>
+                        
+                        {% if lookup.preferred_time_start %}
+                        <div class="col-6 col-md-6">
+                            <div class="p-2 p-md-3 rounded-3" style="background-color: #0f172a; border: 1px solid #334155;">
+                                <small class="text-white-50 d-block mb-1" style="font-size: 0.7rem;">
+                                    <i class="bi bi-clock text-warning me-1"></i>Saat
+                                </small>
+                                <div class="text-white fw-bold" style="font-size: 0.85rem;">
+                                    {{ lookup.preferred_time_start|time:"H:i" }}
+                                    {% if lookup.preferred_time_end %}
+                                        - {{ lookup.preferred_time_end|time:"H:i" }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="col-6 col-md-6">
+                            <div class="p-2 p-md-3 rounded-3" style="background-color: #0f172a; border: 1px solid #334155;">
+                                <small class="text-white-50 d-block mb-1" style="font-size: 0.7rem;">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>Konum
+                                </small>
+                                <div class="text-white fw-bold" style="font-size: 0.85rem;">
+                                    {{ lookup.city }}
+                                    {% if lookup.preferred_court %}
+                                        <br><small class="text-white-50" style="font-size: 0.7rem;">{{ lookup.preferred_court.name }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if lookup.skill_level_min or lookup.skill_level_max %}
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3" style="background-color: #0f172a; border: 1px solid #334155;">
+                                <small class="text-white-50 d-block mb-1">
+                                    <i class="bi bi-speedometer2 text-success me-2"></i>Seviye Tercihi
+                                </small>
+                                <div class="text-white fw-bold">
+                                    {{ lookup.skill_level_min|default:"Yok" }} - {{ lookup.skill_level_max|default:"Yok" }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Açıklama -->
+                    {% if lookup.description %}
+                    <div class="p-3 rounded-3 mb-4" style="background-color: #0f172a; border: 1px solid #334155;">
+                        <small class="text-white-50 d-block mb-2">
+                            <i class="bi bi-chat-left-text me-2"></i>Açıklama
+                        </small>
+                        <p class="text-white mb-0" style="line-height: 1.6;">{{ lookup.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Yanıt Ver Butonu (Sadece Diğer Kullanıcılar Görür) -->
+                    {% if not is_owner and lookup.is_active %}
+                        {% if has_responded %}
+                            <div class="alert alert-info border-0 mb-0" style="background-color: rgba(59, 130, 246, 0.1); color: #60a5fa;">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                Bu ilana zaten yanıt verdiniz. İlan sahibi size ulaşacak.
+                            </div>
+                        {% else %}
+                            <div class="d-grid">
+                                <a href="{% url 'match-lookup-respond' lookup.pk %}" 
+                                   class="btn btn-lg fw-bold shadow-sm rounded-3"
+                                   style="background-color: #d9f99d; color: #0f172a;">
+                                    <i class="bi bi-chat-dots-fill me-2"></i>İlgiliyim, Yanıt Ver
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sağ Sidebar: Yanıtlar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg rounded-4 sticky-top" style="background-color: #1e293b; top: 20px;">
+                
+                <div class="card-header border-0 py-3 px-4" style="background-color: rgba(0,0,0,0.2);">
+                    <h6 class="mb-0 text-white fw-bold">
+                        <i class="bi bi-chat-dots me-2"></i>Yanıtlar ({{ responses.count }})
+                    </h6>
+                </div>
+
+                <div class="card-body p-3" style="max-height: 600px; overflow-y: auto;">
+                    {% if responses %}
+                        {% for response in responses %}
+                        <div class="mb-3 p-3 rounded-3 {% if response.status == 'accepted' %}border border-success{% elif response.status == 'rejected' %}border border-danger{% else %}border border-secondary{% endif %}" 
+                             style="background-color: #0f172a;">
+                            
+                            <!-- Yanıtlayan Kişi -->
+                            <div class="d-flex align-items-center mb-2">
+                                {% if response.responder.profile_picture %}
+                                    <img src="{{ response.responder.profile_picture.url }}" 
+                                         class="rounded-circle border border-secondary me-2"
+                                         style="width: 35px; height: 35px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-2 text-white fw-bold"
+                                         style="width: 35px; height: 35px; font-size: 0.85rem;">
+                                        {{ response.responder.first_name|first|upper }}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="flex-grow-1">
+                                    <a href="{% url 'player-detail' response.responder.pk %}" class="text-white fw-bold small text-decoration-none">
+                                        {{ response.responder.first_name }} {{ response.responder.last_name }}
+                                    </a>
+                                    <div class="text-white-50" style="font-size: 0.7rem;">
+                                        {{ response.created_at|timesince }} önce
+                                    </div>
+                                </div>
+
+                                <!-- Durum Rozeti -->
+                                {% if response.status == 'accepted' %}
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success" style="font-size: 0.65rem;">
+                                        Kabul Edildi
+                                    </span>
+                                {% elif response.status == 'rejected' %}
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger" style="font-size: 0.65rem;">
+                                        Reddedildi
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Mesaj -->
+                            {% if response.message %}
+                            <p class="text-white-50 small mb-2" style="line-height: 1.4;">
+                                "{{ response.message }}"
+                            </p>
+                            {% endif %}
+
+                            <!-- İlan Sahibi İçin Aksiyon Butonları -->
+                            {% if is_owner and response.status == 'pending' %}
+                            <div class="d-flex gap-2 mt-2">
+                                <a href="{% url 'match-lookup-accept-response' response.pk %}" 
+                                   class="btn btn-sm btn-success flex-grow-1 rounded-pill">
+                                    <i class="bi bi-check-lg"></i> Kabul Et
+                                </a>
+                                <a href="{% url 'match-lookup-reject-response' response.pk %}" 
+                                   class="btn btn-sm btn-outline-danger flex-grow-1 rounded-pill"
+                                   onclick="return confirm('Bu yanıtı reddetmek istediğinize emin misiniz?')">
+                                    <i class="bi bi-x-lg"></i> Reddet
+                                </a>
+                            </div>
+                            {% endif %}
+
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div style="font-size: 2rem; opacity: 0.3; margin-bottom: 0.5rem;">💬</div>
+                            <small class="text-white-50">Henüz yanıt yok</small>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -66,3 +66,21 @@ class NotificationAdmin(admin.ModelAdmin):
     list_filter = ['is_read', 'created_at']
     search_fields = ['recipient__username', 'message']
     readonly_fields = ['created_at']
+
+
+# players/admin.py içine eklenecek
+
+from .models import MatchLookup, MatchLookupResponse
+
+@admin.register(MatchLookup)
+class MatchLookupAdmin(admin.ModelAdmin):
+    list_display = ['player', 'looking_for', 'preferred_date', 'city', 'status', 'created_at']
+    list_filter = ['status', 'looking_for', 'city', 'preferred_date']
+    search_fields = ['player__first_name', 'player__last_name', 'city']
+    date_hierarchy = 'preferred_date'
+
+@admin.register(MatchLookupResponse)
+class MatchLookupResponseAdmin(admin.ModelAdmin):
+    list_display = ['responder', 'lookup', 'status', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['responder__first_name', 'lookup__player__first_name']

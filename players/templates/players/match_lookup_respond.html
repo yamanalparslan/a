@@ -1,0 +1,164 @@
+{% extends 'players/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <!-- Geri Dön -->
+            <div class="mb-4">
+                <a href="{% url 'match-lookup-detail' lookup.pk %}" class="text-decoration-none small fw-bold" style="color: #cbd5e1;">
+                    <i class="bi bi-arrow-left me-1"></i> İlan Detayına Dön
+                </a>
+            </div>
+
+            <!-- Kart -->
+            <div class="card border-0 shadow-lg rounded-4" style="background-color: #1e293b;">
+                
+                <!-- Başlık -->
+                <div class="card-header text-center py-4 border-0" 
+                     style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                    <h3 class="fw-bold mb-2" style="color: #d9f99d;">
+                        <i class="bi bi-chat-dots-fill me-2"></i>İlana Yanıt Ver
+                    </h3>
+                    <p class="text-white-50 mb-0 small">İlan sahibi mesajını görecek ve sizinle iletişime geçecek</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    
+                    <!-- İlan Özeti -->
+                    <div class="p-4 rounded-3 mb-4" style="background-color: #0f172a; border: 1px solid #334155;">
+                        <h6 class="text-white fw-bold mb-3">
+                            <i class="bi bi-info-circle me-2"></i>İlan Özeti
+                        </h6>
+                        
+                        <!-- Oyuncu -->
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+                            {% if lookup.player.profile_picture %}
+                                <img src="{{ lookup.player.profile_picture.url }}" 
+                                     class="rounded-circle border border-secondary me-3"
+                                     style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-dark border border-secondary d-flex justify-content-center align-items-center me-3 text-white fw-bold"
+                                     style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                    {{ lookup.player.first_name|first|upper }}
+                                </div>
+                            {% endif %}
+                            
+                            <div>
+                                <div class="text-white fw-bold">{{ lookup.player.first_name }} {{ lookup.player.last_name }}</div>
+                                <small class="text-white-50">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>{{ lookup.player.rating }} Puan
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Detaylar -->
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <small class="text-white-50 d-block mb-1">Ne Arıyor?</small>
+                                <div class="text-white fw-bold small">{{ lookup.get_looking_for_display }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-white-50 d-block mb-1">Tarih</small>
+                                <div class="text-white fw-bold small">{{ lookup.preferred_date|date:"d M Y" }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-white-50 d-block mb-1">Şehir</small>
+                                <div class="text-white fw-bold small">{{ lookup.city }}</div>
+                            </div>
+                            {% if lookup.preferred_time_start %}
+                            <div class="col-6">
+                                <small class="text-white-50 d-block mb-1">Saat</small>
+                                <div class="text-white fw-bold small">
+                                    {{ lookup.preferred_time_start|time:"H:i" }}
+                                    {% if lookup.preferred_time_end %}
+                                        - {{ lookup.preferred_time_end|time:"H:i" }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger rounded-3 mb-4" style="background-color: rgba(220, 38, 38, 0.1); border: 1px solid #dc2626; color: #fca5a5;">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Hata:</strong> Lütfen formu kontrol edin.
+                        </div>
+                        {% endif %}
+
+                        <!-- Mesaj Alanı -->
+                        <div class="mb-4">
+                            <label class="form-label text-white fw-bold small text-uppercase opacity-75">
+                                <i class="bi bi-chat-left-text me-2"></i>Mesajınız (Opsiyonel)
+                            </label>
+                            {{ form.message }}
+                            <small class="form-text text-white-50 d-block mt-2">
+                                <i class="bi bi-lightbulb-fill me-1"></i>
+                                Örn: "Merhaba! Ben de o saatlerde müsaitim, aynı seviyedeyiz. Oynayalım mı?"
+                            </small>
+                        </div>
+
+                        <!-- Bilgilendirme -->
+                        <div class="alert border rounded-3 mb-4" 
+                             style="background-color: rgba(217, 249, 157, 0.05); border-color: #d9f99d !important; color: #d9f99d;">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+                                <div class="small">
+                                    <strong>Bilgi:</strong>
+                                    <ul class="mb-0 ps-3 mt-1">
+                                        <li>Yanıtınız ilan sahibine gönderilecek</li>
+                                        <li>İlan sahibi yanıtınızı kabul ederse, sizinle iletişime geçecek</li>
+                                        <li>Profil bilgileriniz otomatik olarak paylaşılacak</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Butonlar -->
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-lg fw-bold shadow-sm rounded-3 py-3"
+                                    style="background-color: #d9f99d; color: #0f172a; border: none;">
+                                <i class="bi bi-send-fill me-2"></i>Yanıtı Gönder ✉️
+                            </button>
+                            
+                            <a href="{% url 'match-lookup-detail' lookup.pk %}" class="btn btn-outline-light rounded-3 py-2">
+                                İptal Et
+                            </a>
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+textarea {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: white !important;
+    min-height: 120px !important;
+}
+
+textarea:focus {
+    border-color: #d9f99d !important;
+    box-shadow: 0 0 0 3px rgba(217, 249, 157, 0.2) !important;
+}
+
+textarea::placeholder {
+    color: #64748b !important;
+}
+</style>
+{% endblock %}

@@ -103,6 +103,7 @@
                 <a class="nav-link text-white {% if request.resolver_match.url_name == 'home' %}active-desktop{% endif %}" href="{% url 'home' %}">Ana Sayfa</a>
                 <a class="nav-link text-white {% if request.resolver_match.url_name == 'player-list' %}active-desktop{% endif %}" href="{% url 'player-list' %}">Oyuncular</a>
                 <a class="nav-link text-white {% if request.resolver_match.url_name == 'match-list' %}active-desktop{% endif %}" href="{% url 'match-list' %}">Maçlar</a>
+                <a class="nav-link text-white {% if 'match-lookup' in request.resolver_match.url_name %}active-desktop{% endif %}" href="{% url 'match-lookup-list' %}">Maç Bul</a>
                 <a class="nav-link text-white {% if request.resolver_match.url_name == 'leaderboard' %}active-desktop{% endif %}" href="{% url 'leaderboard' %}">Sıralama</a>
                 
                 <a class="nav-link text-white" href="https://www.courtmax.com.tr/padel?sayfa=2" target="_blank">
@@ -177,6 +178,7 @@
         <div class="container h-100">
             <div class="row h-100 g-0">
                 <div class="col-3"><a href="{% url 'home' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="bi bi-house-door"></i><span>Ana Sayfa</span></a></div>
+                <div class="col-3"><a href="{% url 'match-lookup-list' %}" class="bottom-nav-item {% if 'match-lookup' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-search"></i><span>Maç Bul</span></a></div>
                 <div class="col-3"><a href="{% url 'match-list' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'match-list' or request.resolver_match.url_name == 'create-match' %}active{% endif %}"><i class="bi bi-activity"></i><span>Maçlar</span></a></div>
                 <div class="col-3"><a href="{% url 'leaderboard' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}"><i class="bi bi-trophy"></i><span>Sıralama</span></a></div>
                 <div class="col-3"><a href="{% url 'player-list' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'player-list' %}active{% endif %}"><i class="bi bi-people"></i><span>Oyuncular</span></a></div>

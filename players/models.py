@@ -3,6 +3,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
+from django.utils import timezone
+from datetime import timedelta
 
 # --- YENİ MODEL: KORTLAR ---
 class Court(models.Model):
@@ -160,3 +162,110 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.recipient.username}"
+    
+# players/models.py içine eklenecek
+
+from django.utils import timezone
+from datetime import timedelta
+
+class MatchLookup(models.Model):
+    """Maç arama ilanları - Oyuncular partner veya rakip bulabilir"""
+    
+    LOOKING_FOR_CHOICES = [
+        ('partner', '🤝 Takım Arkadaşı Arıyorum'),
+        ('opponents', '⚔️ Rakip Arıyorum'),
+        ('both', '🎯 Her İkisi de Olur'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('active', 'Aktif'),
+        ('matched', 'Eşleşti'),
+        ('expired', 'Süresi Doldu'),
+        ('cancelled', 'İptal Edildi'),
+    ]
+    
+    # Kim arıyor?
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='match_lookups')
+    
+    # Ne arıyor?
+    looking_for = models.CharField(max_length=20, choices=LOOKING_FOR_CHOICES, default='both')
+    
+    # Ne zaman?
+    preferred_date = models.DateField(verbose_name="Tercih Edilen Tarih")
+    preferred_time_start = models.TimeField(verbose_name="Başlangıç Saati", null=True, blank=True)
+    preferred_time_end = models.TimeField(verbose_name="Bitiş Saati", null=True, blank=True)
+    
+    # Nerede?
+    city = models.CharField(max_length=100, verbose_name="Şehir")
+    preferred_court = models.ForeignKey(Court, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Tercih Edilen Kort")
+    
+    # Hangi seviyede?
+    skill_level_min = models.CharField(max_length=100, verbose_name="Min. Seviye", blank=True)
+    skill_level_max = models.CharField(max_length=100, verbose_name="Maks. Seviye", blank=True)
+    
+    # Açıklama
+    description = models.TextField(max_length=500, blank=True, verbose_name="Not/Açıklama")
+    
+    # Durum
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    
+    # Tarih bilgileri
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(verbose_name="Son Geçerlilik")
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Maç Arama İlanı"
+        verbose_name_plural = "Maç Arama İlanları"
+    
+    def __str__(self):
+        return f"{self.player.first_name} - {self.get_looking_for_display()} ({self.preferred_date})"
+    
+    def save(self, *args, **kwargs):
+        # İlk kaydedildiğinde otomatik olarak 7 gün sonra bitir
+        if not self.pk and not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(days=7)
+        super().save(*args, **kwargs)
+    
+    def is_active(self):
+        """İlan hala aktif mi?"""
+        return self.status == 'active' and self.expires_at > timezone.now()
+    
+    def mark_as_matched(self):
+        """İlan eşleştiğinde çağrılır"""
+        self.status = 'matched'
+        self.save()
+    
+    def can_contact(self, requesting_player):
+        """Başka bir oyuncu bu ilana yanıt verebilir mi?"""
+        # Kendi ilanına yanıt veremez
+        if requesting_player == self.player:
+            return False
+        # İlan aktif olmalı
+        if not self.is_active():
+            return False
+        return True
+
+
+class MatchLookupResponse(models.Model):
+    """İlanlara gelen yanıtlar"""
+    
+    STATUS_CHOICES = [
+        ('pending', 'Bekliyor'),
+        ('accepted', 'Kabul Edildi'),
+        ('rejected', 'Reddedildi'),
+    ]
+    
+    lookup = models.ForeignKey(MatchLookup, on_delete=models.CASCADE, related_name='responses')
+    responder = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='lookup_responses')
+    message = models.TextField(max_length=300, blank=True, verbose_name="Mesaj")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['lookup', 'responder']  # Aynı kişi 2 kere yanıt veremesin
+    
+    def __str__(self):
+        return f"{self.responder.first_name} → {self.lookup.player.first_name} ({self.status})"

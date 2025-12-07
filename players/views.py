@@ -9,7 +9,11 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import F, Q
 from django.http import Http404
 from django.contrib import messages
-from django.core.paginator import Paginator # <--- YENİ EKLENEN IMPORT
+from django.core.paginator import Paginator
+from django.utils import timezone
+from django.core.paginator import Paginator
+from .models import MatchLookup, MatchLookupResponse
+from .forms import MatchLookupForm, MatchLookupResponseForm
 
 # REST Framework
 from rest_framework import viewsets, permissions
@@ -517,3 +521,237 @@ class MatchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Match.objects.filter(is_confirmed=True).order_by('-match_date')
     serializer_class = MatchSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+@login_required
+def match_lookup_list(request):
+    """Tüm aktif maç arama ilanlarını listele"""
+    
+    # Filtreleme parametreleri
+    city_filter = request.GET.get('city', '')
+    looking_for_filter = request.GET.get('looking_for', '')
+    date_filter = request.GET.get('date', '')
+    
+    # Temel sorgu: Aktif ve süresi dolmamış ilanlar
+    lookups = MatchLookup.objects.filter(
+        status='active',
+        expires_at__gt=timezone.now()
+    ).select_related('player', 'preferred_court')
+    
+    # Filtreleri uygula
+    if city_filter:
+        lookups = lookups.filter(city__icontains=city_filter)
+    
+    if looking_for_filter:
+        lookups = lookups.filter(looking_for=looking_for_filter)
+    
+    if date_filter:
+        from datetime import datetime
+        try:
+            filter_date = datetime.strptime(date_filter, '%Y-%m-%d').date()
+            lookups = lookups.filter(preferred_date=filter_date)
+        except:
+            pass
+    
+    # Sayfalama
+    paginator = Paginator(lookups, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Şehir listesi (Filtre için)
+    cities = MatchLookup.objects.filter(
+        status='active', 
+        expires_at__gt=timezone.now()
+    ).values_list('city', flat=True).distinct()
+    
+    context = {
+        'lookups': page_obj,
+        'cities': cities,
+        'current_filters': {
+            'city': city_filter,
+            'looking_for': looking_for_filter,
+            'date': date_filter,
+        }
+    }
+    return render(request, 'players/match_lookup_list.html', context)
+
+
+@login_required
+def match_lookup_create(request):
+    """Yeni maç arama ilanı oluştur"""
+    
+    # Kullanıcının profili var mı kontrol et
+    try:
+        player = request.user.player
+    except:
+        messages.error(request, "❌ Önce profilinizi oluşturmalısınız.")
+        return redirect('edit-profile')
+    
+    if request.method == 'POST':
+        form = MatchLookupForm(request.POST, user=request.user)
+        if form.is_valid():
+            lookup = form.save(commit=False)
+            lookup.player = player
+            lookup.save()
+            
+            messages.success(request, "✅ İlanınız yayınlandı! Yakında ilgilenenler size ulaşacak.")
+            return redirect('match-lookup-detail', pk=lookup.pk)
+    else:
+        form = MatchLookupForm(user=request.user)
+    
+    return render(request, 'players/match_lookup_create.html', {'form': form})
+
+
+@login_required
+def match_lookup_detail(request, pk):
+    """İlan detayları ve yanıtlar"""
+    
+    lookup = get_object_or_404(MatchLookup, pk=pk)
+    
+    # Yanıtları getir
+    responses = lookup.responses.all().select_related('responder__user')
+    
+    # İlan sahibi mi?
+    is_owner = request.user == lookup.player.user
+    
+    # Kullanıcı zaten yanıt vermiş mi?
+    has_responded = False
+    if not is_owner:
+        has_responded = lookup.responses.filter(responder=request.user.player).exists()
+    
+    context = {
+        'lookup': lookup,
+        'responses': responses,
+        'is_owner': is_owner,
+        'has_responded': has_responded,
+    }
+    return render(request, 'players/match_lookup_detail.html', context)
+
+
+@login_required
+def match_lookup_respond(request, pk):
+    """İlana yanıt ver"""
+    
+    lookup = get_object_or_404(MatchLookup, pk=pk)
+    
+    # Kendi ilanına yanıt veremez
+    if request.user == lookup.player.user:
+        messages.error(request, "❌ Kendi ilanınıza yanıt veremezsiniz.")
+        return redirect('match-lookup-detail', pk=pk)
+    
+    # İlan aktif değilse
+    if not lookup.is_active():
+        messages.error(request, "❌ Bu ilan artık aktif değil.")
+        return redirect('match-lookup-detail', pk=pk)
+    
+    # Zaten yanıt verdiyse
+    if lookup.responses.filter(responder=request.user.player).exists():
+        messages.warning(request, "⚠️ Bu ilana zaten yanıt verdiniz.")
+        return redirect('match-lookup-detail', pk=pk)
+    
+    if request.method == 'POST':
+        form = MatchLookupResponseForm(request.POST)
+        if form.is_valid():
+            response = form.save(commit=False)
+            response.lookup = lookup
+            response.responder = request.user.player
+            response.save()
+            
+            # İlan sahibine bildirim gönder
+            Notification.objects.create(
+                recipient=lookup.player.user,
+                match=None,  # Maç yerine yanıt bildirimi
+                message=f"🔔 {request.user.username} maç arama ilanınıza yanıt verdi! '{lookup.get_looking_for_display()}' - {lookup.preferred_date}"
+            )
+            
+            messages.success(request, "✅ Yanıtınız gönderildi! İlan sahibi sizinle iletişime geçecek.")
+            return redirect('match-lookup-detail', pk=pk)
+    else:
+        form = MatchLookupResponseForm()
+    
+    context = {
+        'lookup': lookup,
+        'form': form,
+    }
+    return render(request, 'players/match_lookup_respond.html', context)
+
+
+@login_required
+def match_lookup_my_listings(request):
+    """Kullanıcının kendi ilanları"""
+    
+    try:
+        player = request.user.player
+        my_lookups = MatchLookup.objects.filter(player=player).order_by('-created_at')
+        
+        context = {'my_lookups': my_lookups}
+        return render(request, 'players/match_lookup_my_listings.html', context)
+    except:
+        messages.error(request, "❌ Profil bulunamadı.")
+        return redirect('home')
+
+
+@login_required
+def match_lookup_delete(request, pk):
+    """İlanı sil (sadece ilan sahibi)"""
+    
+    lookup = get_object_or_404(MatchLookup, pk=pk)
+    
+    if request.user != lookup.player.user:
+        messages.error(request, "❌ Bu ilanı silemezsiniz.")
+        return redirect('match-lookup-detail', pk=pk)
+    
+    if request.method == 'POST':
+        lookup.delete()
+        messages.success(request, "✅ İlan silindi.")
+        return redirect('match-lookup-my-listings')
+    
+    return render(request, 'players/match_lookup_delete_confirm.html', {'lookup': lookup})
+
+
+@login_required
+def match_lookup_accept_response(request, response_id):
+    """Gelen yanıtı kabul et"""
+    
+    response = get_object_or_404(MatchLookupResponse, pk=response_id)
+    lookup = response.lookup
+    
+    # Sadece ilan sahibi kabul edebilir
+    if request.user != lookup.player.user:
+        messages.error(request, "❌ Bu işlemi yapamazsınız.")
+        return redirect('home')
+    
+    response.status = 'accepted'
+    response.save()
+    
+    # İlanı "eşleşti" olarak işaretle
+    lookup.mark_as_matched()
+    
+    # Yanıt verene bildirim gönder
+    Notification.objects.create(
+        recipient=response.responder.user,
+        match=None,
+        message=f"🎉 {lookup.player.first_name} yanıtınızı kabul etti! Artık maç planlayabilirsiniz."
+    )
+    
+    messages.success(request, f"✅ {response.responder.first_name} ile eşleştiniz! Artık maç ekleyebilirsiniz.")
+    return redirect('match-lookup-detail', pk=lookup.pk)
+
+
+@login_required
+def match_lookup_reject_response(request, response_id):
+    """Gelen yanıtı reddet"""
+    
+    response = get_object_or_404(MatchLookupResponse, pk=response_id)
+    lookup = response.lookup
+    
+    # Sadece ilan sahibi reddedebilir
+    if request.user != lookup.player.user:
+        messages.error(request, "❌ Bu işlemi yapamazsınız.")
+        return redirect('home')
+    
+    response.status = 'rejected'
+    response.save()
+    
+    messages.info(request, "Yanıt reddedildi.")
+    return redirect('match-lookup-detail', pk=lookup.pk)

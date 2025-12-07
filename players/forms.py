@@ -87,3 +87,126 @@ class MatchForm(forms.ModelForm):
         if len(players) > 2: raise forms.ValidationError("En fazla 2 rakip.")
         if len(players) < 1: raise forms.ValidationError("En az 1 rakip.")
         return players
+    
+
+    # players/forms.py içine eklenecek
+
+from django import forms
+from .models import MatchLookup, MatchLookupResponse
+from datetime import date, timedelta
+
+class MatchLookupForm(forms.ModelForm):
+    class Meta:
+        model = MatchLookup
+        fields = [
+            'looking_for', 
+            'preferred_date', 
+            'preferred_time_start', 
+            'preferred_time_end',
+            'city', 
+            'preferred_court',
+            'skill_level_min', 
+            'skill_level_max',
+            'description'
+        ]
+        
+        widgets = {
+            'looking_for': forms.Select(attrs={
+                'class': 'form-select',
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+            'preferred_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'min': date.today().isoformat(),
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+            'preferred_time_start': forms.TimeInput(attrs={
+                'class': 'form-control',
+                'type': 'time',
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+            'preferred_time_end': forms.TimeInput(attrs={
+                'class': 'form-control',
+                'type': 'time',
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+            'city': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'İzmir',
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+            'preferred_court': forms.Select(attrs={
+                'class': 'form-select',
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+            'skill_level_min': forms.Select(attrs={
+                'class': 'form-select',
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+            'skill_level_max': forms.Select(attrs={
+                'class': 'form-select',
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Örn: Cumartesi sabahları düzenli oynuyorum, aynı seviyede partner arıyorum...',
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # Kullanıcının şehrini varsayılan yap
+        if user and hasattr(user, 'player'):
+            self.fields['city'].initial = user.player.city
+            self.fields['skill_level_min'].initial = user.player.skill_level
+            self.fields['skill_level_max'].initial = user.player.skill_level
+        
+        # Seviye seçeneklerini Player modelinden al
+        from .models import Player
+        skill_choices = [('', '-- Seçiniz --')] + list(Player.SKILL_CHOICES)
+        self.fields['skill_level_min'].widget.choices = skill_choices
+        self.fields['skill_level_max'].widget.choices = skill_choices
+        
+        # Kort seçeneklerine "Farketmez" ekle
+        self.fields['preferred_court'].required = False
+        self.fields['preferred_court'].empty_label = "-- Farketmez --"
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        preferred_date = cleaned_data.get('preferred_date')
+        time_start = cleaned_data.get('preferred_time_start')
+        time_end = cleaned_data.get('preferred_time_end')
+        
+        # Tarih kontrolü
+        if preferred_date and preferred_date < date.today():
+            raise forms.ValidationError("Geçmiş bir tarih seçemezsiniz.")
+        
+        # Saat kontrolü
+        if time_start and time_end and time_start >= time_end:
+            raise forms.ValidationError("Bitiş saati, başlangıç saatinden sonra olmalıdır.")
+        
+        return cleaned_data
+
+
+class MatchLookupResponseForm(forms.ModelForm):
+    class Meta:
+        model = MatchLookupResponse
+        fields = ['message']
+        
+        widgets = {
+            'message': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Merhaba! Ben de o saatlerde müsaitim, oynayalım mı?',
+                'style': 'background-color: #0f172a; color: white; border-color: #334155;'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['message'].required = False

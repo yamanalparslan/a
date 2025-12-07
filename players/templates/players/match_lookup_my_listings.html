@@ -1,0 +1,182 @@
+{% extends 'players/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    
+    <!-- Başlık -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h1 class="fw-bold text-white fs-2 mb-1">📋 İlanlarım</h1>
+                <p class="text-white-50 mb-0 small d-none d-md-block">Verdiğin tüm maç arama ilanları</p>
+            </div>
+            <a href="{% url 'match-lookup-list' %}" class="btn btn-outline-light btn-sm px-3 rounded-pill d-none d-md-inline-block">
+                <i class="bi bi-search me-1"></i> Tüm İlanlar
+            </a>
+        </div>
+        
+        <!-- Mobil Butonlar -->
+        <div class="d-grid gap-2 d-md-none">
+            <a href="{% url 'match-lookup-create' %}" class="btn fw-bold py-3 rounded-3 shadow-sm"
+               style="background-color: #d9f99d; color: #0f172a;">
+                <i class="bi bi-plus-lg me-2"></i> Yeni İlan Ver
+            </a>
+            <a href="{% url 'match-lookup-list' %}" class="btn btn-outline-light py-2 rounded-3">
+                <i class="bi bi-search me-1"></i> Tüm İlanlar
+            </a>
+        </div>
+        
+        <!-- Masaüstü Buton -->
+        <div class="d-none d-md-block text-end">
+            <a href="{% url 'match-lookup-create' %}" class="btn fw-bold px-4 py-2 rounded-pill shadow-sm"
+               style="background-color: #d9f99d; color: #0f172a;">
+                <i class="bi bi-plus-lg me-2"></i> Yeni İlan
+            </a>
+        </div>
+    </div>
+
+    <!-- İlanlar -->
+    {% if my_lookups %}
+        <div class="row g-3">
+            {% for lookup in my_lookups %}
+            <div class="col-12 col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="background-color: #1e293b;">
+                    
+                    <!-- Durum Banner -->
+                    <div class="card-header border-0 py-3 px-4 d-flex justify-content-between align-items-center"
+                         style="background-color: rgba(0,0,0,0.2);">
+                        <div class="badge px-3 py-2 rounded-pill border"
+                             style="background-color: #0f172a; border-color: #d9f99d !important; color: #d9f99d;">
+                            {{ lookup.get_looking_for_display }}
+                        </div>
+                        
+                        {% if lookup.is_active %}
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success px-3 py-2 rounded-pill">
+                                <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Aktif
+                            </span>
+                        {% elif lookup.status == 'matched' %}
+                            <span class="badge bg-info bg-opacity-25 text-info border border-info px-3 py-2 rounded-pill">
+                                <i class="bi bi-check-circle-fill me-1"></i> Eşleşti
+                            </span>
+                        {% elif lookup.status == 'expired' %}
+                            <span class="badge bg-warning bg-opacity-25 text-warning border border-warning px-3 py-2 rounded-pill">
+                                <i class="bi bi-clock-history me-1"></i> Süresi Doldu
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary px-3 py-2 rounded-pill">
+                                {{ lookup.get_status_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-body p-3">
+                        
+                        <!-- Tarih ve Saat -->
+                        <div class="mb-3">
+                            <div class="text-white fw-bold fs-6 mb-1">
+                                <i class="bi bi-calendar3 text-info me-2"></i>
+                                {{ lookup.preferred_date|date:"d M Y" }}
+                            </div>
+                            {% if lookup.preferred_time_start %}
+                            <small class="text-white-50" style="font-size: 0.8rem;">
+                                <i class="bi bi-clock text-warning me-2"></i>
+                                {{ lookup.preferred_time_start|time:"H:i" }}
+                                {% if lookup.preferred_time_end %}
+                                    - {{ lookup.preferred_time_end|time:"H:i" }}
+                                {% endif %}
+                            </small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Konum -->
+                        <div class="mb-3">
+                            <small class="text-white-50" style="font-size: 0.8rem;">
+                                <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                                {{ lookup.city }}
+                                {% if lookup.preferred_court %}
+                                    · {{ lookup.preferred_court.name }}
+                                {% endif %}
+                            </small>
+                        </div>
+
+                        <!-- Seviye (sadece masaüstünde) -->
+                        {% if lookup.skill_level_min or lookup.skill_level_max %}
+                        <div class="mb-3 d-none d-md-block">
+                            <small class="text-white-50">
+                                <i class="bi bi-speedometer2 text-success me-2"></i>
+                                Seviye: {{ lookup.skill_level_min|default:"Yok" }} - {{ lookup.skill_level_max|default:"Yok" }}
+                            </small>
+                        </div>
+                        {% endif %}
+
+                        <!-- Açıklama (sadece masaüstünde) -->
+                        {% if lookup.description %}
+                        <p class="text-white-50 small mb-3 d-none d-md-block" style="line-height: 1.4;">
+                            "{{ lookup.description|truncatewords:20 }}"
+                        </p>
+                        {% endif %}
+
+                        <!-- Yanıt İstatistiği -->
+                        <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+                            <div class="flex-grow-1">
+                                <div class="text-white fw-bold">{{ lookup.responses.count }}</div>
+                                <small class="text-white-50">Yanıt</small>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="text-success fw-bold">{{ lookup.responses.filter.status='accepted'|length }}</div>
+                                <small class="text-white-50">Kabul</small>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="text-warning fw-bold">{{ lookup.responses.filter.status='pending'|length }}</div>
+                                <small class="text-white-50">Bekleyen</small>
+                            </div>
+                        </div>
+
+                        <!-- Butonlar -->
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'match-lookup-detail' lookup.pk %}" 
+                               class="btn btn-sm btn-primary flex-grow-1 rounded-pill">
+                                <i class="bi bi-eye-fill me-1"></i> Detaylar
+                            </a>
+                            
+                            {% if lookup.is_active %}
+                            <a href="{% url 'match-lookup-delete' lookup.pk %}" 
+                               class="btn btn-sm btn-outline-danger rounded-pill"
+                               onclick="return confirm('Bu ilanı silmek istediğinize emin misiniz?')">
+                                <i class="bi bi-trash3"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+                    <!-- Oluşturulma Tarihi -->
+                    <div class="card-footer border-0 text-center py-2" style="background-color: rgba(0,0,0,0.1);">
+                        <small class="text-white-50">
+                            <i class="bi bi-clock-history me-1"></i>
+                            {{ lookup.created_at|timesince }} önce oluşturuldu
+                        </small>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <!-- Boş Durum -->
+        <div class="text-center py-5 rounded-4 border border-secondary border-opacity-25" style="background-color: #1e293b;">
+            <div style="font-size: 4rem; opacity: 0.5; margin-bottom: 1.5rem;">📭</div>
+            <h4 class="text-white fw-bold mb-2">Henüz İlan Vermedin</h4>
+            <p style="color: #94a3b8; margin-bottom: 2rem; max-width: 500px; mx-auto;">
+                Maç arama ilanı vererek partner veya rakip bulabilir, yeni oyuncularla tanışabilirsin!
+            </p>
+            <a href="{% url 'match-lookup-create' %}" class="btn px-5 py-3 rounded-pill fw-bold shadow-sm"
+                style="background-color: #d9f99d; color: #0f172a;">
+                <i class="bi bi-megaphone-fill me-2"></i> İlk İlanını Ver
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

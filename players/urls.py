@@ -51,4 +51,14 @@ urlpatterns = [
     path('accept-match/<int:notification_id>/', views.accept_match, name='accept-match'),
     path('notification/reject/<int:notification_id>/', views.reject_match, name='reject-match'),
     path('reject-match/<int:notification_id>/', views.reject_match, name='reject-match'),
+
+    path('find-match/', views.match_lookup_list, name='match-lookup-list'),
+    path('find-match/create/', views.match_lookup_create, name='match-lookup-create'),
+    path('find-match/<int:pk>/', views.match_lookup_detail, name='match-lookup-detail'),
+    path('find-match/<int:pk>/respond/', views.match_lookup_respond, name='match-lookup-respond'),
+    path('find-match/<int:pk>/delete/', views.match_lookup_delete, name='match-lookup-delete'),
+    path('find-match/my-listings/', views.match_lookup_my_listings, name='match-lookup-my-listings'),
+    path('find-match/response/<int:response_id>/accept/', views.match_lookup_accept_response, name='match-lookup-accept-response'),
+    path('find-match/response/<int:response_id>/reject/', views.match_lookup_reject_response, name='match-lookup-reject-response'),
 ]
+
