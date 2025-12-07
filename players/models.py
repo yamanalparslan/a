@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime, time
 
 # --- YENİ MODEL: KORTLAR ---
 class Court(models.Model):
@@ -223,10 +223,26 @@ class MatchLookup(models.Model):
         return f"{self.player.first_name} - {self.get_looking_for_display()} ({self.preferred_date})"
     
     def save(self, *args, **kwargs):
-        # İlk kaydedildiğinde otomatik olarak 7 gün sonra bitir
-        if not self.pk and not self.expires_at:
-            self.expires_at = timezone.now() + timedelta(days=7)
+        # 1. Maç gününün sonunu (23:59:59) hesapla
+        # preferred_date bir 'date' objesi olduğu için onu 'datetime'a çeviriyoruz
+        match_end_time = datetime.combine(self.preferred_date, time.max)
+        match_end_time = timezone.make_aware(match_end_time) # Timezone bilgisi ekle
+
+        # 2. Eğer expires_at hiç ayarlanmamışsa (Yeni kayıt)
+        if not self.expires_at:
+            # Varsayılan olarak 7 gün sonrasını al
+            default_expiry = timezone.now() + timedelta(days=7)
+            
+            # Hangisi daha erkense onu seç (7 gün sonra mı, maç günü mü?)
+            # Eğer maç yarınsa, süre yarın biter. Maç 1 ay sonraysa, süre 7 gün sonra biter (liste tazeliği için).
+            self.expires_at = min(default_expiry, match_end_time)
+        
+        # 3. Eğer expires_at bir şekilde maç tarihini geçiyorsa, onu maç tarihiyle sınırla
+        elif self.expires_at > match_end_time:
+            self.expires_at = match_end_time
+
         super().save(*args, **kwargs)
+        
     
     def is_active(self):
         """İlan hala aktif mi?"""

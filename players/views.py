@@ -535,8 +535,9 @@ def match_lookup_list(request):
     # Temel sorgu: Aktif ve süresi dolmamış ilanlar
     lookups = MatchLookup.objects.filter(
         status='active',
-        expires_at__gt=timezone.now()
-    ).select_related('player', 'preferred_court')
+        expires_at__gt=timezone.now(),
+        preferred_date__gte=timezone.now().date()
+        ).select_related('player', 'preferred_court')
     
     # Filtreleri uygula
     if city_filter:
@@ -720,6 +721,13 @@ def match_lookup_accept_response(request, response_id):
     if request.user != lookup.player.user:
         messages.error(request, "❌ Bu işlemi yapamazsınız.")
         return redirect('home')
+
+    # --- DÜZELTME (YENİ KONTROL) ---
+    # Eğer ilan zaten başkasıyla eşleşmişse işlemi durdur
+    if lookup.status == 'matched':
+        messages.error(request, "⚠️ Bu ilan zaten kapandı veya başka biriyle eşleşti.")
+        return redirect('match-lookup-detail', pk=lookup.pk)
+    # -------------------------------
     
     response.status = 'accepted'
     response.save()
