@@ -41,32 +41,33 @@
             border-bottom: 2px solid var(--lime);
         }
 
-        .bottom-nav {
-            background-color: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            z-index: 1050;
+        /* MOBİL MENÜ STİLLERİ (YENİ) */
+        
+        /* Kaydırma çubuğunu gizle (Chrome, Safari, Opera) */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Kaydırma çubuğunu gizle (IE, Edge, Firefox) */
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* iPhone X ve üstü için güvenli alt boşluk */
+        .pb-safe {
             padding-bottom: env(safe-area-inset-bottom);
         }
-        
-        .bottom-nav-item {
-            color: var(--text-dim);
-            text-align: center;
-            font-size: 0.7rem;
-            padding: 10px 0;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
+
+        /* Mobilde Aktif Menü Rengi */
+        .active-nav {
+            color: var(--lime) !important;
+            text-shadow: 0 0 10px rgba(217, 249, 157, 0.3);
         }
         
-        .bottom-nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
-        .bottom-nav-item.active { color: var(--lime); }
+        .active-nav i {
+            transform: scale(1.1);
+            transition: transform 0.2s;
+        }
 
         /* Kırmızı Bildirim Noktası */
         .notification-dot {
@@ -84,7 +85,6 @@
         .card { background-color: var(--card-dark); border: 1px solid rgba(255,255,255,0.1); }
         
         @media (min-width: 992px) {
-            .bottom-nav { display: none; }
             body { padding-bottom: 0; }
         }
     </style>
@@ -174,17 +174,42 @@
         {% endblock %}
     </div>
 
-    <div class="bottom-nav d-lg-none">
-        <div class="container h-100">
-            <div class="row h-100 g-0">
-                <div class="col-3"><a href="{% url 'home' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="bi bi-house-door"></i><span>Ana Sayfa</span></a></div>
-                <div class="col-3"><a href="{% url 'match-lookup-list' %}" class="bottom-nav-item {% if 'match-lookup' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-search"></i><span>Maç Bul</span></a></div>
-                <div class="col-3"><a href="{% url 'match-list' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'match-list' or request.resolver_match.url_name == 'create-match' %}active{% endif %}"><i class="bi bi-activity"></i><span>Maçlar</span></a></div>
-                <div class="col-3"><a href="{% url 'leaderboard' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}"><i class="bi bi-trophy"></i><span>Sıralama</span></a></div>
-                <div class="col-3"><a href="{% url 'player-list' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'player-list' %}active{% endif %}"><i class="bi bi-people"></i><span>Oyuncular</span></a></div>
+    <nav class="navbar fixed-bottom navbar-dark d-lg-none pb-safe" 
+         style="background-color: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.1);">
+        
+        <div class="container-fluid d-flex flex-nowrap overflow-auto px-0 hide-scrollbar" 
+             style="white-space: nowrap; -webkit-overflow-scrolling: touch;">
+            
+            <div class="d-flex w-100 justify-content-between px-3" style="min-width: 100%;">
+                
+                <a href="{% url 'home' %}" class="nav-link text-center px-3 {% if request.resolver_match.url_name == 'home' %}active-nav{% else %}text-white-50{% endif %}">
+                    <i class="bi bi-house-door-fill fs-4 d-block mb-1"></i>
+                    <span class="small" style="font-size: 0.7rem;">Ana Sayfa</span>
+                </a>
+
+                <a href="{% url 'match-lookup-list' %}" class="nav-link text-center px-3 {% if 'match-lookup' in request.resolver_match.url_name %}active-nav{% else %}text-white-50{% endif %}">
+                    <i class="bi bi-search fs-4 d-block mb-1"></i>
+                    <span class="small" style="font-size: 0.7rem;">Maç Bul</span>
+                </a>
+
+                <a href="{% url 'match-list' %}" class="nav-link text-center px-3 {% if request.resolver_match.url_name == 'match-list' or request.resolver_match.url_name == 'create-match' %}active-nav{% else %}text-white-50{% endif %}">
+                    <i class="bi bi-activity fs-4 d-block mb-1"></i>
+                    <span class="small" style="font-size: 0.7rem;">Maçlar</span>
+                </a>
+
+                <a href="{% url 'leaderboard' %}" class="nav-link text-center px-3 {% if request.resolver_match.url_name == 'leaderboard' %}active-nav{% else %}text-white-50{% endif %}">
+                    <i class="bi bi-trophy-fill fs-4 d-block mb-1"></i>
+                    <span class="small" style="font-size: 0.7rem;">Sıralama</span>
+                </a>
+
+                <a href="{% url 'player-list' %}" class="nav-link text-center px-3 {% if request.resolver_match.url_name == 'player-list' %}active-nav{% else %}text-white-50{% endif %}">
+                    <i class="bi bi-people-fill fs-4 d-block mb-1"></i>
+                    <span class="small" style="font-size: 0.7rem;">Oyuncular</span>
+                </a>
+
             </div>
         </div>
-    </div>
+    </nav>
 
     <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
         {% csrf_token %}
