@@ -240,9 +240,10 @@ def home(request):
     context = {
         'recent_matches': recent_matches,
         'recent_players': recent_players,
+        'perf_stats': None,  # Başlangıçta None
     }
 
-    # 2. PERFORMANS İSTATİSTİKLERİ
+    # 2. PERFORMANS İSTATİSTİKLERİ (SADECE GİRİŞ YAPMIŞSA)
     if request.user.is_authenticated:
         try:
             player = request.user.player
@@ -251,20 +252,21 @@ def home(request):
             all_matches = Match.objects.filter(
                 Q(team1_players=player) | Q(team2_players=player),
                 is_confirmed=True
-            ).distinct()
+            )
 
             # İstatistikleri hesapla
             wins = 0
             losses = 0
             total_won_sets = 0
             total_lost_sets = 0
+            match_count = 0
             
             for match in all_matches:
                 # Beraberlik atla
                 if match.score_team1 == match.score_team2:
                     continue
 
-                # Oyuncu hangi takımda?
+                match_count += 1
                 is_team1 = player in match.team1_players.all()
                 
                 # Kazanıp kaybettiğini kontrol et
@@ -291,11 +293,14 @@ def home(request):
             total_matches = wins + losses
             
             # Kazanma oranı
-            win_rate = int((wins / total_matches * 100)) if total_matches > 0 else 0
-            
-            # Ortalama set sayısı
-            avg_won_sets = round(total_won_sets / total_matches, 2) if total_matches > 0 else 0
-            avg_lost_sets = round(total_lost_sets / total_matches, 2) if total_matches > 0 else 0
+            if total_matches > 0:
+                win_rate = int((wins / total_matches) * 100)
+                avg_won_sets = round(total_won_sets / total_matches, 2)
+                avg_lost_sets = round(total_lost_sets / total_matches, 2)
+            else:
+                win_rate = 0
+                avg_won_sets = 0
+                avg_lost_sets = 0
             
             # Context'e ekle
             context['perf_stats'] = {
@@ -306,10 +311,13 @@ def home(request):
                 'avg_won_sets': avg_won_sets,
                 'avg_lost_sets': avg_lost_sets,
             }
+            
+            print(f"DEBUG: perf_stats = {context['perf_stats']}")  # Debug
 
         except Exception as e:
             print(f"Performans Hatası: {e}")
-            pass
+            import traceback
+            traceback.print_exc()
 
     return render(request, 'players/home.html', context)
 
