@@ -46,12 +46,12 @@
                                 <i class="bi bi-search"></i>
                             </span>
                             <input type="text" id="courtSearch" class="form-control border-secondary text-white" 
-                                   placeholder="Kort ara" style="background-color: #0f172a; font-size: 0.9rem;">
+                            placeholder="Kort ara" style="background-color: #0f172a; font-size: 0.9rem;">
                         </div>
 
                         <!-- Droplist - Mobil Uyumlu -->
                         <div class="scrollable-list p-2 rounded-2 border border-secondary" 
-                             style="max-height: 55vh; 
+                            style="max-height: 55vh; 
                                     overflow-y: auto; 
                                     -webkit-overflow-scrolling: touch;
                                     background-color: #0f172a;">
@@ -59,7 +59,7 @@
                             <!-- Yeni Kort -->
                             <div class="court-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" onclick="toggleNewCourt(true, this)">
                                 <input class="form-check-input me-3 rounded-circle" type="radio" name="court" value="" id="id_court_new"
-                                       style="background-color: #1e293b; border-color: #d9f99d; cursor: pointer; flex-shrink: 0;">
+                                    style="background-color: #1e293b; border-color: #d9f99d; cursor: pointer; flex-shrink: 0;">
                                 <label class="form-check-label flex-grow-1 text-white fw-bold" for="id_court_new" style="cursor: pointer; color: #d9f99d !important; margin-bottom: 0;">
                                     <i class="bi bi-plus-circle me-1"></i> Yeni Kort
                                 </label>
@@ -68,7 +68,7 @@
                             <!-- Seçilmedi -->
                             <div class="court-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" onclick="toggleNewCourt(false, this)">
                                 <input class="form-check-input me-3 rounded-circle" type="radio" name="court" value="" id="id_court_none" checked
-                                       style="background-color: #1e293b; border-color: #64748b; cursor: pointer; flex-shrink: 0;">
+                                    style="background-color: #1e293b; border-color: #64748b; cursor: pointer; flex-shrink: 0;">
                                 <label class="form-check-label flex-grow-1 text-white fst-italic" for="id_court_none" style="cursor: pointer; margin-bottom: 0;">
                                     -- Seçilmedi --
                                 </label>
@@ -78,9 +78,9 @@
                             {% for value, label in form.fields.court.choices %}
                                 {% if value %}
                                     <div class="court-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 
-                                         data-court-name="{{ label|lower }}" onclick="toggleNewCourt(false, this)">
+                                        data-court-name="{{ label|lower }}" onclick="toggleNewCourt(false, this)">
                                         <input class="form-check-input me-3 rounded-circle" type="radio" name="court" value="{{ value }}" id="id_court_{{ forloop.counter }}"
-                                               style="background-color: #1e293b; border-color: #64748b; cursor: pointer; flex-shrink: 0;">
+                                        style="background-color: #1e293b; border-color: #64748b; cursor: pointer; flex-shrink: 0;">
                                         <label class="form-check-label flex-grow-1 text-white" for="id_court_{{ forloop.counter }}" style="cursor: pointer; margin-bottom: 0; font-size: 0.95rem;">
                                             {{ label }}
                                         </label>
@@ -96,7 +96,7 @@
                         <!-- Yeni Kort Input -->
                         <div id="newCourtInputDiv" class="mt-2 d-none fade-in">
                             <input type="text" name="new_court_name" class="form-control border-secondary text-white" 
-                                   placeholder="Yeni kortun adı" style="background-color: #0f172a; font-size: 0.9rem;">
+                                placeholder="Yeni kortun adı" style="background-color: #0f172a; font-size: 0.9rem;">
                             <div class="form-text text-muted small ms-1 mt-1">Bu kort sisteme kaydedilecek.</div>
                         </div>
                     </div>
@@ -130,11 +130,11 @@
                                     <i class="bi bi-search"></i>
                                 </span>
                                 <input type="text" id="teammateSearch" class="form-control border-secondary text-white" 
-                                       placeholder="Partner ara" style="background-color: #1e293b; font-size: 0.9rem;">
+                                placeholder="Partner ara" style="background-color: #1e293b; font-size: 0.9rem;">
                             </div>
 
                             <div class="scrollable-list p-2 rounded-2 border border-secondary" 
-                                 style="max-height: 40vh; 
+                            style="max-height: 40vh; 
                                         overflow-y: auto;
                                         -webkit-overflow-scrolling: touch;
                                         background-color: #1e293b;">
@@ -142,7 +142,7 @@
                                 <!-- Seçilmedi -->
                                 <div class="teammate-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" onclick="selectRadio(this)">
                                     <input class="form-check-input me-3 rounded-circle" type="radio" name="teammate" value="" id="id_teammate_none" checked
-                                           style="background-color: #0f172a; border-color: #64748b; cursor: pointer; flex-shrink: 0;">
+                                style="background-color: #0f172a; border-color: #64748b; cursor: pointer; flex-shrink: 0;">
                                     <label class="form-check-label flex-grow-1 text-white fst-italic opacity-75" for="id_teammate_none" style="cursor: pointer; margin-bottom: 0;">
                                         Tek oynadım
                                     </label>
@@ -152,9 +152,9 @@
                                 {% for value, label in form.fields.teammate.choices %}
                                     {% if value %}
                                         <div class="teammate-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 
-                                             data-player-name="{{ label|lower }}" onclick="selectRadio(this)">
+                                            data-player-name="{{ label|lower }}" onclick="selectRadio(this)">
                                             <input class="form-check-input me-3 rounded-circle" type="radio" name="teammate" value="{{ value }}" id="id_teammate_{{ forloop.counter }}"
-                                                   style="background-color: #0f172a; border-color: #64748b; cursor: pointer; flex-shrink: 0;">
+                                            style="background-color: #0f172a; border-color: #64748b; cursor: pointer; flex-shrink: 0;">
                                             <label class="form-check-label flex-grow-1 text-white" for="id_teammate_{{ forloop.counter }}" style="cursor: pointer; margin-bottom: 0; font-size: 0.95rem;">
                                                 {{ label }}
                                             </label>
@@ -185,9 +185,9 @@
 
                         <div class="scrollable-list p-2 rounded-2 border border-secondary" 
                             style="max-height: 45vh; 
-                                   overflow-y: auto;
-                                   -webkit-overflow-scrolling: touch;
-                                   background-color: #0f172a;">
+                            overflow-y: auto;
+                            -webkit-overflow-scrolling: touch;
+                            background-color: #0f172a;">
                             
                             {% for value, label in form.fields.team2_players.choices %}
                                 <div class="opponent-item d-flex align-items-center py-2 px-3 rounded cursor-pointer" 

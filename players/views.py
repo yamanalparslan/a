@@ -251,14 +251,18 @@ def home(request):
             my_matches = Match.objects.filter(
                 Q(team1_players=player) | Q(team2_players=player),
                 is_rated=True 
-            ).order_by('match_date')  # <-- Eskiden yeniye
+            ).order_by('match_date')
 
-            # --- BAŞLANGIÇ NOKTASI ---
-            dates = []
-            ratings = [1000]  # Herkes 1000 ile başlar
+            # --- BAŞLANGIÇ NOKTASI (GÜNCELLENDİ) ---
+            # "Başlangıç" yazısı yerine kullanıcının kayıt tarihini alıyoruz
+            # request.user.date_joined: Kullanıcının kayıt olduğu tarih/saat
+            start_date = request.user.date_joined.strftime('%d %b') 
+            
+            dates = [start_date]  # İlk tarih olarak kayıt tarihini ekle
+            ratings = [1000]      # Herkes 1000 ile başlar
             
             # Hesaplama için geçici değişken
-            running_rating = 1000 
+            running_rating = 1000
 
             for match in my_matches:
                 # Beraberlik varsa GRAFİĞE EKLEME (puan değişmediğinden)
