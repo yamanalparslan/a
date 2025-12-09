@@ -266,10 +266,8 @@ def home(request):
             ratings.append(current_rating)
 
             for match in my_matches:
-                # Beraberlikse puan değişmedi, sadece tarihi ekle
+                # Beraberlik maçlarını ATLA (Puan değişmez, grafiğe ekleme)
                 if match.score_team1 == match.score_team2:
-                    dates.append(match.match_date.strftime('%d %b'))
-                    ratings.append(current_rating)
                     continue
 
                 # Oyuncu hangi takımda?
@@ -294,16 +292,13 @@ def home(request):
                 if current_rating < 0:
                     current_rating = 0
                 
-                # Grafiğe ekle
+                # Grafiğe ekle (SADECE PUAN DEĞİŞENLER)
                 dates.append(match.match_date.strftime('%d %b'))
                 ratings.append(current_rating)
 
             context['chart_dates'] = json.dumps(dates, cls=DjangoJSONEncoder)
             context['chart_ratings'] = json.dumps(ratings, cls=DjangoJSONEncoder)
             context['current_rating'] = current_rating
-            
-            # Debug için (isteğe bağlı)
-            # print(f"Başlangıç: 1000, Son Puan: {current_rating}, Maç Sayısı: {len(my_matches)}")
 
         except Exception as e:
             print(f"Grafik Hatası: {e}")
