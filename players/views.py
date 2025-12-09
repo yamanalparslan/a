@@ -242,35 +242,36 @@ def home(request):
         'recent_players': recent_players,
     }
 
-    # 2. PUAN GRAFİĞİ (GÜNCEL PUANDAN GERİYE DOĞRU HESAPLAMA)
+    # 2. PUAN GRAFİĞİ (BAŞTAN SONA HESAPLAMA)
     if request.user.is_authenticated:
         try:
             player = request.user.player
             
-            # Maçları YENİDEN ESKİYE doğru çekiyoruz (Tersten işlem yapmak için)
+            # Maçları ESKİDEN YENİYE çekiyoruz (Baştan sona işlem yapmak için)
             my_matches = Match.objects.filter(
                 Q(team1_players=player) | Q(team2_players=player),
                 is_rated=True 
-            ).order_by('-match_date') 
+            ).order_by('match_date')  # Eski → Yeni
 
-            # Listeleri hazırlayalım (Sondan başa doğru dolduracağız)
-            dates_desc = []
-            ratings_desc = []
+            # Listeleri hazırlayalım
+            dates = []
+            ratings = []
             
-            # Hesaplamaya GÜNCEL PUAN ile başlıyoruz.
-            # Böylece grafik her zaman veritabanındaki gerçek puanla biter.
-            current_calc_rating = player.rating 
+            # BAŞLANGIÇ PUANI: 1000
+            current_rating = 1000
+            
+            # Başlangıç noktası
+            start_date = request.user.date_joined.strftime('%d %b')
+            dates.append(start_date)
+            ratings.append(current_rating)
 
             for match in my_matches:
-                # 1. Grafiğe şu anki durumu ekle (Bu maçın sonucu olan puan)
-                dates_desc.append(match.match_date.strftime('%d %b'))
-                ratings_desc.append(current_calc_rating)
-                
-                # Beraberlikse puan değişmedi, döngüye devam
+                # Beraberlikse puan değişmedi, sadece tarihi ekle
                 if match.score_team1 == match.score_team2:
+                    dates.append(match.match_date.strftime('%d %b'))
+                    ratings.append(current_rating)
                     continue
 
-                # 2. ÖNCEKİ durumu bulmak için ters işlem yap
                 # Oyuncu hangi takımda?
                 is_team1 = player in match.team1_players.all()
                 
@@ -281,32 +282,28 @@ def home(request):
                 elif not is_team1 and match.score_team2 > match.score_team1:
                     won = True
                 
-                # TERS MANTIK: 
-                # Eğer maçı kazanıp bu puana geldiyse, maçtan önce puanı 150 düşüktü.
-                # Eğer maçı kaybedip bu puana düştüyse, maçtan önce puanı 100 yüksekti.
+                # Puan hesapla
+                # Kazandı: +150 puan
+                # Kaybetti: -100 puan
                 if won:
-                    current_calc_rating -= 150
+                    current_rating += 150
                 else:
-                    current_calc_rating += 100
+                    current_rating -= 100
                 
                 # Güvenlik önlemi: Negatif olursa 0 kabul et
-                if current_calc_rating < 0:
-                    current_calc_rating = 0
-
-            # Döngü bitince elimizdeki 'current_calc_rating' artık "Başlangıç Puanı"dır.
-            # Bunu da listenin en sonuna (yani zamanın başına) ekleyelim.
-            start_date = request.user.date_joined.strftime('%d %b')
-            dates_desc.append(start_date)
-            ratings_desc.append(current_calc_rating)
-
-            # Listeleri ters çevir (Eskiden yeniye doğru sıralanmış olur)
-            dates = dates_desc[::-1]
-            ratings = ratings_desc[::-1]
+                if current_rating < 0:
+                    current_rating = 0
+                
+                # Grafiğe ekle
+                dates.append(match.match_date.strftime('%d %b'))
+                ratings.append(current_rating)
 
             context['chart_dates'] = json.dumps(dates, cls=DjangoJSONEncoder)
             context['chart_ratings'] = json.dumps(ratings, cls=DjangoJSONEncoder)
+            context['current_rating'] = current_rating
             
-            context['current_rating'] = player.rating
+            # Debug için (isteğe bağlı)
+            # print(f"Başlangıç: 1000, Son Puan: {current_rating}, Maç Sayısı: {len(my_matches)}")
 
         except Exception as e:
             print(f"Grafik Hatası: {e}")
