@@ -242,66 +242,73 @@ def home(request):
         'recent_players': recent_players,
     }
 
-    # 2. PUAN GRAFİĞİ (BAŞTAN SONA HESAPLAMA)
+    # 2. PERFORMANS İSTATİSTİKLERİ
     if request.user.is_authenticated:
         try:
             player = request.user.player
             
-            # Maçları ESKİDEN YENİYE çekiyoruz (Baştan sona işlem yapmak için)
-            my_matches = Match.objects.filter(
+            # TÜM onaylanan maçları al
+            all_matches = Match.objects.filter(
                 Q(team1_players=player) | Q(team2_players=player),
-                is_rated=True 
-            ).order_by('match_date')  # Eski → Yeni
+                is_confirmed=True
+            ).distinct()
 
-            # Listeleri hazırlayalım
-            dates = []
-            ratings = []
+            # İstatistikleri hesapla
+            wins = 0
+            losses = 0
+            total_won_sets = 0
+            total_lost_sets = 0
             
-            # BAŞLANGIÇ PUANI: 1000
-            current_rating = 1000
-            
-            # Başlangıç noktası
-            start_date = request.user.date_joined.strftime('%d %b')
-            dates.append(start_date)
-            ratings.append(current_rating)
-
-            for match in my_matches:
-                # Beraberlik maçlarını ATLA (Puan değişmez, grafiğe ekleme)
+            for match in all_matches:
+                # Beraberlik atla
                 if match.score_team1 == match.score_team2:
                     continue
 
                 # Oyuncu hangi takımda?
                 is_team1 = player in match.team1_players.all()
                 
-                # Bu maçı kazanmış mıydı?
-                won = False
-                if is_team1 and match.score_team1 > match.score_team2:
-                    won = True
-                elif not is_team1 and match.score_team2 > match.score_team1:
-                    won = True
-                
-                # Puan hesapla
-                # Kazandı: +150 puan
-                # Kaybetti: -100 puan
-                if won:
-                    current_rating += 150
-                else:
-                    current_rating -= 100
-                
-                # Güvenlik önlemi: Negatif olursa 0 kabul et
-                if current_rating < 0:
-                    current_rating = 0
-                
-                # Grafiğe ekle (SADECE PUAN DEĞİŞENLER)
-                dates.append(match.match_date.strftime('%d %b'))
-                ratings.append(current_rating)
+                # Kazanıp kaybettiğini kontrol et
+                if is_team1:
+                    if match.score_team1 > match.score_team2:
+                        wins += 1
+                        total_won_sets += match.score_team1
+                        total_lost_sets += match.score_team2
+                    else:
+                        losses += 1
+                        total_won_sets += match.score_team1
+                        total_lost_sets += match.score_team2
+                else:  # Takım 2'de
+                    if match.score_team2 > match.score_team1:
+                        wins += 1
+                        total_won_sets += match.score_team2
+                        total_lost_sets += match.score_team1
+                    else:
+                        losses += 1
+                        total_won_sets += match.score_team2
+                        total_lost_sets += match.score_team1
 
-            context['chart_dates'] = json.dumps(dates, cls=DjangoJSONEncoder)
-            context['chart_ratings'] = json.dumps(ratings, cls=DjangoJSONEncoder)
-            context['current_rating'] = current_rating
+            # Toplam maç sayısı
+            total_matches = wins + losses
+            
+            # Kazanma oranı
+            win_rate = int((wins / total_matches * 100)) if total_matches > 0 else 0
+            
+            # Ortalama set sayısı
+            avg_won_sets = round(total_won_sets / total_matches, 2) if total_matches > 0 else 0
+            avg_lost_sets = round(total_lost_sets / total_matches, 2) if total_matches > 0 else 0
+            
+            # Context'e ekle
+            context['perf_stats'] = {
+                'total_matches': total_matches,
+                'wins': wins,
+                'losses': losses,
+                'win_rate': win_rate,
+                'avg_won_sets': avg_won_sets,
+                'avg_lost_sets': avg_lost_sets,
+            }
 
         except Exception as e:
-            print(f"Grafik Hatası: {e}")
+            print(f"Performans Hatası: {e}")
             pass
 
     return render(request, 'players/home.html', context)
