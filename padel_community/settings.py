@@ -158,10 +158,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
-# Güvenlik (CSRF)
-CSRF_TRUSTED_ORIGINS = [
-    'https://courtmax-padel-mate.onrender.com',
-]
 
 # --- CLOUDINARY API AYARLARI ---
 CLOUDINARY_STORAGE = {
