@@ -12,7 +12,7 @@ class PlayerAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'first_name', 'last_name', 'skill_level', 'rating', 'city']
     list_filter = ['skill_level', 'city', 'rating']
     search_fields = ['user__username', 'first_name', 'last_name', 'phone']
-    readonly_fields = ['rating']
+    #readonly_fields = ['rating']
     
     fieldsets = (
         ('Kullanıcı Bilgisi', {
