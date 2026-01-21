@@ -12,26 +12,16 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-)d8ce(xmnq+n%08ff#w&j5uqu8xg18sjwxe=u$2$vp$v%wtark")
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-change-me-in-production")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = [
-    'courtmax-padel-mate.onrender.com',  # Render adresi
-    'courtmaxpadel.com',                 # Yeni domain (kısa)
-    'www.courtmaxpadel.com',             # Yeni domain (uzun)
-    'localhost',
-    '127.0.0.1'
-]
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'courtmax-padel-mate.onrender.com,courtmaxpadel.com,www.courtmaxpadel.com,localhost,127.0.0.1').split(',')
 
 # 2. Form güvenliği (Giriş yapabilmek için ŞART)
 # Buraya domainlerin başında 'https://' olacak şekilde yazmalısın.
-CSRF_TRUSTED_ORIGINS = [
-    'https://courtmax-padel-mate.onrender.com',
-    'https://courtmaxpadel.com',
-    'https://www.courtmaxpadel.com',
-]
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://courtmax-padel-mate.onrender.com,https://courtmaxpadel.com,https://www.courtmaxpadel.com').split(',')
 
 # Application definition
 
@@ -43,7 +33,7 @@ INSTALLED_APPS = [
 
     # Cloudinary (En başta)
     'cloudinary_storage',
-    
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,7 +44,7 @@ INSTALLED_APPS = [
     # Diğerleri
     'cloudinary',
     'rest_framework',
-    
+
     # SİZİN UYGULAMANIZ (Sadece bu olmalı)
 ]
 
@@ -75,7 +65,7 @@ ROOT_URLCONF = "padel_community.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [], 
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -96,8 +86,8 @@ WSGI_APPLICATION = "padel_community.wsgi.application"
 
 DATABASES = {
     'default': dj_database_url.config(
-        # Render'daki veritabanı bağlantı adresi
-        default='postgresql://padel_mate_user:8WkbvDFbSmXGsCn2e2BCEC9ZR82PSVJQ@dpg-d4eq99rgk3sc73btca50-a.frankfurt-postgres.render.com/padel_mate',
+        # Default to SQLite for safety if DATABASE_URL is not set
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
         conn_max_age=600
     )
 }
@@ -161,9 +151,9 @@ LOGOUT_REDIRECT_URL = 'home'
 
 # --- CLOUDINARY API AYARLARI ---
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'divljychy'), 
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '372999294198912'), 
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'yUt4kD31eX_0Hu516ATRONG3qBA'),
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
     'SECURE': True,
     'MEDIA_TAG': 'media',
 }
@@ -175,17 +165,29 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 # Gmail Adresiniz (Gönderen Kişi)
-EMAIL_HOST_USER = 'courtmaxpm@gmail.com' 
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'courtmaxpm@gmail.com')
 
 # Gmail Uygulama Şifresi
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'wgtl soqn xpxz ybyh')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 DEFAULT_FROM_EMAIL = 'Courtmax Padel Mate <noreply@courtmax.com>'
 
 LOGIN_URL = 'login'
 PASSWORD_CHANGE_REDIRECT_URL = 'home'
 
-SESSION_COOKIE_AGE = 1000
+# Session Security
+SESSION_COOKIE_AGE = 1209600 # 2 weeks
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
 CSRF_USE_SESSIONS = True
+
+# HTTPS Security Settings
+USE_HTTPS = os.environ.get("USE_HTTPS", "False") == "True"
+
+if USE_HTTPS:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000 # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True

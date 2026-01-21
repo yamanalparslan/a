@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Courtmax Padel Mate - Profesyonel padel topluluğu. Maçlar ayarla, performansını takip et ve sıralamada yüksel.">
+    <meta name="keywords" content="padel, courtmax, izmir padel, padel maç, padel turnuva, padel oyuncu bul">
     <title>Courtmax Padel Mate</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎾</text></svg>">
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -26,6 +28,9 @@
             font-family: 'Inter', sans-serif;
             padding-bottom: 80px;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         .navbar-top {
@@ -42,7 +47,7 @@
         }
 
         /* MOBİL MENÜ STİLLERİ (YENİ) */
-        
+
         /* Kaydırma çubuğunu gizle (Chrome, Safari, Opera) */
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
@@ -63,7 +68,7 @@
             color: var(--lime) !important;
             text-shadow: 0 0 10px rgba(217, 249, 157, 0.3);
         }
-        
+
         .active-nav i {
             transform: scale(1.1);
             transition: transform 0.2s;
@@ -83,9 +88,13 @@
 
         a { text-decoration: none; }
         .card { background-color: var(--card-dark); border: 1px solid rgba(255,255,255,0.1); }
-        
+
         @media (min-width: 992px) {
             body { padding-bottom: 0; }
+        }
+
+        footer {
+            margin-top: auto;
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -94,22 +103,22 @@
 
     <nav class="navbar navbar-expand-lg navbar-top sticky-top">
         <div class="container d-flex justify-content-between align-items-center h-100">
-            
+
             <a class="navbar-brand fs-4 fw-bold" href="{% url 'home' %}">
                 <span style="color: #ffffff;">Courtmax</span> <span style="color: var(--lime);">Padel Mate</span>
             </a>
-            
+
             <div class="d-none d-lg-flex align-items-center gap-4">
                 <a class="nav-link text-white {% if request.resolver_match.url_name == 'home' %}active-desktop{% endif %}" href="{% url 'home' %}">Ana Sayfa</a>
                 <a class="nav-link text-white {% if request.resolver_match.url_name == 'player-list' %}active-desktop{% endif %}" href="{% url 'player-list' %}">Oyuncular</a>
                 <a class="nav-link text-white {% if request.resolver_match.url_name == 'match-list' %}active-desktop{% endif %}" href="{% url 'match-list' %}">Maçlar</a>
                 <a class="nav-link text-white {% if 'match-lookup' in request.resolver_match.url_name %}active-desktop{% endif %}" href="{% url 'match-lookup-list' %}">Maç Bul</a>
                 <a class="nav-link text-white {% if request.resolver_match.url_name == 'leaderboard' %}active-desktop{% endif %}" href="{% url 'leaderboard' %}">Sıralama</a>
-                
+
                 <a class="nav-link text-white" href="https://www.courtmax.com.tr/padel?sayfa=2" target="_blank">
                     <i class="bi bi-bag-fill me-1"></i> Mağaza
                 </a>
-                
+
                 <a class="nav-link btn btn-outline-secondary text-light border-0 px-3 position-relative" href="{% url 'notifications' %}">
                     <i class="bi bi-bell-fill me-1"></i> Bildirimler
                     {% if unread_notifications %}
@@ -137,7 +146,7 @@
             </div>
 
             <div class="d-flex align-items-center gap-3 d-lg-none">
-                
+
                 <a href="https://www.courtmax.com.tr/padel?sayfa=2" target="_blank" class="text-white fs-4">
                     <i class="bi bi-bag"></i>
                 </a>
@@ -154,7 +163,7 @@
                         <a class="text-white fs-1" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person-circle"></i>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow-lg border-0 position-absolute" 
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow-lg border-0 position-absolute"
                             style="margin-top: 10px; z-index: 1055;">
                             <li><h6 class="dropdown-header" style="color: var(--lime);">{{ user.username }}</h6></li>
                             <li><a class="dropdown-item py-2" href="{% url 'edit-profile' %}"><i class="bi bi-pencil-square me-2"></i> Profili Düzenle</a></li>
@@ -170,18 +179,41 @@
     </nav>
 
     <div class="container py-4">
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+                        {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>{% endif %}
+                        {% if message.tags == 'error' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>{% endif %}
+                        {% if message.tags == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2"></i>{% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         {% block content %}
         {% endblock %}
     </div>
 
-    <nav class="navbar fixed-bottom navbar-dark d-lg-none pb-safe" 
+    <!-- Footer -->
+    <footer class="text-center py-4 border-top border-secondary text-white-50 d-none d-lg-block" style="background-color: var(--bg-dark);">
+        <div class="container">
+            <p class="mb-1">&copy; {% now "Y" %} Courtmax Padel Mate. Tüm hakları saklıdır.</p>
+            <small>Professional Padel Community Platform</small>
+        </div>
+    </footer>
+
+    <nav class="navbar fixed-bottom navbar-dark d-lg-none pb-safe"
          style="background-color: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.1);">
-        
-        <div class="container-fluid d-flex flex-nowrap overflow-auto px-0 hide-scrollbar" 
+
+        <div class="container-fluid d-flex flex-nowrap overflow-auto px-0 hide-scrollbar"
              style="white-space: nowrap; -webkit-overflow-scrolling: touch;">
-            
+
             <div class="d-flex w-100 justify-content-between px-3" style="min-width: 100%;">
-                
+
                 <a href="{% url 'home' %}" class="nav-link text-center px-3 {% if request.resolver_match.url_name == 'home' %}active-nav{% else %}text-white-50{% endif %}">
                     <i class="bi bi-house-door-fill fs-4 d-block mb-1"></i>
                     <span class="small" style="font-size: 0.7rem;">Ana Sayfa</span>

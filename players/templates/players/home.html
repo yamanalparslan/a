@@ -2,19 +2,19 @@
 
 {% block content %}
 
-<div class="row mb-5 align-items-center">
-    <div class="col-lg-8">
-        <h1 class="display-4 fw-bold mb-2 text-white">Hoş Geldin, <span style="color: #d9f99d;">{{ user.username }}</span></h1>
-        <p class="lead" style="color: #cbd5e1;">Courtmax Padel topluluğunda performansını takip et, rakiplerinle yarış.</p>
+<div class="row mb-5 align-items-center py-5 rounded-4 px-3 px-lg-0" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+    <div class="col-lg-8 ps-lg-5">
+        <h1 class="display-4 fw-bold mb-3 text-white">Hoş Geldin, <span style="color: #d9f99d;">{{ user.username }}</span></h1>
+        <p class="lead" style="color: #cbd5e1;">Courtmax Padel topluluğunda performansını takip et, rakiplerinle yarış ve seviyeni yükselt.</p>
     </div>
-    <div class="col-lg-4 text-lg-end">
+    <div class="col-lg-4 text-lg-end pe-lg-5 mt-4 mt-lg-0">
         {% if user.is_authenticated %}
-            <a href="{% url 'create-match' %}" class="btn btn-lg shadow-lg fw-bold" 
-               style="background-color: #d9f99d; color: #0f172a; border: none;">
+            <a href="{% url 'create-match' %}" class="btn btn-lg shadow-lg fw-bold px-4 py-3"
+               style="background-color: #d9f99d; color: #0f172a; border: none; transition: transform 0.2s;">
                 <i class="bi bi-plus-lg me-2"></i> Maç Ekle
             </a>
         {% else %}
-            <a href="{% url 'login' %}" class="btn btn-lg fw-bold px-5 rounded-pill shadow-sm"
+            <a href="{% url 'login' %}" class="btn btn-lg fw-bold px-5 py-3 rounded-pill shadow-sm"
                style="background-color: #d9f99d; color: #0f172a; border: none;">
                Giriş Yap
             </a>
@@ -23,9 +23,9 @@
 </div>
 
 <div class="row g-4">
-    
+
     <div class="col-lg-7">
-        
+
         {% if user.is_authenticated and perf_stats %}
             <!-- İSTATİSTİK KARTLARI -->
             <div class="row g-3 mb-4">
@@ -62,7 +62,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="mt-3 text-end">
                 <a href="{% url 'match-list' %}" class="text-decoration-none small text-white hover-effect">
                     Tüm Maç Geçmişini Gör &rarr;
@@ -85,15 +85,15 @@
                             <i class="bi bi-calendar-event me-1"></i> {{ match.match_date|date:"d M, H:i" }}
                         </div>
                         <div class="fw-bold fs-5">
-                            <span style="color: #d9f99d;">Takım 1</span> 
-                            <span style="color: #64748b;" class="mx-1">vs</span> 
+                            <span style="color: #d9f99d;">Takım 1</span>
+                            <span style="color: #64748b;" class="mx-1">vs</span>
                             <span style="color: #ffffff;">Takım 2</span>
                         </div>
                     </div>
                     <div class="text-end">
                         <div class="badge bg-black border border-secondary p-2 fs-5 font-monospace">
-                            <span style="color: #d9f99d;">{{ match.score_team1 }}</span> 
-                            <span style="color: #64748b;">-</span> 
+                            <span style="color: #d9f99d;">{{ match.score_team1 }}</span>
+                            <span style="color: #64748b;">-</span>
                             <span style="color: #ffffff;">{{ match.score_team2 }}</span>
                         </div>
                     </div>
@@ -121,12 +121,12 @@
                 <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-secondary py-3 px-4">
                     <div class="d-flex align-items-center">
                         {% if player.profile_picture %}
-                            <img src="{{ player.profile_picture.url }}" 
-                                 alt="{{ player.first_name }}" 
+                            <img src="{{ player.profile_picture.url }}"
+                                 alt="{{ player.first_name }}"
                                  class="rounded-circle me-3 border border-secondary"
                                  style="width: 45px; height: 45px; object-fit: cover;">
                         {% else %}
-                            <div class="rounded-circle d-flex justify-content-center align-items-center me-3 text-white fw-bold" 
+                            <div class="rounded-circle d-flex justify-content-center align-items-center me-3 text-white fw-bold"
                                  style="width: 45px; height: 45px; background-color: #0f172a; border: 1px solid #334155;">
                                 {{ player.first_name|first|upper }}
                             </div>
@@ -138,7 +138,7 @@
                             </div>
                         </div>
                     </div>
-                    <span class="badge border border-secondary fw-bold px-3 py-2 rounded-pill" 
+                    <span class="badge border border-secondary fw-bold px-3 py-2 rounded-pill"
                           style="background-color: #0f172a; color: #d9f99d;">
                         {{ player.rating }}
                     </span>
@@ -151,10 +151,5 @@
     </div>
 
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-// Chart kodu burada değilse silinecek
-</script>
 
 {% endblock %}

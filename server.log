@@ -1,0 +1,13 @@
+Watching for file changes with StatReloader
+[21/Jan/2026 16:23:15] "GET / HTTP/1.1" 200 11565
+[21/Jan/2026 16:23:16] "GET /players/login/ HTTP/1.1" 200 11254
+[21/Jan/2026 16:23:17] "POST /players/login/ HTTP/1.1" 302 0
+[21/Jan/2026 16:23:17] "GET /players/ HTTP/1.1" 200 15944
+[21/Jan/2026 16:24:08] "GET / HTTP/1.1" 200 11565
+[21/Jan/2026 16:24:09] "GET /players/login/ HTTP/1.1" 200 11254
+[21/Jan/2026 16:24:10] "POST /players/login/ HTTP/1.1" 302 0
+[21/Jan/2026 16:24:10] "GET /players/ HTTP/1.1" 200 15944
+[21/Jan/2026 16:24:34] "GET / HTTP/1.1" 200 11565
+[21/Jan/2026 16:24:34] "GET /players/login/ HTTP/1.1" 200 11254
+[21/Jan/2026 16:24:35] "POST /players/login/ HTTP/1.1" 302 0
+[21/Jan/2026 16:24:35] "GET /players/ HTTP/1.1" 200 15944
