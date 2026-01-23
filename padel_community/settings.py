@@ -33,7 +33,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 INSTALLED_APPS = [
 
-    'unfold',
+    #'unfold',
 
     'players.apps.PlayersConfig',
 
