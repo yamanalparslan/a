@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-# exit on error
+# Hata olursa dur
 set -o errexit
 
+# Kütüphaneleri yükle
 pip install -r requirements.txt
-python manage.py collectstatic --no-input
+
+# Veritabanı tablolarını oluştur
+python manage.py migrate
+
+# Eski statik dosyaları temizle ve yenilerini topla (Jazzmin kalıntılarını siler)
+python manage.py collectstatic --no-input --clear
