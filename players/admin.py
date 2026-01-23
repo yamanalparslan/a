@@ -4,22 +4,19 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.db.models import Count, Q
-from unfold.admin import ModelAdmin
+# --- ÖNEMLİ DEĞİŞİKLİK: Unfold ModelAdmin import edildi ---
+from unfold.admin import ModelAdmin 
 from .models import Player, Match, Court, Notification, MatchLookup, MatchLookupResponse
 
-# ================================
-# ADMIN PANEL GENEL AYARLARI
-# ================================
 admin.site.site_header = "🎾 Courtmax Padel Mate Admin"
 admin.site.site_title = "Courtmax Admin Paneli"
 admin.site.index_title = "Padel Yönetim Paneli - Hoş Geldiniz"
-
 
 # ================================
 # PLAYER ADMIN
 # ================================
 @admin.register(Player)
-class PlayerAdmin(admin.ModelAdmin):
+class PlayerAdmin(ModelAdmin):  # <--- (Eski: admin.ModelAdmin)
     list_display = [
         'colored_id', 
         'player_info', 
@@ -35,42 +32,26 @@ class PlayerAdmin(admin.ModelAdmin):
     list_per_page = 25
     ordering = ['-rating']
     
-    fieldsets = (
-        ('👤 Kullanıcı Bilgisi', {
-            'fields': ('user', 'first_name', 'last_name'),
-            'classes': ('wide',)
-        }),
-        ('📞 İletişim', {
-            'fields': ('phone', 'city'),
-            'classes': ('collapse',)
-        }),
-        ('🎾 Padel Bilgisi', {
-            'fields': ('skill_level', 'rating'),
-            'classes': ('wide',)
-        }),
-        ('📸 Profil Fotoğrafı', {
-            'fields': ('profile_picture',),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    readonly_fields = []
+    # Unfold özellikleri
+    list_fullwidth = True
     
     def colored_id(self, obj):
         return format_html(
-            '<span style="font-weight: bold; color: #d9f99d;">#{}</span>',
+            '<span class="font-bold text-green-600">#{}</span>',
             obj.id
         )
     colored_id.short_description = 'ID'
     
     def player_info(self, obj):
-        profile_pic = ''
+        img_html = ''
         if obj.profile_picture:
-            profile_pic = f'<img src="{obj.profile_picture.url}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid #d9f99d;">'
+            img_html = f'<img src="{obj.profile_picture.url}" class="w-8 h-8 rounded-full border border-gray-200 mr-2 object-cover">'
+        else:
+             img_html = f'<div class="w-8 h-8 rounded-full bg-gray-800 border border-gray-600 mr-2 flex items-center justify-center text-xs text-white font-bold">{obj.first_name[0].upper()}</div>'
         
         return format_html(
-            '{}<div style="display: inline-block;"><strong style="color: #fff;">{} {}</strong><br><small style="color: #94a3b8;">@{}</small></div>',
-            profile_pic,
+            '<div class="flex items-center">{}<div><div class="font-medium text-gray-900 dark:text-gray-200">{} {}</div><div class="text-xs text-gray-500">@{}</div></div></div>',
+            format_html(img_html),
             obj.first_name,
             obj.last_name,
             obj.user.username
@@ -79,57 +60,54 @@ class PlayerAdmin(admin.ModelAdmin):
     
     def contact_info(self, obj):
         return format_html(
-            '<div style="font-size: 0.9em;"><strong>📞</strong> {}</div>',
-            obj.phone or '<span style="color: #94a3b8;">-</span>'
+            '<div class="text-sm"><span class="mr-1">📞</span>{}</div>',
+            obj.phone or '-'
         )
     contact_info.short_description = 'İletişim'
     
     def skill_badge(self, obj):
         colors = {
-            '0-1.0 Beginner': '#10b981',
-            '1.5 Novice': '#10b981',
-            '2.0-2.5 Improver': '#f59e0b',
-            '3.0 Intermediate': '#f59e0b',
-            '3.5 Upper Int': '#f59e0b',
-            '4.0 Advanced': '#f97316',
-            '4.5 High Advanced': '#f97316',
-            '5.0 Semi Pro': '#ef4444',
-            '5.5-6.0 Pro': '#ef4444',
-            '6.5-7.0 Elite': '#ef4444',
+            '0-1.0 Beginner': 'bg-emerald-500',
+            '1.5 Novice': 'bg-emerald-500',
+            '2.0-2.5 Improver': 'bg-amber-500',
+            '3.0 Intermediate': 'bg-amber-500',
+            '3.5 Upper Int': 'bg-amber-500',
+            '4.0 Advanced': 'bg-orange-500',
+            '4.5 High Advanced': 'bg-orange-500',
+            '5.0 Semi Pro': 'bg-red-500',
+            '5.5-6.0 Pro': 'bg-red-500',
+            '6.5-7.0 Elite': 'bg-red-600',
         }
-        color = colors.get(obj.skill_level, '#64748b')
+        bg_class = colors.get(obj.skill_level, 'bg-slate-500')
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold; white-space: nowrap;">{}</span>',
-            color,
-            obj.skill_level
+            '<span class="{} text-white px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap">{}</span>',
+            bg_class,
+            obj.skill_level.split(' ')[0]
         )
     skill_badge.short_description = 'Seviye'
     
     def rating_badge(self, obj):
+        color_class = "text-slate-500"
+        icon = '🎯'
         if obj.rating >= 1500:
-            color = '#d9f99d'
+            color_class = "text-lime-500"
             icon = '🏆'
         elif obj.rating >= 1200:
-            color = '#60a5fa'
+            color_class = "text-blue-500"
             icon = '⭐'
         elif obj.rating >= 1000:
-            color = '#94a3b8'
+            color_class = "text-slate-400"
             icon = '👍'
-        else:
-            color = '#64748b'
-            icon = '🎯'
-        
+            
         return format_html(
-            '<span style="color: {}; font-weight: bold; font-size: 1.1em;">{} {}</span>',
-            color,
-            icon,
-            obj.rating
+            '<span class="{} font-bold text-sm">{} {}</span>',
+            color_class, icon, obj.rating
         )
     rating_badge.short_description = 'Puan'
     
     def city_badge(self, obj):
         return format_html(
-            '<span style="background-color: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 4px 10px; border-radius: 8px; font-size: 0.85em;">📍 {}</span>',
+            '<span class="px-2 py-1 rounded bg-gray-700 text-gray-200 text-xs">📍 {}</span>',
             obj.city or '-'
         )
     city_badge.short_description = 'Şehir'
@@ -138,57 +116,44 @@ class PlayerAdmin(admin.ModelAdmin):
         team1_count = obj.team1_matches.filter(is_confirmed=True).count()
         team2_count = obj.team2_matches.filter(is_confirmed=True).count()
         total = team1_count + team2_count
-        
         return format_html(
-            '<span style="color: #d9f99d; font-weight: bold;">{}</span> <small style="color: #64748b;">maç</small>',
+            '<span class="text-lime-500 font-bold">{}</span> <small class="text-gray-500">maç</small>',
             total
         )
-    match_count.short_description = 'Toplam Maç'
+    match_count.short_description = 'Maç'
     
     def profile_status(self, obj):
         if obj.profile_picture:
-            return format_html('<span style="color: #10b981;">✓ Var</span>')
-        return format_html('<span style="color: #64748b;">✗ Yok</span>')
-    profile_status.short_description = 'Profil Fotoğrafı'
+            return format_html('<span class="text-emerald-500 text-xs">✓ Var</span>')
+        return format_html('<span class="text-slate-500 text-xs">✗ Yok</span>')
+    profile_status.short_description = 'Foto'
 
 
 # ================================
 # COURT ADMIN
 # ================================
 @admin.register(Court)
-class CourtAdmin(admin.ModelAdmin):
+class CourtAdmin(ModelAdmin):
     list_display = ['colored_id', 'court_name', 'city_info', 'match_count']
     list_filter = ['city']
     search_fields = ['name', 'city']
     list_per_page = 20
     
     def colored_id(self, obj):
-        return format_html(
-            '<span style="font-weight: bold; color: #d9f99d;">#{}</span>',
-            obj.id
-        )
+        return format_html('<span class="font-bold text-green-600">#{}</span>', obj.id)
     colored_id.short_description = 'ID'
     
     def court_name(self, obj):
-        return format_html(
-            '<strong style="color: #fff; font-size: 1.05em;">🏟️ {}</strong>',
-            obj.name
-        )
+        return format_html('<strong class="text-gray-200 text-base">🏟️ {}</strong>', obj.name)
     court_name.short_description = 'Kort Adı'
     
     def city_info(self, obj):
-        return format_html(
-            '<span style="background-color: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 5px 12px; border-radius: 8px;">📍 {}</span>',
-            obj.city
-        )
+        return format_html('<span class="px-2 py-1 rounded bg-gray-700 text-gray-200 text-xs">📍 {}</span>', obj.city)
     city_info.short_description = 'Şehir'
     
     def match_count(self, obj):
         count = obj.match_set.count()
-        return format_html(
-            '<span style="color: #60a5fa; font-weight: bold;">{}</span> <small style="color: #64748b;">maç</small>',
-            count
-        )
+        return format_html('<span class="text-blue-400 font-bold">{}</span> <small class="text-gray-500">maç</small>', count)
     match_count.short_description = 'Toplam Maç'
 
 
@@ -196,7 +161,7 @@ class CourtAdmin(admin.ModelAdmin):
 # MATCH ADMIN
 # ================================
 @admin.register(Match)
-class MatchAdmin(admin.ModelAdmin):
+class MatchAdmin(ModelAdmin):
     list_display = [
         'colored_id',
         'match_date_formatted',
@@ -212,101 +177,79 @@ class MatchAdmin(admin.ModelAdmin):
     date_hierarchy = 'match_date'
     ordering = ['-match_date']
     
+    # Unfold Fieldsets (Collapse özelliği için classes aynı kalabilir)
     fieldsets = (
         ('⚔️ Maç Bilgisi', {
             'fields': ('match_date', 'created_by', 'court'),
-            'classes': ('wide',)
+            'classes': ('tab',), # Unfold tab özelliği
         }),
-        ('🟢 Takım 1', {
-            'fields': ('team1_players', 'set1_team1', 'set2_team1', 'set3_team1'),
-            'classes': ('collapse',)
+        ('Skor Detayları', {
+            'fields': ('score_team1', 'score_team2', 'set1_team1', 'set1_team2', 'set2_team1', 'set2_team2', 'set3_team1', 'set3_team2'),
+            'classes': ('tab',),
         }),
-        ('🔴 Takım 2', {
-            'fields': ('team2_players', 'set1_team2', 'set2_team2', 'set3_team2'),
-            'classes': ('collapse',)
-        }),
-        ('📊 Sonuç', {
-            'fields': ('score_team1', 'score_team2', 'is_confirmed', 'is_rated'),
-            'classes': ('wide',)
+        ('Durum', {
+             'fields': ('is_confirmed', 'is_rated'),
+             'classes': ('tab',),
         }),
     )
     
     def colored_id(self, obj):
-        return format_html(
-            '<span style="font-weight: bold; color: #d9f99d;">#{}</span>',
-            obj.id
-        )
+        return format_html('<span class="font-bold text-green-600">#{}</span>', obj.id)
     colored_id.short_description = 'ID'
     
     def match_date_formatted(self, obj):
         return format_html(
-            '<div style="font-size: 0.95em;"><strong style="color: #fff;">{}</strong><br><small style="color: #94a3b8;">{}</small></div>',
+            '<div><div class="font-medium text-gray-200">{}</div><div class="text-xs text-gray-500">{}</div></div>',
             obj.match_date.strftime('%d %B %Y'),
             obj.match_date.strftime('%H:%M')
         )
-    match_date_formatted.short_description = 'Tarih & Saat'
+    match_date_formatted.short_description = 'Tarih'
     
     def court_info(self, obj):
         if obj.court:
             return format_html(
-                '<div style="font-size: 0.9em;"><strong style="color: #cbd5e1;">🏟️ {}</strong><br><small style="color: #64748b;">{}</small></div>',
-                obj.court.name,
-                obj.court.city
+                '<div><div class="text-gray-300">🏟️ {}</div><div class="text-xs text-gray-500">{}</div></div>',
+                obj.court.name, obj.court.city
             )
-        return format_html('<span style="color: #64748b;">-</span>')
+        return format_html('<span class="text-gray-500">-</span>')
     court_info.short_description = 'Kort'
     
     def score_display(self, obj):
-        if obj.score_team1 > obj.score_team2:
-            winner_color = '#10b981'
-            loser_color = '#64748b'
-        elif obj.score_team2 > obj.score_team1:
-            winner_color = '#64748b'
-            loser_color = '#10b981'
-        else:
-            winner_color = loser_color = '#f59e0b'
+        w_color = "text-emerald-500"
+        l_color = "text-slate-400"
+        
+        c1 = w_color if obj.score_team1 > obj.score_team2 else l_color
+        c2 = w_color if obj.score_team2 > obj.score_team1 else l_color
         
         return format_html(
-            '<div style="text-align: center; font-size: 1.3em; font-weight: bold; font-family: monospace;">'
-            '<span style="color: {};">{}</span>'
-            '<span style="color: #64748b; margin: 0 5px;">-</span>'
-            '<span style="color: {};">{}</span>'
+            '<div class="flex flex-col items-center">'
+            '<div class="text-lg font-mono font-bold tracking-widest">'
+            '<span class="{}">{}</span><span class="text-gray-600 mx-1">-</span><span class="{}">{}</span>'
             '</div>'
-            '<div style="text-align: center; font-size: 0.75em; color: #64748b; margin-top: 3px;">'
-            '({}-{}) ({}-{}) ({}-{})'
+            '<div class="text-xs text-gray-500 mt-1">({}-{}) ({}-{})</div>'
             '</div>',
-            winner_color, obj.score_team1,
-            loser_color, obj.score_team2,
+            c1, obj.score_team1,
+            c2, obj.score_team2,
             obj.set1_team1, obj.set1_team2,
-            obj.set2_team1, obj.set2_team2,
-            obj.set3_team1 or 0, obj.set3_team2 or 0
+            obj.set2_team1, obj.set2_team2
         )
     score_display.short_description = 'Skor'
     
     def status_badges(self, obj):
-        confirmed = ''
-        rated = ''
-        
+        badges = ""
         if obj.is_confirmed:
-            confirmed = '<span style="background-color: #10b981; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.75em; margin-right: 5px;">✓ Onaylı</span>'
+            badges += '<span class="bg-green-600/20 text-green-400 border border-green-600/30 px-2 py-0.5 rounded text-xs mr-1">✓ Onaylı</span>'
         else:
-            confirmed = '<span style="background-color: #f59e0b; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.75em; margin-right: 5px;">⏳ Bekliyor</span>'
+            badges += '<span class="bg-amber-600/20 text-amber-400 border border-amber-600/30 px-2 py-0.5 rounded text-xs mr-1">⏳ Bekliyor</span>'
         
         if obj.is_rated:
-            rated = '<span style="background-color: #3b82f6; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.75em;">⭐ Puanlandı</span>'
-        
-        return format_html(
-            '<div style="white-space: nowrap;">{}{}</div>',
-            confirmed,
-            rated
-        )
+            badges += '<span class="bg-blue-600/20 text-blue-400 border border-blue-600/30 px-2 py-0.5 rounded text-xs">⭐ Puanlandı</span>'
+            
+        return format_html('<div class="flex items-center">{}</div>', format_html(badges))
     status_badges.short_description = 'Durum'
     
     def creator_info(self, obj):
-        return format_html(
-            '<small style="color: #94a3b8;">@{}</small>',
-            obj.created_by.username if obj.created_by else '-'
-        )
+        return format_html('<small class="text-gray-400">@{}</small>', obj.created_by.username if obj.created_by else '-')
     creator_info.short_description = 'Oluşturan'
 
 
@@ -314,78 +257,34 @@ class MatchAdmin(admin.ModelAdmin):
 # NOTIFICATION ADMIN
 # ================================
 @admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
-    list_display = ['colored_id', 'recipient_info', 'message_preview', 'match_link', 'read_status', 'time_ago']
+class NotificationAdmin(ModelAdmin):
+    list_display = ['colored_id', 'recipient_info', 'message_preview', 'read_status', 'time_ago']
     list_filter = ['is_read', 'created_at']
     search_fields = ['recipient__username', 'message']
-    readonly_fields = ['created_at']
-    list_per_page = 30
-    date_hierarchy = 'created_at'
-    ordering = ['-created_at']
     
     def colored_id(self, obj):
-        return format_html(
-            '<span style="font-weight: bold; color: #d9f99d;">#{}</span>',
-            obj.id
-        )
+        return format_html('<span class="font-bold text-green-600">#{}</span>', obj.id)
     colored_id.short_description = 'ID'
     
     def recipient_info(self, obj):
-        return format_html(
-            '<strong style="color: #fff;">@{}</strong>',
-            obj.recipient.username
-        )
+        return format_html('<strong class="text-gray-200">@{}</strong>', obj.recipient.username)
     recipient_info.short_description = 'Alıcı'
     
     def message_preview(self, obj):
-        max_length = 60
-        message = obj.message[:max_length] + '...' if len(obj.message) > max_length else obj.message
-        return format_html(
-            '<span style="color: #cbd5e1; font-size: 0.9em;">{}</span>',
-            message
-        )
+        return format_html('<span class="text-gray-400 text-sm">{}</span>', obj.message[:50])
     message_preview.short_description = 'Mesaj'
-    
-    def match_link(self, obj):
-        if obj.match:
-            url = reverse('admin:players_match_change', args=[obj.match.id])
-            return format_html(
-                '<a href="{}" style="color: #60a5fa; text-decoration: none;">🔗 Maç #{}</a>',
-                url,
-                obj.match.id
-            )
-        return format_html('<span style="color: #64748b;">-</span>')
-    match_link.short_description = 'Maç'
     
     def read_status(self, obj):
         if obj.is_read:
-            return format_html(
-                '<span style="background-color: #10b981; color: white; padding: 3px 10px; border-radius: 10px; font-size: 0.75em;">✓ Okundu</span>'
-            )
-        return format_html(
-            '<span style="background-color: #ef4444; color: white; padding: 3px 10px; border-radius: 10px; font-size: 0.75em;">● Yeni</span>'
-        )
+             return format_html('<span class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">Okundu</span>')
+        return format_html('<span class="text-xs bg-red-900 text-red-300 px-2 py-1 rounded">Yeni</span>')
     read_status.short_description = 'Durum'
     
     def time_ago(self, obj):
         from django.utils import timezone
         diff = timezone.now() - obj.created_at
-        
-        if diff.days > 0:
-            return format_html(
-                '<small style="color: #64748b;">{} gün önce</small>',
-                diff.days
-            )
-        elif diff.seconds >= 3600:
-            return format_html(
-                '<small style="color: #64748b;">{} saat önce</small>',
-                diff.seconds // 3600
-            )
-        else:
-            return format_html(
-                '<small style="color: #64748b;">{} dk önce</small>',
-                diff.seconds // 60
-            )
+        if diff.days > 0: return f"{diff.days} gün önce"
+        return "Bugün"
     time_ago.short_description = 'Zaman'
 
 
@@ -393,195 +292,54 @@ class NotificationAdmin(admin.ModelAdmin):
 # MATCH LOOKUP ADMIN
 # ================================
 @admin.register(MatchLookup)
-class MatchLookupAdmin(admin.ModelAdmin):
-    list_display = [
-        'colored_id',
-        'player_info',
-        'looking_for_badge',
-        'date_info',
-        'location_info',
-        'status_badge',
-        'response_count'
-    ]
-    list_filter = ['status', 'looking_for', 'city', 'preferred_date']
-    search_fields = ['player__first_name', 'player__last_name', 'city', 'description']
-    date_hierarchy = 'preferred_date'
-    list_per_page = 25
-    ordering = ['-created_at']
+class MatchLookupAdmin(ModelAdmin):
+    list_display = ['colored_id', 'player_info', 'looking_for_badge', 'location_info', 'status_badge']
+    list_filter = ['status', 'looking_for', 'city']
     
     def colored_id(self, obj):
-        return format_html(
-            '<span style="font-weight: bold; color: #d9f99d;">#{}</span>',
-            obj.id
-        )
+        return format_html('<span class="font-bold text-green-600">#{}</span>', obj.id)
     colored_id.short_description = 'ID'
-    
+
     def player_info(self, obj):
         return format_html(
-            '<strong style="color: #fff;">{} {}</strong><br><small style="color: #94a3b8;">@{}</small>',
-            obj.player.first_name,
-            obj.player.last_name,
-            obj.player.user.username
+            '<strong class="text-gray-200">{} {}</strong><br><small class="text-gray-400">@{}</small>',
+            obj.player.first_name, obj.player.last_name, obj.player.user.username
         )
     player_info.short_description = 'Oyuncu'
-    
+
     def looking_for_badge(self, obj):
-        colors = {
-            'partner': '#3b82f6',
-            'opponents': '#ef4444',
-            'both': '#10b981'
-        }
-        icons = {
-            'partner': '🤝',
-            'opponents': '⚔️',
-            'both': '🎯'
-        }
-        color = colors.get(obj.looking_for, '#64748b')
-        icon = icons.get(obj.looking_for, '❓')
+        color = "bg-gray-600"
+        if obj.looking_for == 'partner': color = "bg-blue-600"
+        elif obj.looking_for == 'opponents': color = "bg-red-600"
+        elif obj.looking_for == 'both': color = "bg-green-600"
         
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold;">{} {}</span>',
-            color,
-            icon,
-            obj.get_looking_for_display()
+            '<span class="{} text-white px-2 py-1 rounded text-xs font-bold">{}</span>',
+            color, obj.get_looking_for_display()
         )
     looking_for_badge.short_description = 'Aranan'
     
-    def date_info(self, obj):
-        return format_html(
-            '<div style="font-size: 0.9em;"><strong style="color: #cbd5e1;">📅 {}</strong><br><small style="color: #64748b;">{} - {}</small></div>',
-            obj.preferred_date.strftime('%d %b %Y'),
-            obj.preferred_time_start.strftime('%H:%M') if obj.preferred_time_start else '-',
-            obj.preferred_time_end.strftime('%H:%M') if obj.preferred_time_end else '-'
-        )
-    date_info.short_description = 'Tarih & Saat'
-    
     def location_info(self, obj):
-        court = obj.preferred_court.name if obj.preferred_court else 'Farketmez'
         return format_html(
-            '<div style="font-size: 0.9em;"><strong style="color: #cbd5e1;">📍 {}</strong><br><small style="color: #64748b;">{}</small></div>',
-            obj.city,
-            court
+            '<div class="text-sm"><span class="text-gray-300">📍 {}</span></div>',
+            obj.city
         )
     location_info.short_description = 'Konum'
-    
+
     def status_badge(self, obj):
-        colors = {
-            'active': '#10b981',
-            'matched': '#3b82f6',
-            'expired': '#64748b',
-            'cancelled': '#ef4444'
-        }
-        color = colors.get(obj.status, '#64748b')
+        color = "bg-gray-600"
+        if obj.status == 'active': color = "bg-green-600"
+        elif obj.status == 'matched': color = "bg-blue-600"
+        elif obj.status == 'expired': color = "bg-yellow-600"
+        elif obj.status == 'cancelled': color = "bg-red-600"
         
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 4px 10px; border-radius: 10px; font-size: 0.75em; font-weight: bold;">{}</span>',
-            color,
-            obj.get_status_display()
+            '<span class="{} text-white px-2 py-1 rounded text-xs">{}</span>',
+            color, obj.get_status_display()
         )
     status_badge.short_description = 'Durum'
-    
-    def response_count(self, obj):
-        count = obj.responses.count()
-        pending = obj.responses.filter(status='pending').count()
-        
-        return format_html(
-            '<span style="color: #d9f99d; font-weight: bold;">{}</span> <small style="color: #64748b;">yanıt</small><br>'
-            '<small style="color: #f59e0b;">{} bekliyor</small>',
-            count,
-            pending
-        )
-    response_count.short_description = 'Yanıtlar'
 
 
-# ================================
-# MATCH LOOKUP RESPONSE ADMIN
-# ================================
 @admin.register(MatchLookupResponse)
-class MatchLookupResponseAdmin(admin.ModelAdmin):
-    list_display = [
-        'colored_id',
-        'responder_info',
-        'lookup_info',
-        'message_preview',
-        'status_badge',
-        'time_ago'
-    ]
-    list_filter = ['status', 'created_at']
-    search_fields = ['responder__first_name', 'responder__last_name', 'message']
-    list_per_page = 25
-    ordering = ['-created_at']
-    
-    def colored_id(self, obj):
-        return format_html(
-            '<span style="font-weight: bold; color: #d9f99d;">#{}</span>',
-            obj.id
-        )
-    colored_id.short_description = 'ID'
-    
-    def responder_info(self, obj):
-        return format_html(
-            '<strong style="color: #fff;">{} {}</strong><br><small style="color: #94a3b8;">@{}</small>',
-            obj.responder.first_name,
-            obj.responder.last_name,
-            obj.responder.user.username
-        )
-    responder_info.short_description = 'Yanıtlayan'
-    
-    def lookup_info(self, obj):
-        url = reverse('admin:players_matchlookup_change', args=[obj.lookup.id])
-        return format_html(
-            '<a href="{}" style="color: #60a5fa; text-decoration: none;">🔗 İlan #{}</a><br>'
-            '<small style="color: #64748b;">{}</small>',
-            url,
-            obj.lookup.id,
-            obj.lookup.get_looking_for_display()
-        )
-    lookup_info.short_description = 'İlan'
-    
-    def message_preview(self, obj):
-        if obj.message:
-            max_length = 50
-            message = obj.message[:max_length] + '...' if len(obj.message) > max_length else obj.message
-            return format_html(
-                '<span style="color: #cbd5e1; font-size: 0.85em; font-style: italic;">"{}"</span>',
-                message
-            )
-        return format_html('<span style="color: #64748b;">-</span>')
-    message_preview.short_description = 'Mesaj'
-    
-    def status_badge(self, obj):
-        colors = {
-            'pending': '#f59e0b',
-            'accepted': '#10b981',
-            'rejected': '#ef4444'
-        }
-        color = colors.get(obj.status, '#64748b')
-        
-        return format_html(
-            '<span style="background-color: {}; color: white; padding: 4px 10px; border-radius: 10px; font-size: 0.75em; font-weight: bold;">{}</span>',
-            color,
-            obj.get_status_display()
-        )
-    status_badge.short_description = 'Durum'
-    
-    def time_ago(self, obj):
-        from django.utils import timezone
-        diff = timezone.now() - obj.created_at
-        
-        if diff.days > 0:
-            return format_html(
-                '<small style="color: #64748b;">{} gün önce</small>',
-                diff.days
-            )
-        elif diff.seconds >= 3600:
-            return format_html(
-                '<small style="color: #64748b;">{} saat önce</small>',
-                diff.seconds // 3600
-            )
-        else:
-            return format_html(
-                '<small style="color: #64748b;">{} dk önce</small>',
-                diff.seconds // 60
-            )
-    time_ago.short_description = 'Zaman'
+class MatchLookupResponseAdmin(ModelAdmin):
+    list_display = ['id', 'responder', 'status', 'created_at']
