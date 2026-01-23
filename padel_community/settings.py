@@ -19,8 +19,6 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
     'courtmax-padel-mate.onrender.com',  # Render adresi
-    'courtmaxpadel.com',                 # Yeni domain (kısa)
-    'www.courtmaxpadel.com',             # Yeni domain (uzun)
     'localhost',
     '127.0.0.1'
 ]
@@ -35,7 +33,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 INSTALLED_APPS = [
 
-    #'unfold',
+    'unfold',
 
     'players.apps.PlayersConfig',
 
