@@ -29,3 +29,7 @@ urlpatterns = [
 # Geliştirme modundayken (DEBUG=True) yüklenen resimleri sunmak için:
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    admin.site.site_header = "🎾 Courtmax Padel Mate Admin"
+admin.site.site_title = "Courtmax Admin"
+admin.site.index_title = "Padel Yönetim Paneli"

@@ -29,8 +29,6 @@ ALLOWED_HOSTS = [
 # Buraya domainlerin başında 'https://' olacak şekilde yazmalısın.
 CSRF_TRUSTED_ORIGINS = [
     'https://courtmax-padel-mate.onrender.com',
-    'https://courtmaxpadel.com',
-    'https://www.courtmaxpadel.com',
 ]
 
 # Application definition
@@ -150,6 +148,9 @@ STORAGES = {
 # 2. Eski Yöntem
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
